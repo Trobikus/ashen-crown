@@ -29,7 +29,7 @@ Ebene für Ebene tiefer, bis du dem Wächter des Thrones gegenüberstehst.
 
 - **Auto-Kampf & Zonen** — Jede der **5 Ebenen** bringt ihr eigenes Bestiarium aus je
   drei Kreaturen mit — **15 Gegner insgesamt**, von der Ascheratte bis zum Thronenden.
-  Pro Ebene wartet nach 25 Siegen ein Boss; sein Fall öffnet die Tür in die Tiefe.
+  Pro Ebene wartet nach 30 Siegen ein Boss; sein Fall öffnet die Tür in die Tiefe.
   Über die Gebiete-Karte reist du für sicheres Farmen in freigeschaltete Ebenen zurück.
 - **Fertigkeitenbaum** — **217 Knoten** im Path-of-Exile-Stil: vier Pfade
   (Krieg, Haut, Asche, Geist) mit kleinen Passives, Notables und **12 Keystones mit
