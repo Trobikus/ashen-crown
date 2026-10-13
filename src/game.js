@@ -62,7 +62,7 @@ const RARITIES = [
   { key: 'episch', label: 'Episch', suffix: 'der Krone', color: '#9d6d8a', weight: 5, mult: 4 },
 ];
 
-const DROP_CHANCES = { normal: 0.05, elite: 0.3, boss: 1 };
+const DROP_CHANCES = { normal: 0.02, elite: 0.15, boss: 1 };
 const BASE_CRIT_CHANCE = 5;
 const CRIT_MULTIPLIER = 2;
 const BASE_ATTACK_SPEED = 1;
