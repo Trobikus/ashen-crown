@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ashen Crown</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <main id="menu">
+      <h1>Ashen Crown</h1>
+      <p class="tagline">Die Asche erinnert sich. Der Thron wartet.</p>
+      <nav>
+        <button id="btn-start">Start</button>
+        <button id="btn-options">Optionen</button>
+        <button id="btn-quit">Beenden</button>
+      </nav>
+      <p id="notice" hidden></p>
+    </main>
+    <div id="hub" hidden>
+      <button id="hub-menu" class="btn-small">Hauptmenü</button>
+      <div id="hub-hud">
+        <span>Stufe <strong id="hub-level">1</strong></span>
+        <span>Asche <strong id="hub-ash">0</strong></span>
+      </div>
+      <h2>Der Schrein</h2>
+      <p class="tagline">Hier beginnt und endet jeder Weg in die Asche.</p>
+      <div id="hub-tiles">
+        <button class="tile" id="tile-hero">
+          <span class="tile-name">Held</span>
+          <span class="tile-sub">Der Erweckte</span>
+        </button>
+        <button class="tile" id="tile-skills">
+          <span class="tile-name">Fertigkeiten</span>
+          <span class="tile-sub" id="tile-skills-sub">Wähle weise</span>
+        </button>
+        <button class="tile tile-descend" id="btn-descend">
+          <span class="tile-name">In die Krypta hinabsteigen</span>
+          <span class="tile-sub">Der Kampf ruft</span>
+        </button>
+        <button class="tile" id="tile-map">
+          <span class="tile-name">Gebiete</span>
+          <span class="tile-sub" id="tile-map-sub">1 von 5 Gebieten offen</span>
+        </button>
+        <button class="tile" id="tile-crafting">
+          <span class="tile-name">Crafting</span>
+          <span class="tile-sub">Noch ohne Funktion</span>
+        </button>
+      </div>
+    </div>
+    <section class="scene" id="scene-hero" hidden>
+      <header class="scene-header">
+        <button class="btn-small" data-back>Zurück</button>
+      </header>
+      <h2>Held</h2>
+      <div class="character-layout">
+        <div class="stats-panel">
+          <dl class="stat-list">
+            <div id="stat-points-row" hidden>
+              <dt>Statpunkte</dt><dd id="hero-stat-points">0</dd>
+              <div class="spend-amount">
+                <button class="active" data-amount="1">×1</button>
+                <button data-amount="5">×5</button>
+                <button data-amount="10">×10</button>
+              </div>
+            </div>
+            <div class="has-tooltip">
+              <dt>Stufe</dt><dd id="hero-modal-level">1</dd>
+              <div class="tooltip">Jede Stufe gewährt 5 Statpunkte zur freien Verteilung.</div>
+            </div>
+            <div class="has-tooltip">
+              <dt>Erfahrung</dt><dd id="hero-modal-xp">0 / 12</dd>
+              <div class="tooltip">Sammelt sich durch erlegte Kreaturen. Ist der Bedarf voll, steigst du eine Stufe auf.</div>
+            </div>
+            <div class="has-tooltip">
+              <dt>Lebenskraft</dt><dd id="hero-modal-hp">20</dd>
+              <button class="stat-plus" data-stat="hp" hidden>+</button>
+              <div class="tooltip">Dein gesamtes Leben. Fällt es auf null, erwachst du am Schrein. Ein Punkt: +5.</div>
+            </div>
+            <div class="has-tooltip">
+              <dt>Schaden</dt><dd id="hero-modal-damage">2</dd>
+              <button class="stat-plus" data-stat="damage" hidden>+</button>
+              <div class="tooltip">Dein Wucht pro Schlag — aus Stufe, Übungen und Waffe. Ein Punkt: +1.</div>
+            </div>
+            <div class="has-tooltip">
+              <dt>Rüstung</dt><dd id="hero-modal-armor">0</dd>
+              <button class="stat-plus" data-stat="armor" hidden>+</button>
+              <div class="tooltip">Verringert jeden erlittenen Treffer um diesen Wert. Mindestens 1 Schaden kommt immer durch. Ein Punkt: +1.</div>
+            </div>
+            <div class="has-tooltip">
+              <dt>Kritische Chance</dt><dd id="hero-modal-crit">5 %</dd>
+              <button class="stat-plus" data-stat="crit" hidden>+</button>
+              <div class="tooltip">Chance, einen Schlag für doppelten Schaden zu treffen. Ein Punkt: +1 %.</div>
+            </div>
+            <div class="has-tooltip">
+              <dt>Kritischer Schaden</dt><dd id="hero-modal-critdmg">200 %</dd>
+              <div class="tooltip">Multiplikator eines kritischen Treffers.</div>
+            </div>
+            <div class="has-tooltip">
+              <dt>Angriffstempo</dt><dd id="hero-modal-speed">1,0 / s</dd>
+              <div class="tooltip">Schläge pro Sekunde. 1,0 entspricht einem Schlag alle 1,5 Sekunden.</div>
+            </div>
+            <div class="has-tooltip">
+              <dt>Erlegte Kreaturen</dt><dd id="hero-modal-kills">0</dd>
+              <div class="tooltip">Zählt jedes erschlagene Wesen seit deiner Erweckung.</div>
+            </div>
+          </dl>
+        </div>
+        <div class="gear-panel">
+          <div class="gear-slots">
+            <div class="gear-slot has-tooltip" data-slot="waffe"><span class="slot-name">Waffe</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="brust"><span class="slot-name">Brust</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="helm"><span class="slot-name">Helm</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="hose"><span class="slot-name">Hose</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="schuhe"><span class="slot-name">Schuhe</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="hand-links"><span class="slot-name">Handschuh Links</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="hand-rechts"><span class="slot-name">Handschuh Rechts</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+          </div>
+          <div class="inventory-bar">
+            <span class="inventory-label">Inventar <span class="inventory-count" id="inventory-count">0 / 40</span></span>
+            <div class="inventory-tools">
+              <button class="btn-small" id="btn-sell">Verkaufen</button>
+              <button class="btn-small" id="btn-sell-all" hidden>Alles auswählen</button>
+              <button class="btn-small" id="btn-sort-inventory">Sortieren</button>
+              <button class="btn-small" id="btn-equip-best">Bestes anlegen</button>
+            </div>
+          </div>
+          <div id="inventory-grid"></div>
+        </div>
+      </div>
+    </section>
+    <section class="scene" id="scene-skills" hidden>
+      <header class="scene-header">
+        <button class="btn-small" data-back>Zurück</button>
+      </header>
+      <h2>Fertigkeiten</h2>
+      <p class="skill-hud">Skillpunkte: <strong id="skill-points-hud">0</strong></p>
+      <div id="skill-tree-wrap">
+        <svg id="skill-tree" viewBox="-300 -300 600 600"></svg>
+        <div class="skill-tooltip" id="skill-tooltip" hidden></div>
+      </div>
+      <p class="tagline">Geschnittene Runen heilen nicht.</p>
+    </section>
+    <section class="scene" id="scene-map" hidden>
+      <header class="scene-header">
+        <button class="btn-small" data-back>Zurück</button>
+      </header>
+      <h2>Gebiete</h2>
+      <div id="zone-list"></div>
+      <p class="tagline">Jede Ebene tiefer verlangt mehr, als die Asche zurückgibt.</p>
+    </section>
+    <section class="scene" id="scene-crafting" hidden>
+      <header class="scene-header">
+        <button class="btn-small" data-back>Zurück</button>
+      </header>
+      <h2>Crafting</h2>
+      <p class="tagline">Noch ohne Funktion.</p>
+    </section>
+    <div id="game" hidden>
+      <header id="hud">
+        <span>Bereich <strong id="hud-zone">Aschenkrypta</strong></span>
+        <span>Stufe <strong id="hud-level">1</strong></span>
+        <span>Asche <strong id="hud-ash">0</strong></span>
+        <button id="btn-shrine" class="btn-small">Schrein</button>
+      </header>
+      <div id="arena">
+        <div class="fighter" id="hero-fighter">
+          <div class="figure" id="hero-figure"></div>
+          <div class="fighter-name">Der Erweckte</div>
+          <div class="hp-bar"><div class="hp-fill hero-fill" id="hero-hp"></div></div>
+        </div>
+        <div class="fighter" id="enemy-fighter">
+          <div class="figure" id="enemy-figure"></div>
+          <div class="fighter-name" id="enemy-name">—</div>
+          <div class="hp-bar"><div class="hp-fill enemy-fill" id="enemy-hp"></div></div>
+        </div>
+      </div>
+      <div id="actions">
+        <button id="up-damage">Klinge schärfen · <span id="cost-damage">10</span> Asche</button>
+        <button id="up-hp">Haut härten · <span id="cost-hp">15</span> Asche</button>
+        <button id="btn-door" hidden>Durch die Tür gehen</button>
+      </div>
+    </div>
+    <div id="overlay"><p id="overlay-text"></p></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
