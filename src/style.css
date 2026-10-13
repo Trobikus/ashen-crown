@@ -377,6 +377,15 @@ button:hover {
   padding-bottom: 0.5rem;
 }
 
+#upgrade-row {
+  display: flex;
+  gap: 0.6rem;
+}
+
+#upgrade-row button {
+  width: clamp(170px, 16vw, 240px);
+}
+
 .tile-descend {
   border-color: #8a7f6d;
 }
