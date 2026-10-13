@@ -590,7 +590,7 @@ function generateItem() {
     name: `${slot.base} ${rarity.suffix}`,
     rarity: rarity.key,
     enhance: 0,
-    mastery: null,
+    mastery: rarity.key === 'episch' ? rollMastery(slot.stat) : null,
     ...rollItemValues(slot, rarity, ZONES[state.zone].ilvl),
   };
 }
@@ -1059,7 +1059,8 @@ function itemStatsText(item) {
 function comparisonHtml(item) {
   const equipped = state.equipment[item.slot];
   if (!equipped || equipped.id === item.id) return '';
-  return `<div class="tt-compare">Getragen: ${equipped.name} · ${itemStatsText(equipped)}</div>`;
+  const mastery = equipped.mastery ? ` · Meisterschaft: ${SKILL_EFFECT_LABELS[equipped.mastery.stat](equipped.mastery.value)}` : '';
+  return `<div class="tt-compare">Getragen: ${equipped.name}${equipped.enhance ? ` +${equipped.enhance}` : ''} · ${itemStatsText(equipped)}${mastery}</div>`;
 }
 
 function tooltipHtml(item, action, showValue = false) {
