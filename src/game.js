@@ -337,7 +337,9 @@ const SKILL_EFFECT_LABELS = {
   damage: (v) => `${skillSigned(v)} Schaden`,
   damagePct: (v) => `${skillSigned(v)} % Schaden`,
   hp: (v) => `${skillSigned(v)} Lebenskraft`,
+  hpPct: (v) => `${skillSigned(v)} % Lebenskraft`,
   armor: (v) => `${skillSigned(v)} Rüstung`,
+  armorPct: (v) => `${skillSigned(v)} % Rüstung`,
   crit: (v) => `${skillSigned(v)} % Kritchance`,
   critDmg: (v) => `${skillSigned(v)} % Kritschaden`,
   speed: (v) => `${skillSigned(v)} % Angriffstempo`,
@@ -431,6 +433,9 @@ function cacheDom() {
   el.sceneOptions = document.getElementById('scene-options');
   el.sceneMap = document.getElementById('scene-map');
   el.sceneCrafting = document.getElementById('scene-crafting');
+  el.craftSlots = document.getElementById('craft-slots');
+  el.craftDetail = document.getElementById('craft-detail');
+  el.craftAsh = document.getElementById('craft-ash');
   el.optionsTabs = document.getElementById('options-tabs');
   el.optionsPanel = document.getElementById('options-panel');
   el.resetButton = document.getElementById('btn-reset-save');
@@ -489,49 +494,81 @@ function skillBonus(stat) {
   return total;
 }
 
+const MASTERY_POOL = {
+  damage: [
+    { stat: 'damagePct', min: 8, max: 15 },
+    { stat: 'speed', min: 6, max: 12 },
+    { stat: 'critDmg', min: 15, max: 30 },
+  ],
+  hp: [
+    { stat: 'hpPct', min: 10, max: 20 },
+    { stat: 'armorPct', min: 8, max: 16 },
+    { stat: 'ash', min: 5, max: 10 },
+    { stat: 'xp', min: 5, max: 10 },
+  ],
+};
+
+function rollMastery(slotStat) {
+  const pool = MASTERY_POOL[slotStat === 'damage' ? 'damage' : 'hp'];
+  const roll = pool[Math.floor(Math.random() * pool.length)];
+  return { stat: roll.stat, value: Math.round(roll.min + Math.random() * (roll.max - roll.min)) };
+}
+
+function masteryBonus(stat) {
+  let total = 0;
+  for (const slot of GEAR_SLOTS) {
+    const item = state.equipment[slot.key];
+    if (item?.mastery?.stat === stat) total += item.mastery.value;
+  }
+  return total;
+}
+
+function statBonus(stat) {
+  return skillBonus(stat) + masteryBonus(stat);
+}
+
 function heroDamage() {
   let damage = state.damage;
   for (const slot of GEAR_SLOTS) {
     const item = state.equipment[slot.key];
-    if (item) damage += item.damage ?? 0;
+    if (item) damage += itemStats(item).damage;
   }
-  damage += skillBonus('damage');
-  return Math.round(damage * (1 + skillBonus('damagePct') / 100));
+  return Math.round((damage + statBonus('damage')) * (1 + statBonus('damagePct') / 100));
 }
 
 function heroMaxHp() {
   let maxHp = state.maxHp;
   for (const slot of GEAR_SLOTS) {
     const item = state.equipment[slot.key];
-    if (item) maxHp += item.hp ?? 0;
+    if (item) maxHp += itemStats(item).hp;
   }
-  return maxHp + skillBonus('hp');
+  return Math.round((maxHp + statBonus('hp')) * (1 + statBonus('hpPct') / 100));
 }
 
 function heroArmor() {
   let armor = state.armorBase;
   for (const slot of GEAR_SLOTS) {
     const item = state.equipment[slot.key];
-    if (item) armor += item.armor ?? 0;
+    if (item) armor += itemStats(item).armor;
   }
-  return armor + skillBonus('armor');
+  return Math.round((armor + statBonus('armor')) * (1 + statBonus('armorPct') / 100));
 }
 
 function heroCritChance() {
   let crit = BASE_CRIT_CHANCE + state.critBonus;
   for (const slot of GEAR_SLOTS) {
     const item = state.equipment[slot.key];
-    if (item) crit += item.critChance ?? 0;
+    if (item) crit += itemStats(item).critChance;
   }
-  return crit + skillBonus('crit');
+  return crit + statBonus('crit');
 }
 
 function heroAttackSpeed() {
-  return BASE_ATTACK_SPEED + skillBonus('speed') / 100;
+  return BASE_ATTACK_SPEED + statBonus('speed') / 100;
 }
 
 function critMultiplier() {
-  return CRIT_MULTIPLIER + skillBonus('critDmg') / 100;
+  return CRIT_MULTIPLIER + statBonus('critDmg') / 100;
 }
 
 function rollRarity() {
@@ -547,28 +584,38 @@ function rollRarity() {
 function generateItem() {
   const slot = GEAR_SLOTS[Math.floor(Math.random() * GEAR_SLOTS.length)];
   const rarity = rollRarity();
-  const ilvl = zoneOf(state.zone).ilvl;
-  const base = slot.stat === 'damage' ? 1 + ilvl * 0.4 : 4 + ilvl * 1.1;
-  const amount = Math.max(1, Math.round(base * rarity.mult));
-  const item = {
+  return {
     id: ++state.itemSeq,
     slot: slot.key,
     name: `${slot.base} ${rarity.suffix}`,
     rarity: rarity.key,
-    damage: 0,
-    hp: 0,
-    armor: 0,
-    critChance: 0,
+    enhance: 0,
+    mastery: null,
+    ...rollItemValues(slot, rarity, ZONES[state.zone].ilvl),
   };
+}
+
+function rollItemValues(slot, rarity, ilvl) {
+  const base = slot.stat === 'damage' ? 1 + ilvl * 0.4 : 4 + ilvl * 1.1;
+  const amount = Math.max(1, Math.round(base * rarity.mult));
+  const values = { damage: 0, hp: 0, armor: 0, critChance: 0 };
   if (slot.stat === 'damage') {
-    item.damage = amount;
-    if (rarity.key === 'selten') item.critChance = 5;
-    if (rarity.key === 'episch') item.critChance = 10;
+    values.damage = amount;
+    if (rarity.key === 'selten') values.critChance = 5;
+    if (rarity.key === 'episch') values.critChance = 10;
   } else {
-    item.hp = amount;
-    item.armor = Math.max(1, Math.round(amount * 0.4));
+    values.hp = amount;
+    values.armor = Math.max(1, Math.round(amount * 0.4));
   }
-  return item;
+  return values;
+}
+
+const craftIlvl = () => ZONES[Math.min(state.cleared, ZONES.length - 1)].ilvl;
+
+function itemStats(item) {
+  const stats = { damage: item.damage, hp: item.hp, armor: item.armor, critChance: item.critChance };
+  for (const [stat, value] of Object.entries(item.enhanceBonus ?? {})) stats[stat] += value;
+  return stats;
 }
 
 function rollDrop(enemyType) {
@@ -604,7 +651,8 @@ function unequipItem(slotKey) {
 }
 
 function itemScore(item) {
-  return item.damage * 2 + item.hp * 0.5 + item.armor + item.critChance * 3;
+  const s = itemStats(item);
+  return s.damage * 2 + s.hp * 0.5 + s.armor + s.critChance * 3 + (item.mastery ? item.mastery.value * 2 : 0);
 }
 
 function sortInventory() {
@@ -855,7 +903,7 @@ function spawnEnemy() {
 }
 
 function gainXp(amount) {
-  state.xp += Math.round(amount * (1 + skillBonus('xp') / 100));
+  state.xp += Math.round(amount * (1 + statBonus('xp') / 100));
   while (state.xp >= xpNeeded(state.level)) {
     state.xp -= xpNeeded(state.level);
     state.level += 1;
@@ -904,7 +952,7 @@ function killEnemy() {
   const def = scaledEnemy(enemy.type);
   state.kills += 1;
   state.zoneKills += 1;
-  state.ash += Math.round(def.ash * (1 + skillBonus('ash') / 100));
+  state.ash += Math.round(def.ash * (1 + statBonus('ash') / 100));
   gainXp(def.xp);
   rollDrop(enemy.type);
   if (def.boss) {
@@ -995,12 +1043,13 @@ function tick() {
 }
 
 function itemStatsText(item) {
+  const s = itemStats(item);
   return (
     [
-      item.damage ? `+${item.damage} Schaden` : null,
-      item.hp ? `+${item.hp} Lebenskraft` : null,
-      item.armor ? `+${item.armor} Rüstung` : null,
-      item.critChance ? `+${item.critChance} % Kritchance` : null,
+      s.damage ? `+${s.damage} Schaden` : null,
+      s.hp ? `+${s.hp} Lebenskraft` : null,
+      s.armor ? `+${s.armor} Rüstung` : null,
+      s.critChance ? `+${s.critChance} % Kritchance` : null,
     ]
       .filter(Boolean)
       .join(' · ') || 'Keine Werte'
@@ -1016,19 +1065,21 @@ function comparisonHtml(item) {
 function tooltipHtml(item, action, showValue = false) {
   if (!item) return '<span class="tt-empty">Leer</span>';
   const rarity = rarityOf(item.rarity);
-  const stats = [
-    item.damage ? `+${item.damage} Schaden` : null,
-    item.hp ? `+${item.hp} Lebenskraft` : null,
-    item.armor ? `+${item.armor} Rüstung` : null,
-    item.critChance ? `+${item.critChance} % Kritchance` : null,
+  const stats = itemStats(item);
+  const rows = [
+    stats.damage ? `<div class="tt-stat">+${stats.damage} Schaden</div>` : null,
+    stats.hp ? `<div class="tt-stat">+${stats.hp} Lebenskraft</div>` : null,
+    stats.armor ? `<div class="tt-stat">+${stats.armor} Rüstung</div>` : null,
+    stats.critChance ? `<div class="tt-stat">+${stats.critChance} % Kritchance</div>` : null,
+    item.enhance ? `<div class="tt-enhance">Verstärkt +${item.enhance}</div>` : null,
+    item.mastery ? `<div class="tt-mastery">Meisterschaft: ${SKILL_EFFECT_LABELS[item.mastery.stat](item.mastery.value)}</div>` : null,
   ]
     .filter(Boolean)
-    .map((stat) => `<div class="tt-stat">${stat}</div>`)
     .join('');
   return `
     <div class="tt-name" style="color:${rarity.color}">${item.name}</div>
     <div class="tt-rarity" style="color:${rarity.color}">${rarity.label}</div>
-    ${stats}
+    ${rows}
     ${showValue ? `<div class="tt-stat">Wert: ${itemSellValue(item)} Asche</div>` : ''}
     ${comparisonHtml(item)}
     <div class="tt-hint">Klicken zum ${action}</div>`;
@@ -1066,6 +1117,119 @@ function renderInventory() {
   }
 }
 
+let selectedCraftSlot = null;
+
+function buildCraftSlots() {
+  if (el.craftSlots.children.length) return;
+  for (const slot of GEAR_SLOTS) {
+    const row = document.createElement('button');
+    row.className = 'craft-slot';
+    row.dataset.slot = slot.key;
+    el.craftSlots.appendChild(row);
+  }
+}
+
+function enhanceBonusValue(slotKey, enhanceLevel) {
+  const scale = gearSlotOf(slotKey).stat === 'damage' ? 1 + 0.5 * craftIlvl() : 4 + 2.5 * craftIlvl();
+  return Math.max(1, Math.round(scale * (1 + 0.4 * (enhanceLevel - 1))));
+}
+
+function enhanceCost(item) {
+  return Math.round(30 * 1.6 ** (item.enhance + 1) * (1 + 0.25 * craftIlvl()));
+}
+
+function reforgeCost(item) {
+  const base = item.rarity === 'gewoehnlich' ? 600 : 3000;
+  return Math.round(base * (1 + 0.4 * craftIlvl()));
+}
+
+function craftEnhance(slotKey) {
+  const item = state.equipment[slotKey];
+  if (!item) return;
+  const cost = enhanceCost(item);
+  if (state.ash < cost) return;
+  state.ash -= cost;
+  item.enhance += 1;
+  const bonus = enhanceBonusValue(slotKey, item.enhance);
+  if (gearSlotOf(slotKey).stat === 'damage') {
+    item.enhanceBonus = { damage: bonus };
+  } else {
+    item.enhanceBonus = { hp: bonus, armor: Math.max(1, Math.round(bonus * 0.4)) };
+  }
+  heroHp = Math.min(heroHp, heroMaxHp());
+  save();
+  render();
+}
+
+function craftReforge(slotKey) {
+  const item = state.equipment[slotKey];
+  if (!item || item.rarity === 'episch') return;
+  const cost = reforgeCost(item);
+  if (state.ash < cost) return;
+  state.ash -= cost;
+  const next = item.rarity === 'gewoehnlich' ? RARITIES[1] : RARITIES[2];
+  const slot = gearSlotOf(slotKey);
+  item.rarity = next.key;
+  item.name = `${slot.base} ${next.suffix}`;
+  Object.assign(item, rollItemValues(slot, next, craftIlvl()));
+  if (next.key === 'episch') item.mastery = rollMastery(slot.stat);
+  heroHp = Math.min(heroHp, heroMaxHp());
+  save();
+  render();
+}
+
+function renderCrafting() {
+  if (el.sceneCrafting.hidden) return;
+  el.craftAsh.textContent = state.ash;
+  for (const row of el.craftSlots.querySelectorAll('.craft-slot')) {
+    const slotKey = row.dataset.slot;
+    const item = state.equipment[slotKey];
+    const rarity = item ? rarityOf(item.rarity) : null;
+    row.classList.toggle('selected', slotKey === selectedCraftSlot);
+    row.classList.toggle('empty', !item);
+    row.innerHTML = `<span class="craft-slot-name">${gearSlotOf(slotKey).label}</span>
+      <span class="craft-slot-item" style="color:${rarity?.color ?? '#5f584e'}">${item ? `${item.name}${item.enhance ? ` +${item.enhance}` : ''}` : 'Leer'}</span>`;
+  }
+  renderCraftDetail();
+}
+
+function renderCraftDetail() {
+  const item = state.equipment[selectedCraftSlot];
+  if (!item) {
+    el.craftDetail.innerHTML = '<p class="craft-hint">Wähle links einen besetzten Ausrüstungsslot, den du schmieden willst.</p>';
+    return;
+  }
+  const rarity = rarityOf(item.rarity);
+  const slot = gearSlotOf(selectedCraftSlot);
+  const eCost = enhanceCost(item);
+  const curBonus = enhanceBonusValue(selectedCraftSlot, item.enhance);
+  const nextBonus = enhanceBonusValue(selectedCraftSlot, item.enhance + 1);
+  const enhancePreview = slot.stat === 'damage'
+    ? `+${nextBonus - curBonus} Schaden`
+    : `+${nextBonus - curBonus} Lebenskraft · +${Math.max(1, Math.round((nextBonus - curBonus) * 0.4))} Rüstung`;
+  const nextRarity = item.rarity === 'gewoehnlich' ? RARITIES[1] : item.rarity === 'selten' ? RARITIES[2] : null;
+  const rCost = nextRarity ? reforgeCost(item) : 0;
+  const masteryHint = nextRarity?.key === 'episch' ? 'Rollt eine Meisterschaft' : 'Werte werden neu gewürfelt';
+  el.craftDetail.innerHTML = `
+    <div class="craft-item">
+      <div class="tt-name" style="color:${rarity.color}">${item.name}${item.enhance ? ` +${item.enhance}` : ''}</div>
+      <div class="tt-rarity" style="color:${rarity.color}">${rarity.label}</div>
+      <div class="tt-stat">${itemStatsText(item)}</div>
+      ${item.enhanceBonus ? '<div class="tt-enhance">Verstärkt durch die Werkstatt</div>' : ''}
+      ${item.mastery ? `<div class="tt-mastery">Meisterschaft: ${SKILL_EFFECT_LABELS[item.mastery.stat](item.mastery.value)}</div>` : ''}
+    </div>
+    <div class="craft-action">
+      <div class="craft-action-head">Verstärken auf +${item.enhance + 1}<span>${enhancePreview}</span></div>
+      <button class="btn-small" data-craft="enhance" ${state.ash < eCost ? 'disabled' : ''}>Schmieden · ${eCost} Asche</button>
+    </div>
+    <div class="craft-action">
+      <div class="craft-action-head">Umschmieden auf ${nextRarity ? nextRarity.label : '—'}<span>${nextRarity ? masteryHint : ''}</span></div>
+      ${nextRarity
+        ? `<button class="btn-small" data-craft="reforge" ${state.ash < rCost ? 'disabled' : ''}>Umschmieden · ${rCost} Asche</button>`
+        : '<span class="craft-hint">Maximale Seltenheit erreicht.</span>'}
+    </div>`;
+}
+
 function render() {
   el.hubLevel.textContent = state.level;
   el.hubAsh.textContent = state.ash;
@@ -1087,6 +1251,7 @@ function render() {
   el.hudZone.textContent = zoneOf(state.zone).name;
   el.tileMapSub.textContent = `${Math.min(state.cleared + 1, ZONES.length)} von ${ZONES.length} Gebieten offen`;
   renderZones();
+  renderCrafting();
   el.doorButton.hidden = !(state.zone + 1 <= Math.min(state.cleared, ZONES.length - 1));
   renderSkillTree();
   el.modalHeroLevel.textContent = state.level;
@@ -1139,6 +1304,9 @@ function normalizeItem(item) {
   item.hp ??= 0;
   item.armor ??= 0;
   item.critChance ??= 0;
+  item.enhance ??= 0;
+  item.enhanceBonus ??= null;
+  item.mastery ??= null;
   return item;
 }
 
@@ -1209,7 +1377,7 @@ function simulateKills(seconds) {
     remaining -= duration;
     state.kills += 1;
     state.zoneKills += 1;
-    state.ash += Math.round(def.ash * (1 + skillBonus('ash') / 100));
+    state.ash += Math.round(def.ash * (1 + statBonus('ash') / 100));
     gainXp(def.xp);
     rollDrop(isElite ? 'elite' : 'normal');
   }
@@ -1365,6 +1533,18 @@ function bindEvents() {
   el.tileSkills.addEventListener('click', () => showScreen(el.sceneSkills));
   el.tileMap.addEventListener('click', () => showScreen(el.sceneMap));
   el.tileCrafting.addEventListener('click', () => showScreen(el.sceneCrafting));
+  el.craftSlots.addEventListener('click', (e) => {
+    const row = e.target.closest('.craft-slot');
+    if (!row) return;
+    selectedCraftSlot = row.dataset.slot;
+    renderCrafting();
+  });
+  el.craftDetail.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-craft]');
+    if (!btn || btn.disabled) return;
+    if (btn.dataset.craft === 'enhance') craftEnhance(selectedCraftSlot);
+    else craftReforge(selectedCraftSlot);
+  });
   el.zoneList.addEventListener('click', (e) => {
     const row = e.target.closest('.zone-row');
     if (!row || row.disabled) return;
@@ -1490,6 +1670,7 @@ function ensureInit() {
   bindEvents();
   buildSkillTree();
   buildZoneList();
+  buildCraftSlots();
   applySkillView();
   loadSettings();
   applySettings();

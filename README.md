@@ -38,6 +38,10 @@ Ebene für Ebene tiefer, bis du dem Wächter des Thrones gegenüberstehst.
 - **Loot & Inventar** — **7 Rüstungsslots**, **3 Raritäten** (Gewöhnlich → Episch).
   Die Itemstärke wächst mit der Tiefe der Ebene: Wer tiefer kämpft, findet Besseres.
   Verkaufen, Sortieren und „Bestes anlegen" inklusive.
+- **Crafting** — Die Werkstatt macht Asche zu Macht: Ausrüstungsstufen **verstärken**
+  (steile Kostenkurve pro Stufe) oder **umschmieden** (Rarity-Upgrade mit Neuwurf).
+  Epische Items rollen eine goldene **Meisterschaft** — Prozentboni, die es sonst auf
+  Gear nirgends gibt. Alles skaliert mit der tiefsten errungenen Ebene.
 - **Stufen & Asche** — Jede Stufe bringt 5 Statpunkte und 1 Skillpunkt; Asche finanziert
   Klinge und Haut im Kampf selbst. Beide Wege stärken denselben Helden, keinen zweiten.
 - **Offline-Fortschritt** — Bis zu **8 Stunden** kämpft dein Held ohne dich weiter und

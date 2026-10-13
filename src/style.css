@@ -736,6 +736,109 @@ button:hover {
   margin-top: 0.2rem;
 }
 
+.tt-mastery {
+  color: #d9a03f;
+  font-size: 0.78rem;
+  margin-top: 0.2rem;
+}
+
+.tt-enhance {
+  color: #8a9ab0;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 0.2rem;
+}
+
+#craft-layout {
+  display: flex;
+  gap: 1.2rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+#craft-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: clamp(240px, 26vw, 340px);
+}
+
+.craft-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.45rem 0.8rem;
+  text-align: left;
+  letter-spacing: 0.05em;
+}
+
+.craft-slot-name {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #8a7f6d;
+}
+
+.craft-slot-item {
+  font-size: 0.85rem;
+}
+
+.craft-slot.selected {
+  border-color: #d9a03f;
+}
+
+.craft-slot.empty {
+  opacity: 0.5;
+}
+
+#craft-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  width: clamp(280px, 30vw, 420px);
+}
+
+.craft-item {
+  border: 1px solid #3a352e;
+  padding: 0.7rem 0.9rem;
+  text-align: left;
+}
+
+.craft-action {
+  border: 1px solid #3a352e;
+  padding: 0.7rem 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+}
+
+.craft-action-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+}
+
+.craft-action-head span {
+  font-size: 0.72rem;
+  color: #5f584e;
+  font-style: italic;
+  letter-spacing: 0.04em;
+}
+
+.craft-hint {
+  font-style: italic;
+  color: #5f584e;
+  font-size: 0.85rem;
+  padding: 0.4rem 0;
+}
+
 .skill-hud {
   font-size: 0.85rem;
   letter-spacing: 0.2em;
