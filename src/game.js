@@ -11,29 +11,29 @@ const INVENTORY_CAP = 40;
 
 const ZONE_ENEMIES = [
   {
-    normal: { name: 'Ascheratte', hp: 10, damage: 1, ash: 4, xp: 4 },
-    elite: { name: 'Knochenfresser', hp: 25, damage: 2, ash: 15, xp: 12 },
-    boss: { name: 'Grabwächter', hp: 60, damage: 3, ash: 50, xp: 40, boss: true },
+    normal: { name: 'Ascheratte', hp: 10, damage: 1, ash: 4, xp: 30 },
+    elite: { name: 'Knochenfresser', hp: 25, damage: 2, ash: 14, xp: 90 },
+    boss: { name: 'Grabwächter', hp: 50, damage: 2, ash: 48, xp: 300, boss: true },
   },
   {
-    normal: { name: 'Knochenkriecher', hp: 50, damage: 3, ash: 12, xp: 10 },
-    elite: { name: 'Beinhausritter', hp: 125, damage: 5, ash: 45, xp: 30 },
-    boss: { name: 'Gebeinwächter', hp: 300, damage: 8, ash: 150, xp: 100, boss: true },
+    normal: { name: 'Knochenkriecher', hp: 40, damage: 2, ash: 15, xp: 110 },
+    elite: { name: 'Beinhausritter', hp: 100, damage: 3, ash: 52, xp: 330 },
+    boss: { name: 'Gebeinwächter', hp: 200, damage: 3, ash: 180, xp: 1100, boss: true },
   },
   {
-    normal: { name: 'Aschenwicht', hp: 280, damage: 8, ash: 40, xp: 32 },
-    elite: { name: 'Glutgeist', hp: 700, damage: 16, ash: 150, xp: 96 },
-    boss: { name: 'Aschenmutter', hp: 1700, damage: 24, ash: 500, xp: 320, boss: true },
+    normal: { name: 'Aschenwicht', hp: 150, damage: 6, ash: 53, xp: 400 },
+    elite: { name: 'Glutgeist', hp: 375, damage: 8, ash: 186, xp: 1200 },
+    boss: { name: 'Aschenmutter', hp: 750, damage: 10, ash: 636, xp: 4000, boss: true },
   },
   {
-    normal: { name: 'Grabwurm', hp: 1600, damage: 28, ash: 140, xp: 105 },
-    elite: { name: 'Aaskrone', hp: 4000, damage: 55, ash: 500, xp: 310 },
-    boss: { name: 'Der Bestattete', hp: 9500, damage: 85, ash: 1700, xp: 1050, boss: true },
+    normal: { name: 'Grabwurm', hp: 550, damage: 16, ash: 200, xp: 1500 },
+    elite: { name: 'Aaskrone', hp: 1375, damage: 21, ash: 700, xp: 4500 },
+    boss: { name: 'Der Bestattete', hp: 2750, damage: 26, ash: 2400, xp: 15000, boss: true },
   },
   {
-    normal: { name: 'Hofschatten', hp: 9000, damage: 90, ash: 440, xp: 320 },
-    elite: { name: 'Kronenritter', hp: 22000, damage: 180, ash: 1650, xp: 950 },
-    boss: { name: 'Der Thronende', hp: 54000, damage: 270, ash: 5500, xp: 3200, boss: true },
+    normal: { name: 'Hofschatten', hp: 2000, damage: 42, ash: 750, xp: 5600 },
+    elite: { name: 'Kronenritter', hp: 5000, damage: 55, ash: 2625, xp: 16800 },
+    boss: { name: 'Der Thronende', hp: 10000, damage: 67, ash: 9000, xp: 56000, boss: true },
   },
 ];
 
@@ -65,6 +65,7 @@ const DROP_CHANCES = { normal: 0.05, elite: 0.3, boss: 1 };
 const BASE_CRIT_CHANCE = 5;
 const CRIT_MULTIPLIER = 2;
 const BASE_ATTACK_SPEED = 1;
+const ARMOR_RESISTANCE = 12;
 const SKILL_SPOKE_ANGLES = [-30, 0, 30];
 const SKILL_SMALL_OFFSET = 9;
 const SKILL_WHEEL_RADII = [130, 215, 300, 385, 470];
@@ -347,7 +348,7 @@ const state = {
   ash: 0,
   xp: 0,
   level: 1,
-  maxHp: 20,
+  maxHp: 30,
   damage: 2,
   damageUps: 0,
   hpUps: 0,
@@ -447,7 +448,7 @@ function cacheDom() {
   el.overlay = document.getElementById('overlay');
 }
 
-const xpNeeded = (level) => 8 + 4 * level;
+const xpNeeded = (level) => Math.round(4 * level * level + 6 * level);
 const upgradeCost = (base, ups) => Math.round(base * 1.6 ** ups);
 const rarityOf = (key) => RARITIES.find((rarity) => rarity.key === key);
 const gearSlotOf = (key) => GEAR_SLOTS.find((slot) => slot.key === key);
@@ -915,7 +916,9 @@ function heroAttack() {
 }
 
 function enemyAttack() {
-  const taken = Math.max(1, enemy.damage - heroArmor());
+  const armor = heroArmor();
+  const reduction = armor / (armor + ARMOR_RESISTANCE * enemy.damage);
+  const taken = Math.max(1, Math.round(enemy.damage * (1 - reduction)));
   heroHp -= taken;
   flash(el.enemyFigure);
   spawnDamageFloat(el.heroFighter, taken);
