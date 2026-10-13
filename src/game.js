@@ -4,13 +4,13 @@ import { state, settings, SAVE_KEY } from './state.js';
 
 import { loadSettings, saveSettings, applySettings } from './settings.js';
 
-import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, INVENTORY_CAP, ZONES, GEAR_SLOTS, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, xpNeeded, upgradeCost, zoneOf, normalizeItem } from './data.js';
+import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, INVENTORY_CAP, ZONES, GEAR_SLOTS, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, xpNeeded, upgradeCost, zoneOf, normalizeItem, formatNum } from './data.js';
 
 import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier } from './stats.js';
 
 import { buildSkillTree, renderSkillTree, bindSkillTreeEvents, applySkillView } from './skilltree.js';
 
-import { buildZoneList, renderZones } from './zones.js';
+import { buildZoneList, renderZones, resetZoneView, switchZoneView } from './zones.js';
 
 import { buildCraftSlots, renderCrafting, bindCraftEvents } from './crafting.js';
 
@@ -60,7 +60,7 @@ function spawnDamageFloat(fighter, amount, isCrit = false) {
   if (!settings.damageNumbers) return;
   const span = document.createElement('span');
   span.className = isCrit ? 'dmg-float crit' : 'dmg-float';
-  span.textContent = amount;
+  span.textContent = formatNum(amount);
   span.style.left = `${35 + Math.random() * 30}%`;
   fighter.appendChild(span);
   setTimeout(() => span.remove(), 900);
@@ -171,8 +171,12 @@ function killEnemy() {
   rollDrop(enemy.type);
   if (def.boss) {
     state.cleared = Math.max(state.cleared, state.zone + 1);
-    if (state.zone + 1 < ZONES.length) {
-      showDismissibleOverlay(`${def.name} bezwungen — ${ZONES[state.zone + 1].name} ist jetzt offen.`, 4200);
+    const next = ZONES[state.zone + 1];
+    if (next) {
+      const continentGate = next.continent !== ZONES[state.zone].continent
+        ? `Neuer Kontinent: ${next.continent}. `
+        : '';
+      showDismissibleOverlay(`${def.name} bezwungen — ${continentGate}${next.name} ist jetzt offen.`, 4200);
     } else {
       showDismissibleOverlay(`${def.name} bezwungen — ${ZONES[state.zone].name} ist erreicht.`, 4200);
     }
@@ -258,9 +262,9 @@ function tick() {
 
 function render() {
   el.hubLevel.textContent = state.level;
-  el.hubAsh.textContent = state.ash;
+  el.hubAsh.textContent = formatNum(state.ash);
   el.hudLevel.textContent = state.level;
-  el.hudAsh.textContent = state.ash;
+  el.hudAsh.textContent = formatNum(state.ash);
   el.inventoryCount.textContent = `${state.inventory.length} / ${INVENTORY_CAP}`;
   el.statPointsRow.hidden = state.statPoints === 0;
   el.statPointsValue.textContent = state.statPoints;
@@ -274,21 +278,22 @@ function render() {
   el.skillPointsHud.textContent = state.skillPoints;
   el.skillPointsHud.classList.toggle('has-points', state.skillPoints > 0);
   el.tileSkillsSub.textContent = state.skillPoints > 0 ? `${state.skillPoints} Punkte frei` : 'Wähle weise';
-  el.hudZone.textContent = zoneOf(state.zone).name;
+  const zone = zoneOf(state.zone);
+  el.hudZone.textContent = `${zone.continent} · ${zone.name}`;
   el.tileMapSub.textContent = `${Math.min(state.cleared + 1, ZONES.length)} von ${ZONES.length} Gebieten offen`;
   renderZones();
   renderCrafting();
   el.doorButton.hidden = !(state.zone + 1 <= Math.min(state.cleared, ZONES.length - 1));
   renderSkillTree();
   el.modalHeroLevel.textContent = state.level;
-  el.modalHeroXp.textContent = `${state.xp} / ${xpNeeded(state.level)}`;
-  el.modalHeroHp.textContent = heroMaxHp();
-  el.modalHeroDamage.textContent = heroDamage();
-  el.modalHeroArmor.textContent = heroArmor();
+  el.modalHeroXp.textContent = `${formatNum(state.xp)} / ${formatNum(xpNeeded(state.level))}`;
+  el.modalHeroHp.textContent = formatNum(heroMaxHp());
+  el.modalHeroDamage.textContent = formatNum(heroDamage());
+  el.modalHeroArmor.textContent = formatNum(heroArmor());
   el.modalHeroCrit.textContent = `${heroCritChance()} %`;
   el.modalHeroCritDmg.textContent = `${Math.round(critMultiplier() * 100)} %`;
   el.modalHeroSpeed.textContent = `${heroAttackSpeed().toFixed(1).replace('.', ',')} / s`;
-  el.modalHeroKills.textContent = state.kills;
+  el.modalHeroKills.textContent = formatNum(state.kills);
   el.heroHp.style.width = `${Math.max(0, heroHp / heroMaxHp()) * 100}%`;
   if (enemy) {
     el.enemyName.textContent = enemy.name;
@@ -298,8 +303,8 @@ function render() {
   }
   const dmgCost = upgradeCost(10, state.damageUps);
   const hpCost = upgradeCost(15, state.hpUps);
-  el.costDamage.textContent = dmgCost;
-  el.costHp.textContent = hpCost;
+  el.costDamage.textContent = formatNum(dmgCost);
+  el.costHp.textContent = formatNum(hpCost);
   el.upDamage.disabled = state.ash < dmgCost;
   el.upHp.disabled = state.ash < hpCost;
   renderGearIfDirty();
@@ -378,7 +383,7 @@ function applyOfflineProgress() {
   const kills = state.kills - killsBefore;
   if (kills <= 0) return;
   const levelsPart = levels > 0 ? `, +${levels} ${levels === 1 ? 'Stufe' : 'Stufen'}` : '';
-  offlineSummary = `Während du fort warst (${formatDuration(capped)}): ${kills} Kämpfe, +${ash} Asche${levelsPart}.`;
+  offlineSummary = `Während du fort warst (${formatDuration(capped)}): ${kills} Kämpfe, +${formatNum(ash)} Asche${levelsPart}.`;
   save();
 }
 
@@ -491,10 +496,19 @@ function bindEvents() {
   });
   el.tileHero.addEventListener('click', () => showScreen(el.sceneHero));
   el.tileSkills.addEventListener('click', () => showScreen(el.sceneSkills));
-  el.tileMap.addEventListener('click', () => showScreen(el.sceneMap));
+  el.tileMap.addEventListener('click', () => {
+    resetZoneView();
+    showScreen(el.sceneMap);
+    renderZones();
+  });
   el.tileCrafting.addEventListener('click', () => showScreen(el.sceneCrafting));
   bindCraftEvents(hooks);
   el.zoneList.addEventListener('click', (e) => {
+    const pager = e.target.closest('.zone-pager');
+    if (pager && !pager.disabled) {
+      switchZoneView(Number(pager.dataset.dir));
+      return;
+    }
     const row = e.target.closest('.zone-row');
     if (!row || row.disabled) return;
     enterZone(Number(row.dataset.zone));

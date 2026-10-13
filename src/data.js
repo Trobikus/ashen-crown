@@ -23,6 +23,91 @@ const OFFLINE_MIN_GAP_MS = 30 * 1000;
 
 const INVENTORY_CAP = 40;
 
+const CONTINENTS = [
+  {
+    key: 'aschenlande',
+    name: 'Die Aschenlande',
+    zones: [
+      { name: 'Aschenkrypta', ilvl: 1 },
+      { name: 'Knochengewölbe', ilvl: 6 },
+      { name: 'Aschekatakomben', ilvl: 14 },
+      { name: 'Grabestiefe', ilvl: 26 },
+      { name: 'Thronhalle der Asche', ilvl: 42 },
+      { name: 'Glutgruft', ilvl: 62 },
+      { name: 'Knochenlabyrinth', ilvl: 86 },
+      { name: 'Aschenabgrund', ilvl: 114 },
+      { name: 'Knochenkathedrale', ilvl: 146 },
+      { name: 'Herz der Asche', ilvl: 182 },
+    ],
+  },
+  {
+    key: 'frostreich',
+    name: 'Das Frostreich',
+    zones: [
+      { name: 'Frostkrypta', ilvl: 222 },
+      { name: 'Reifgewölbe', ilvl: 266 },
+      { name: 'Eiskatakomben', ilvl: 314 },
+      { name: 'Schneetiefe', ilvl: 366 },
+      { name: 'Halle des Frosts', ilvl: 422 },
+      { name: 'Frostgruft', ilvl: 482 },
+      { name: 'Eisverlies', ilvl: 546 },
+      { name: 'Winterabgrund', ilvl: 614 },
+      { name: 'Eiskathedrale', ilvl: 686 },
+      { name: 'Herz des Winters', ilvl: 762 },
+    ],
+  },
+  {
+    key: 'faulmoor',
+    name: 'Das Faulmoor',
+    zones: [
+      { name: 'Moorkrypta', ilvl: 842 },
+      { name: 'Faulgewölbe', ilvl: 926 },
+      { name: 'Sumpfkatakomben', ilvl: 1014 },
+      { name: 'Modertiefe', ilvl: 1106 },
+      { name: 'Halle der Fäulnis', ilvl: 1202 },
+      { name: 'Pestgruft', ilvl: 1302 },
+      { name: 'Schlinglabyrinth', ilvl: 1406 },
+      { name: 'Moorabgrund', ilvl: 1514 },
+      { name: 'Moorkathedrale', ilvl: 1626 },
+      { name: 'Herz des Moores', ilvl: 1742 },
+    ],
+  },
+  {
+    key: 'blutmark',
+    name: 'Das Blutmark',
+    zones: [
+      { name: 'Blutkrypta', ilvl: 1862 },
+      { name: 'Rostgewölbe', ilvl: 1986 },
+      { name: 'Eisenkatakomben', ilvl: 2114 },
+      { name: 'Kriegstiefe', ilvl: 2246 },
+      { name: 'Halle des Blutes', ilvl: 2382 },
+      { name: 'Rostgruft', ilvl: 2522 },
+      { name: 'Klingenlabyrinth', ilvl: 2666 },
+      { name: 'Blutabgrund', ilvl: 2814 },
+      { name: 'Eisenkathedrale', ilvl: 2966 },
+      { name: 'Herz des Blutes', ilvl: 3122 },
+    ],
+  },
+  {
+    key: 'sternenleere',
+    name: 'Die Sternenleere',
+    zones: [
+      { name: 'Leerenkrypta', ilvl: 3282 },
+      { name: 'Nachtgewölbe', ilvl: 3446 },
+      { name: 'Sternenkatakomben', ilvl: 3614 },
+      { name: 'Leerentiefe', ilvl: 3786 },
+      { name: 'Halle der Leere', ilvl: 3962 },
+      { name: 'Finsternisgruft', ilvl: 4142 },
+      { name: 'Sternenlabyrinth', ilvl: 4326 },
+      { name: 'Leerenabgrund', ilvl: 4514 },
+      { name: 'Sternenkathedrale', ilvl: 4706 },
+      { name: 'Herz der Leere', ilvl: 4902 },
+    ],
+  },
+];
+
+const ZONES = CONTINENTS.flatMap((continent) => continent.zones.map((zone) => ({ ...zone, continent: continent.name })));
+
 const ZONE_ENEMIES = [
   {
     normal: { name: 'Ascheratte', hp: 10, damage: 1, ash: 4, xp: 30 },
@@ -49,15 +134,127 @@ const ZONE_ENEMIES = [
     elite: { name: 'Kronenritter', hp: 5000, damage: 55, ash: 2625, xp: 16800 },
     boss: { name: 'Der Thronende', hp: 10000, damage: 67, ash: 9000, xp: 56000, boss: true },
   },
+  {
+    normal: { name: 'Glutschleicher', hp: 7400, damage: 113, ash: 2800, xp: 21000 },
+    elite: { name: 'Aschenbrut', hp: 18500, damage: 148, ash: 9800, xp: 63000 },
+    boss: { name: 'Glutfürst', hp: 37000, damage: 181, ash: 33600, xp: 210000, boss: true },
+  },
+  {
+    normal: { name: 'Knochenläufer', hp: 27400, damage: 305, ash: 10500, xp: 78000 },
+    elite: { name: 'Knochenweber', hp: 68500, damage: 400, ash: 36750, xp: 234000 },
+    boss: { name: 'Knochenkoloss', hp: 137000, damage: 488, ash: 126000, xp: 780000, boss: true },
+  },
+  {
+    normal: { name: 'Aschenwanderer', hp: 101000, damage: 825, ash: 39200, xp: 291000 },
+    elite: { name: 'Staubschreiter', hp: 252500, damage: 1080, ash: 137200, xp: 873000 },
+    boss: { name: 'Der Verschluckte', hp: 505000, damage: 1320, ash: 470400, xp: 2910000, boss: true },
+  },
+  {
+    normal: { name: 'Knochenchor', hp: 375000, damage: 2230, ash: 147000, xp: 1085000 },
+    elite: { name: 'Grabesorganist', hp: 937500, damage: 2920, ash: 514500, xp: 3255000 },
+    boss: { name: 'Der Knochenkönig', hp: 1875000, damage: 3570, ash: 1764000, xp: 10850000, boss: true },
+  },
+  {
+    normal: { name: 'Ascheavatar', hp: 1390000, damage: 6020, ash: 546000, xp: 4040000 },
+    elite: { name: 'Ewige Glut', hp: 3475000, damage: 7890, ash: 1911000, xp: 12120000 },
+    boss: { name: 'Der Aschegott', hp: 6950000, damage: 9630, ash: 6552000, xp: 40400000, boss: true },
+  },
 ];
 
-const ZONES = [
-  { name: 'Aschenkrypta', ilvl: 1 },
-  { name: 'Knochengewölbe', ilvl: 6 },
-  { name: 'Aschekatakomben', ilvl: 14 },
-  { name: 'Grabestiefe', ilvl: 26 },
-  { name: 'Thronhalle der Asche', ilvl: 42 },
-];
+// Hand abgestimmt sind nur die Bestien der Aschenlande; jeder weitere Kontinent
+// führt deren Progression mit denselben Verhältnissen fort
+// (Elite: HP ×2,5 · Boss: HP ×5 · Elite-Asche ×3,5 · Boss-Asche ×12 · Elite-EP ×3 · Boss-EP ×10).
+const CONTINENT_ENEMIES = {
+  frostreich: [
+    ['Frostschleicher', 'Eisbrut', 'Der Frostherzog'],
+    ['Schneekriecher', 'Reifritter', 'Der Reifwächter'],
+    ['Frostwicht', 'Kaltgeist', 'Die Eisjungfrau'],
+    ['Schneewühler', 'Frostkranich', 'Der Eingefrorene'],
+    ['Winterherold', 'Eisritter', 'Der Winterkönig'],
+    ['Frostläufer', 'Gletscherbrut', 'Der Eisbann'],
+    ['Kettenfrost', 'Frostkerkerer', 'Sturmfessel'],
+    ['Schneesturmschreiter', 'Nordgeist', 'Das Winterherz'],
+    ['Chor des Frosts', 'Frostorganist', 'Der Eispriester'],
+    ['Winteravatar', 'Ewiger Frost', 'Der Frostgott'],
+  ],
+  faulmoor: [
+    ['Moorkriecher', 'Schleimbrut', 'Der Moorgraf'],
+    ['Moderschleicher', 'Pestritter', 'Die Moormutter'],
+    ['Sumpfwicht', 'Fäulnisgeist', 'Der Schleimfürst'],
+    ['Madenwühler', 'Aasfliege', 'Der Verweste'],
+    ['Hofsmoder', 'Pestherold', 'Der Moorkönig'],
+    ['Pestträger', 'Seuchenbrut', 'Der Pestfürst'],
+    ['Dornenschlinger', 'Rankenwürger', 'Die Schlingmutter'],
+    ['Sumpfschatten', 'Tiefenschleim', 'Der Verschlundene'],
+    ['Chor der Moder', 'Pestorganist', 'Der Faulpriester'],
+    ['Mooravatar', 'Ewige Fäulnis', 'Der Moorgott'],
+  ],
+  blutmark: [
+    ['Blutschleicher', 'Blutbrut', 'Der Blutgraf'],
+    ['Rostkriecher', 'Eisenritter', 'Die Rostkönigin'],
+    ['Eisenwicht', 'Klingengeist', 'Der Eisenfürst'],
+    ['Söldnerleiche', 'Blutgeier', 'Der Schlachtherr'],
+    ['Hofsmörder', 'Blutritter', 'Der Blutkönig'],
+    ['Blutwurm', 'Rabenschwarm', 'Der Schlächter'],
+    ['Klingentänzer', 'Stahlweber', 'Der Stahlkoloss'],
+    ['Blutschatten', 'Rostschreiter', 'Der Blutherr'],
+    ['Chor der Klinge', 'Rostorganist', 'Der Blutpriester'],
+    ['Blutavatar', 'Ewige Wut', 'Der Blutgott'],
+  ],
+  sternenleere: [
+    ['Nachtschleicher', 'Leerenbrut', 'Der Nachtfürst'],
+    ['Leerenkriecher', 'Nachtritter', 'Der Sternenwächter'],
+    ['Sternenwicht', 'Kometengeist', 'Die Sternenmutter'],
+    ['Nachtwühler', 'Sternenasche', 'Der Gestürzte Stern'],
+    ['Nachtherold', 'Sternenritter', 'Der Sternenkönig'],
+    ['Finsterniswurm', 'Schwarzfunke', 'Der Finsterfürst'],
+    ['Sternenläufer', 'Mondweber', 'Der Sternenkoloss'],
+    ['Nachtschatten', 'Leerenschreiter', 'Der Verschlinger'],
+    ['Chor der Sterne', 'Nachtorganist', 'Der Sternenpriester'],
+    ['Leerenavatar', 'Ewige Nacht', 'Die Aschenkrone'],
+  ],
+};
+
+const ENEMY_GROWTH = { hp: 3.7, damage: 2.7, ash: 3.73, xp: 3.73 };
+
+const sig3 = (value) => Number(value.toPrecision(3));
+
+const followUpEnemies = ([normalName, eliteName, bossName], prevNormal) => {
+  const normal = {
+    name: normalName,
+    hp: sig3(prevNormal.hp * ENEMY_GROWTH.hp),
+    damage: Math.max(1, Math.round(prevNormal.damage * ENEMY_GROWTH.damage)),
+    ash: sig3(prevNormal.ash * ENEMY_GROWTH.ash),
+    xp: sig3(prevNormal.xp * ENEMY_GROWTH.xp),
+  };
+  return {
+    normal,
+    elite: {
+      name: eliteName,
+      hp: normal.hp * 2.5,
+      damage: Math.max(1, Math.round(normal.damage * 1.31)),
+      ash: Math.round(normal.ash * 3.5),
+      xp: normal.xp * 3,
+    },
+    boss: {
+      name: bossName,
+      hp: normal.hp * 5,
+      damage: Math.max(1, Math.round(normal.damage * 1.6)),
+      ash: normal.ash * 12,
+      xp: normal.xp * 10,
+      boss: true,
+    },
+  };
+};
+
+for (const continent of CONTINENTS.slice(1)) {
+  let prevNormal = ZONE_ENEMIES[ZONE_ENEMIES.length - 1].normal;
+  for (const names of CONTINENT_ENEMIES[continent.key]) {
+    const entry = followUpEnemies(names, prevNormal);
+    ZONE_ENEMIES.push(entry);
+    prevNormal = entry.normal;
+  }
+}
 
 const GEAR_SLOTS = [
   { key: 'waffe', label: 'Waffe', base: 'Klinge', abbrev: 'KL', stat: 'damage', icon: waffeIcon },
@@ -375,6 +572,19 @@ const SKILL_EFFECT_LABELS = {
   xp: (v) => `${skillSigned(v)} % Erfahrung`,
 };
 
+const NUM_SUFFIXES = ['', 'k', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No'];
+
+function formatNum(value) {
+  const sign = value < 0 ? '-' : '';
+  const abs = Math.abs(value);
+  if (abs < 1000) return `${sign}${Math.round(abs)}`;
+  const tier = Math.min(Math.floor(Math.log10(abs) / 3), NUM_SUFFIXES.length - 1);
+  const scaled = abs / 1000 ** tier;
+  let text = scaled.toFixed(scaled >= 100 ? 0 : scaled >= 10 ? 1 : 2);
+  if (text.includes('.')) text = text.replace(/0+$/, '').replace(/\.$/, '');
+  return `${sign}${text.replace('.', ',')}${NUM_SUFFIXES[tier]}`;
+}
+
 const MASTERY_POOL = {
   damage: [
     { stat: 'damagePct', min: 8, max: 15 },
@@ -457,9 +667,9 @@ function itemStatsText(item) {
   const s = itemStats(item);
   return (
     [
-      s.damage ? `+${s.damage} Schaden` : null,
-      s.hp ? `+${s.hp} Lebenskraft` : null,
-      s.armor ? `+${s.armor} Rüstung` : null,
+      s.damage ? `+${formatNum(s.damage)} Schaden` : null,
+      s.hp ? `+${formatNum(s.hp)} Lebenskraft` : null,
+      s.armor ? `+${formatNum(s.armor)} Rüstung` : null,
       s.critChance ? `+${s.critChance} % Kritchance` : null,
     ]
       .filter(Boolean)
@@ -484,5 +694,7 @@ export {
   rollMastery, xpNeeded, upgradeCost, rarityOf, gearSlotOf, zoneOf, rollRarity, rollItemValues,
 
   itemStats, itemScore, itemStatsText, normalizeItem,
+
+  CONTINENTS, formatNum,
 
 };

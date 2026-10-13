@@ -1,4 +1,4 @@
-import { GEAR_SLOTS, RARITIES, ZONES, SKILL_EFFECT_LABELS, gearSlotOf, rarityOf, rollItemValues, itemStatsText, rollMastery } from './data.js';
+import { GEAR_SLOTS, RARITIES, ZONES, SKILL_EFFECT_LABELS, gearSlotOf, rarityOf, rollItemValues, itemStatsText, rollMastery, formatNum } from './data.js';
 
 import { state } from './state.js';
 
@@ -67,7 +67,7 @@ function craftReforge(slotKey, hooks) {
 
 function renderCrafting() {
   if (el.sceneCrafting.hidden) return;
-  el.craftAsh.textContent = state.ash;
+  el.craftAsh.textContent = formatNum(state.ash);
   for (const row of el.craftSlots.querySelectorAll('.craft-slot')) {
     const slotKey = row.dataset.slot;
     const item = state.equipment[slotKey];
@@ -92,8 +92,8 @@ function renderCraftDetail() {
   const curBonus = enhanceBonusValue(selectedCraftSlot, item.enhance);
   const nextBonus = enhanceBonusValue(selectedCraftSlot, item.enhance + 1);
   const enhancePreview = slot.stat === 'damage'
-    ? `+${nextBonus - curBonus} Schaden`
-    : `+${nextBonus - curBonus} Lebenskraft · +${Math.max(1, Math.round((nextBonus - curBonus) * 0.4))} Rüstung`;
+    ? `+${formatNum(nextBonus - curBonus)} Schaden`
+    : `+${formatNum(nextBonus - curBonus)} Lebenskraft · +${formatNum(Math.max(1, Math.round((nextBonus - curBonus) * 0.4)))} Rüstung`;
   const nextRarity = item.rarity === 'gewoehnlich' ? RARITIES[1] : item.rarity === 'selten' ? RARITIES[2] : null;
   const rCost = nextRarity ? reforgeCost(item) : 0;
   const masteryHint = nextRarity?.key === 'episch' ? 'Rollt eine Meisterschaft' : 'Werte werden neu gewürfelt';
@@ -107,12 +107,12 @@ function renderCraftDetail() {
     </div>
     <div class="craft-action">
       <div class="craft-action-head">Verstärken auf +${item.enhance + 1}<span>${enhancePreview}</span></div>
-      <button class="btn-small" data-craft="enhance" ${state.ash < eCost ? 'disabled' : ''}>Schmieden · ${eCost} Asche</button>
+      <button class="btn-small" data-craft="enhance" ${state.ash < eCost ? 'disabled' : ''}>Schmieden · ${formatNum(eCost)} Asche</button>
     </div>
     <div class="craft-action">
       <div class="craft-action-head">Umschmieden auf ${nextRarity ? nextRarity.label : '—'}<span>${nextRarity ? masteryHint : ''}</span></div>
       ${nextRarity
-        ? `<button class="btn-small" data-craft="reforge" ${state.ash < rCost ? 'disabled' : ''}>Umschmieden · ${rCost} Asche</button>`
+        ? `<button class="btn-small" data-craft="reforge" ${state.ash < rCost ? 'disabled' : ''}>Umschmieden · ${formatNum(rCost)} Asche</button>`
         : '<span class="craft-hint">Maximale Seltenheit erreicht.</span>'}
     </div>`;
 }

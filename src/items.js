@@ -1,4 +1,4 @@
-import { INVENTORY_CAP, GEAR_SLOTS, ZONES, RARITIES, DROP_CHANCES, gearSlotOf, rarityOf, rollRarity, rollItemValues, itemStats, itemStatsText, itemScore, SKILL_EFFECT_LABELS } from './data.js';
+import { INVENTORY_CAP, GEAR_SLOTS, ZONES, RARITIES, DROP_CHANCES, gearSlotOf, rarityOf, rollRarity, rollItemValues, itemStats, itemStatsText, itemScore, SKILL_EFFECT_LABELS, formatNum } from './data.js';
 
 import { state } from './state.js';
 
@@ -76,7 +76,7 @@ export function renderGearIfDirty() {
 
     ? selectedForSale.size
 
-      ? `${selectedForSale.size} verkaufen · ${saleAsh} Asche`
+      ? `${selectedForSale.size} verkaufen · ${formatNum(saleAsh)} Asche`
 
       : 'Abbrechen'
 
@@ -183,9 +183,9 @@ function tooltipHtml(item, action, showValue = false) {
   const rarity = rarityOf(item.rarity);
   const stats = itemStats(item);
   const rows = [
-    stats.damage ? `<div class="tt-stat">+${stats.damage} Schaden</div>` : null,
-    stats.hp ? `<div class="tt-stat">+${stats.hp} Lebenskraft</div>` : null,
-    stats.armor ? `<div class="tt-stat">+${stats.armor} Rüstung</div>` : null,
+    stats.damage ? `<div class="tt-stat">+${formatNum(stats.damage)} Schaden</div>` : null,
+    stats.hp ? `<div class="tt-stat">+${formatNum(stats.hp)} Lebenskraft</div>` : null,
+    stats.armor ? `<div class="tt-stat">+${formatNum(stats.armor)} Rüstung</div>` : null,
     stats.critChance ? `<div class="tt-stat">+${stats.critChance} % Kritchance</div>` : null,
     item.enhance ? `<div class="tt-enhance">Verstärkt +${item.enhance}</div>` : null,
     item.mastery ? `<div class="tt-mastery">Meisterschaft: ${SKILL_EFFECT_LABELS[item.mastery.stat](item.mastery.value)}</div>` : null,
@@ -196,7 +196,7 @@ function tooltipHtml(item, action, showValue = false) {
     <div class="tt-name" style="color:${rarity.color}">${item.name}</div>
     <div class="tt-rarity" style="color:${rarity.color}">${rarity.label}</div>
     ${rows}
-    ${showValue ? `<div class="tt-stat">Wert: ${itemSellValue(item)} Asche</div>` : ''}
+    ${showValue ? `<div class="tt-stat">Wert: ${formatNum(itemSellValue(item))} Asche</div>` : ''}
     ${comparisonHtml(item)}
     <div class="tt-hint">Klicken zum ${action}</div>`;
 }
