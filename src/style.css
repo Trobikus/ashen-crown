@@ -587,6 +587,133 @@ button:hover {
   position: relative;
 }
 
+#options-tabs {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.options-tab {
+  width: auto;
+  padding: 0.3rem 1.2rem;
+  font-size: 0.8rem;
+}
+
+.options-tab.active {
+  border-color: #d9a03f;
+  color: #efe9df;
+}
+
+.options-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: clamp(300px, 38vw, 500px);
+  margin-top: 0.8rem;
+}
+
+.option-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid #3a352e;
+  cursor: pointer;
+  text-align: left;
+}
+
+.option-row:hover {
+  border-color: #8a7f6d;
+}
+
+.option-row.danger-row {
+  cursor: default;
+  margin-top: 0.8rem;
+  border-color: #6b3a32;
+}
+
+.option-row.danger-row:hover {
+  border-color: #6b3a32;
+}
+
+.option-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+}
+
+.option-desc {
+  font-size: 0.72rem;
+  color: #5f584e;
+  font-style: italic;
+  letter-spacing: 0.04em;
+}
+
+.toggle {
+  position: relative;
+  width: 42px;
+  height: 22px;
+  flex: none;
+}
+
+.toggle input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+  width: 100%;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  border: 1px solid #3a352e;
+  background: #14110f;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  background: #5f584e;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.toggle input:checked + .toggle-slider {
+  background: #2a241c;
+  border-color: #d9a03f;
+}
+
+.toggle input:checked + .toggle-slider::after {
+  transform: translateX(20px);
+  background: #d9a03f;
+}
+
+.btn-danger {
+  border-color: #6b3a32;
+  color: #c97a63;
+}
+
+.btn-danger:hover,
+.btn-danger.armed {
+  border-color: #b0503c;
+  color: #e39a84;
+}
+
+#skill-tree.no-pulse .skill-node.available circle {
+  animation: none;
+  filter: none;
+}
+
 .tt-desc {
   font-style: italic;
   color: #9a9184;

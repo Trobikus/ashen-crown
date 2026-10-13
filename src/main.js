@@ -1,4 +1,4 @@
-import { startGame } from './game.js';
+import { startGame, openOptions } from './game.js';
 
 const notice = document.getElementById('notice');
 
@@ -12,7 +12,7 @@ document.getElementById('btn-start').addEventListener('click', () => {
 });
 
 document.getElementById('btn-options').addEventListener('click', () => {
-  showNotice('Noch nicht implementiert.');
+  openOptions('menu');
 });
 
 document.getElementById('btn-quit').addEventListener('click', () => {

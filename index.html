@@ -19,6 +19,7 @@
     </main>
     <div id="hub" hidden>
       <button id="hub-menu" class="btn-small">Hauptmenü</button>
+      <button id="hub-options" class="btn-small">Optionen</button>
       <div id="hub-hud">
         <span>Stufe <strong id="hub-level">1</strong></span>
         <span>Asche <strong id="hub-ash">0</strong></span>
@@ -140,6 +141,47 @@
         <div class="skill-tooltip" id="skill-tooltip" hidden></div>
       </div>
       <p class="tagline">Geschnittene Runen heilen nicht.</p>
+    </section>
+    <section class="scene" id="scene-options" hidden>
+      <header class="scene-header">
+        <button class="btn-small" id="btn-options-back">Zurück</button>
+      </header>
+      <h2>Optionen</h2>
+      <nav id="options-tabs">
+        <button class="options-tab active" data-tab="display">Anzeige</button>
+        <button class="options-tab" data-tab="game">Spiel</button>
+      </nav>
+      <div id="options-panel">
+        <div class="options-page" data-page="display">
+          <label class="option-row">
+            <span class="option-label">Schadenszahlen<span class="option-desc">Fliegende Zahlen für jeden Treffer</span></span>
+            <span class="toggle"><input type="checkbox" data-setting="damageNumbers" checked><span class="toggle-slider"></span></span>
+          </label>
+          <label class="option-row">
+            <span class="option-label">Treffer-Aufblitzen<span class="option-desc">Kämpfer blinken kurz bei Treffern</span></span>
+            <span class="toggle"><input type="checkbox" data-setting="hitFlash" checked><span class="toggle-slider"></span></span>
+          </label>
+          <label class="option-row">
+            <span class="option-label">Pulsierende Fertigkeiten<span class="option-desc">Verfügbare Skillpunkte pulsieren im Baum</span></span>
+            <span class="toggle"><input type="checkbox" data-setting="skillPulse" checked><span class="toggle-slider"></span></span>
+          </label>
+        </div>
+        <div class="options-page" data-page="game" hidden>
+          <label class="option-row">
+            <span class="option-label">Offline-Fortschritt<span class="option-desc">Kämpft bis zu 8 Stunden weiter, während du weg bist</span></span>
+            <span class="toggle"><input type="checkbox" data-setting="offlineProgress" checked><span class="toggle-slider"></span></span>
+          </label>
+          <label class="option-row">
+            <span class="option-label">Offline-Zusammenfassung<span class="option-desc">Beim Start anzeigen, was offline passiert ist</span></span>
+            <span class="toggle"><input type="checkbox" data-setting="offlineSummary" checked><span class="toggle-slider"></span></span>
+          </label>
+          <div class="option-row danger-row">
+            <span class="option-label">Spielstand zurücksetzen<span class="option-desc">Löscht Helden, Ausrüstung und Skillpunkte endgültig</span></span>
+            <button class="btn-small btn-danger" id="btn-reset-save">Zurücksetzen</button>
+          </div>
+        </div>
+      </div>
+      <p class="tagline">Wer die Asche formt, formt sich selbst.</p>
     </section>
     <section class="scene" id="scene-map" hidden>
       <header class="scene-header">

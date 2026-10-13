@@ -1,4 +1,5 @@
 const SAVE_KEY = 'ashen-crown-save';
+const SETTINGS_KEY = 'ashen-crown-settings';
 const TICK_MS = 100;
 const ATTACK_INTERVAL_MS = 1500;
 const STATS_SYNC_INTERVAL_MS = 3000;
@@ -344,6 +345,15 @@ const SKILL_EFFECT_LABELS = {
   xp: (v) => `${skillSigned(v)} % Erfahrung`,
 };
 
+const DEFAULT_SETTINGS = {
+  damageNumbers: true,
+  hitFlash: true,
+  skillPulse: true,
+  offlineProgress: true,
+  offlineSummary: true,
+};
+const settings = { ...DEFAULT_SETTINGS };
+
 const state = {
   ash: 0,
   xp: 0,
@@ -382,6 +392,9 @@ let gearDirty = true;
 let sellMode = false;
 let skillTreeBuilt = false;
 let statSpendAmount = 1;
+let optionsReturnScreen = null;
+let resetArmed = false;
+let resetTimer = null;
 const selectedForSale = new Set();
 
 const el = {};
@@ -412,10 +425,15 @@ function cacheDom() {
   el.shrineButton = document.getElementById('btn-shrine');
   el.btnDescend = document.getElementById('btn-descend');
   el.hubMenu = document.getElementById('hub-menu');
+  el.hubOptions = document.getElementById('hub-options');
   el.sceneHero = document.getElementById('scene-hero');
   el.sceneSkills = document.getElementById('scene-skills');
+  el.sceneOptions = document.getElementById('scene-options');
   el.sceneMap = document.getElementById('scene-map');
   el.sceneCrafting = document.getElementById('scene-crafting');
+  el.optionsTabs = document.getElementById('options-tabs');
+  el.optionsPanel = document.getElementById('options-panel');
+  el.resetButton = document.getElementById('btn-reset-save');
   el.tileHero = document.getElementById('tile-hero');
   el.tileSkills = document.getElementById('tile-skills');
   el.tileMap = document.getElementById('tile-map');
@@ -771,11 +789,13 @@ function sellSelected() {
 }
 
 function flash(figure) {
+  if (!settings.hitFlash) return;
   figure.classList.add('hit');
   setTimeout(() => figure.classList.remove('hit'), 150);
 }
 
 function spawnDamageFloat(fighter, amount, isCrit = false) {
+  if (!settings.damageNumbers) return;
   const span = document.createElement('span');
   span.className = isCrit ? 'dmg-float crit' : 'dmg-float';
   span.textContent = amount;
@@ -815,7 +835,7 @@ function hideOverlay() {
 
 function showScreen(target) {
   if (target !== el.sceneHero) exitSellMode();
-  for (const screen of [el.menu, el.hub, el.sceneHero, el.sceneSkills, el.sceneMap, el.sceneCrafting, el.game]) {
+  for (const screen of [el.menu, el.hub, el.sceneHero, el.sceneSkills, el.sceneOptions, el.sceneMap, el.sceneCrafting, el.game]) {
     screen.hidden = screen !== target;
   }
 }
@@ -1122,6 +1142,25 @@ function normalizeItem(item) {
   return item;
 }
 
+function loadSettings() {
+  try {
+    Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY)) ?? {});
+  } catch {
+    Object.assign(settings, DEFAULT_SETTINGS);
+  }
+}
+
+function saveSettings() {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+function applySettings() {
+  el.skillTree.classList.toggle('no-pulse', !settings.skillPulse);
+  for (const input of el.optionsPanel.querySelectorAll('[data-setting]')) {
+    input.checked = settings[input.dataset.setting];
+  }
+}
+
 function loadSave() {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
@@ -1177,6 +1216,7 @@ function simulateKills(seconds) {
 }
 
 function applyOfflineProgress() {
+  if (!settings.offlineProgress) return;
   const elapsed = Date.now() - (state.lastSeen || Date.now());
   if (elapsed < OFFLINE_MIN_GAP_MS) return;
   const capped = Math.min(elapsed, OFFLINE_CAP_MS);
@@ -1283,7 +1323,44 @@ function bindEvents() {
     render();
   });
   el.hubMenu.addEventListener('click', returnToMenu);
+  el.hubOptions.addEventListener('click', () => openOptions('hub'));
   el.overlay.addEventListener('click', dismissOverlay);
+  el.optionsTabs.addEventListener('click', (e) => {
+    const btn = e.target.closest('.options-tab');
+    if (!btn) return;
+    for (const tab of el.optionsTabs.querySelectorAll('.options-tab')) {
+      tab.classList.toggle('active', tab === btn);
+    }
+    for (const page of el.optionsPanel.querySelectorAll('.options-page')) {
+      page.hidden = page.dataset.page !== btn.dataset.tab;
+    }
+  });
+  el.optionsPanel.addEventListener('change', (e) => {
+    const input = e.target.closest('[data-setting]');
+    if (!input) return;
+    settings[input.dataset.setting] = input.checked;
+    saveSettings();
+    applySettings();
+  });
+  el.resetButton.addEventListener('click', () => {
+    if (!resetArmed) {
+      resetArmed = true;
+      el.resetButton.classList.add('armed');
+      el.resetButton.textContent = 'Wirklich? Erneut klicken';
+      resetTimer = setTimeout(() => {
+        resetArmed = false;
+        el.resetButton.classList.remove('armed');
+        el.resetButton.textContent = 'Zurücksetzen';
+      }, 4000);
+      return;
+    }
+    clearTimeout(resetTimer);
+    localStorage.removeItem(SAVE_KEY);
+    location.reload();
+  });
+  document.getElementById('btn-options-back').addEventListener('click', () => {
+    showScreen(optionsReturnScreen ?? el.hub);
+  });
   el.tileHero.addEventListener('click', () => showScreen(el.sceneHero));
   el.tileSkills.addEventListener('click', () => showScreen(el.sceneSkills));
   el.tileMap.addEventListener('click', () => showScreen(el.sceneMap));
@@ -1407,17 +1484,22 @@ function bindEvents() {
   });
 }
 
+function ensureInit() {
+  if (el.game) return;
+  cacheDom();
+  bindEvents();
+  buildSkillTree();
+  buildZoneList();
+  applySkillView();
+  loadSettings();
+  applySettings();
+  hasSave = loadSave();
+  if (hasSave) applyOfflineProgress();
+  setInterval(idleTick, STATS_SYNC_INTERVAL_MS);
+}
+
 export function startGame() {
-  if (!el.game) {
-    cacheDom();
-    bindEvents();
-    buildSkillTree();
-    buildZoneList();
-    applySkillView();
-    hasSave = loadSave();
-    if (hasSave) applyOfflineProgress();
-    setInterval(idleTick, STATS_SYNC_INTERVAL_MS);
-  }
+  ensureInit();
   showScreen(el.hub);
   render();
   if (!visited) {
@@ -1426,8 +1508,15 @@ export function startGame() {
       paused = true;
       showDismissibleOverlay('Du erwachst in Asche. Die Krone ruft.', 2600);
     } else if (offlineSummary) {
-      showDismissibleOverlay(offlineSummary, 4500);
+      if (settings.offlineSummary) showDismissibleOverlay(offlineSummary, 4500);
       offlineSummary = null;
     }
   }
+}
+
+export function openOptions(from) {
+  ensureInit();
+  optionsReturnScreen = from === 'menu' ? el.menu : el.hub;
+  showScreen(el.sceneOptions);
+  render();
 }
