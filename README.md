@@ -27,10 +27,10 @@ Ebene für Ebene tiefer, bis du dem Wächter des Thrones gegenüberstehst.
 
 ## ⚙️ Systeme, die ineinandergreifen
 
-- **Auto-Kampf & Zonen** — Jede der **5 Ebenen** skaliert dieselben drei Gegner-Typen
-  (Ascheratte, Knochenfresser, Grabwächter) auf neue Höchstwerte. Pro Ebene wartet nach
-  25 Siegen ein Wächter; sein Fall öffnet die Tür in die Tiefe. Über die Gebiete-Karte
-  reist du für sicheres Farmen in freigeschaltete Ebenen zurück.
+- **Auto-Kampf & Zonen** — Jede der **5 Ebenen** bringt ihr eigenes Bestiarium aus je
+  drei Kreaturen mit — **15 Gegner insgesamt**, von der Ascheratte bis zum Thronenden.
+  Pro Ebene wartet nach 25 Siegen ein Boss; sein Fall öffnet die Tür in die Tiefe.
+  Über die Gebiete-Karte reist du für sicheres Farmen in freigeschaltete Ebenen zurück.
 - **Fertigkeitenbaum** — **217 Knoten** im Path-of-Exile-Stil: vier Pfade
   (Krieg, Haut, Asche, Geist) mit kleinen Passives, Notables und **12 Keystones mit
   Tradeoffs**. **12 Brücken** verbinden die Pfade miteinander — für Misch-Builds,
@@ -46,10 +46,15 @@ Ebene für Ebene tiefer, bis du dem Wächter des Thrones gegenüberstehst.
 ## 🗺️ Die fünf Ebenen
 
 1. **Aschenkrypta** — Hier beginnt und endet jeder Weg.
+   *Ascheratte · Knochenfresser · Grabwächter*
 2. **Knochengewölbe** — Was hier knirscht, war einmal Ritter.
+   *Knochenkriecher · Beinhausritter · Gebeinwächter*
 3. **Aschekatakomben** — Die Wände atmen Asche aus.
+   *Aschenwicht · Glutgeist · Aschenmutter*
 4. **Grabestiefe** — Selbst die Ratten haben aufgehört zu wimmern.
+   *Grabwurm · Aaskrone · Der Bestattete*
 5. **Thronhalle der Asche** — Die Krone wartet. Sie wartet immer noch.
+   *Hofschatten · Kronenritter · Der Thronende*
 
 ## 🌳 Die vier Pfade
 

@@ -9,18 +9,40 @@ const OFFLINE_CAP_MS = 8 * 60 * 60 * 1000;
 const OFFLINE_MIN_GAP_MS = 30 * 1000;
 const INVENTORY_CAP = 40;
 
-const ENEMY_TYPES = {
-  ratte: { name: 'Ascheratte', hp: 10, damage: 1, ash: 4, xp: 4 },
-  elite: { name: 'Knochenfresser', hp: 25, damage: 2, ash: 15, xp: 12 },
-  boss: { name: 'Grabwächter', hp: 60, damage: 3, ash: 50, xp: 40, boss: true },
-};
+const ZONE_ENEMIES = [
+  {
+    normal: { name: 'Ascheratte', hp: 10, damage: 1, ash: 4, xp: 4 },
+    elite: { name: 'Knochenfresser', hp: 25, damage: 2, ash: 15, xp: 12 },
+    boss: { name: 'Grabwächter', hp: 60, damage: 3, ash: 50, xp: 40, boss: true },
+  },
+  {
+    normal: { name: 'Knochenkriecher', hp: 50, damage: 3, ash: 12, xp: 10 },
+    elite: { name: 'Beinhausritter', hp: 125, damage: 5, ash: 45, xp: 30 },
+    boss: { name: 'Gebeinwächter', hp: 300, damage: 8, ash: 150, xp: 100, boss: true },
+  },
+  {
+    normal: { name: 'Aschenwicht', hp: 280, damage: 8, ash: 40, xp: 32 },
+    elite: { name: 'Glutgeist', hp: 700, damage: 16, ash: 150, xp: 96 },
+    boss: { name: 'Aschenmutter', hp: 1700, damage: 24, ash: 500, xp: 320, boss: true },
+  },
+  {
+    normal: { name: 'Grabwurm', hp: 1600, damage: 28, ash: 140, xp: 105 },
+    elite: { name: 'Aaskrone', hp: 4000, damage: 55, ash: 500, xp: 310 },
+    boss: { name: 'Der Bestattete', hp: 9500, damage: 85, ash: 1700, xp: 1050, boss: true },
+  },
+  {
+    normal: { name: 'Hofschatten', hp: 9000, damage: 90, ash: 440, xp: 320 },
+    elite: { name: 'Kronenritter', hp: 22000, damage: 180, ash: 1650, xp: 950 },
+    boss: { name: 'Der Thronende', hp: 54000, damage: 270, ash: 5500, xp: 3200, boss: true },
+  },
+];
 
 const ZONES = [
-  { name: 'Aschenkrypta', hp: 1, damage: 1, ash: 1, xp: 1, ilvl: 1 },
-  { name: 'Knochengewölbe', hp: 5, damage: 2.5, ash: 3, xp: 2.5, ilvl: 6 },
-  { name: 'Aschekatakomben', hp: 28, damage: 8, ash: 10, xp: 8, ilvl: 14 },
-  { name: 'Grabestiefe', hp: 160, damage: 28, ash: 34, xp: 26, ilvl: 26 },
-  { name: 'Thronhalle der Asche', hp: 900, damage: 90, ash: 110, xp: 80, ilvl: 42 },
+  { name: 'Aschenkrypta', ilvl: 1 },
+  { name: 'Knochengewölbe', ilvl: 6 },
+  { name: 'Aschekatakomben', ilvl: 14 },
+  { name: 'Grabestiefe', ilvl: 26 },
+  { name: 'Thronhalle der Asche', ilvl: 42 },
 ];
 
 const GEAR_SLOTS = [
@@ -39,7 +61,7 @@ const RARITIES = [
   { key: 'episch', label: 'Episch', suffix: 'der Krone', color: '#9d6d8a', weight: 5, mult: 4 },
 ];
 
-const DROP_CHANCES = { ratte: 0.05, elite: 0.3, boss: 1 };
+const DROP_CHANCES = { normal: 0.05, elite: 0.3, boss: 1 };
 const BASE_CRIT_CHANCE = 5;
 const CRIT_MULTIPLIER = 2;
 const BASE_ATTACK_SPEED = 1;
@@ -432,15 +454,8 @@ const gearSlotOf = (key) => GEAR_SLOTS.find((slot) => slot.key === key);
 const zoneOf = (index) => ZONES[Math.max(0, Math.min(index, ZONES.length - 1))];
 
 function scaledEnemy(type) {
-  const def = ENEMY_TYPES[type];
-  const zone = zoneOf(state.zone);
-  return {
-    ...def,
-    hp: Math.max(1, Math.round(def.hp * zone.hp)),
-    damage: Math.max(1, Math.round(def.damage * zone.damage)),
-    ash: Math.max(1, Math.round(def.ash * zone.ash)),
-    xp: Math.max(1, Math.round(def.xp * zone.xp)),
-  };
+  const zone = Math.max(0, Math.min(state.zone, ZONE_ENEMIES.length - 1));
+  return { ...ZONE_ENEMIES[zone][type] };
 }
 
 function skillBonus(stat) {
@@ -805,7 +820,7 @@ function showScreen(target) {
 }
 
 function spawnEnemy() {
-  let type = 'ratte';
+  let type = 'normal';
   const zoneCleared = state.cleared > state.zone;
   if (!zoneCleared && state.zoneKills >= BOSS_AFTER_KILLS) {
     type = 'boss';
@@ -874,9 +889,9 @@ function killEnemy() {
   if (def.boss) {
     state.cleared = Math.max(state.cleared, state.zone + 1);
     if (state.zone + 1 < ZONES.length) {
-      showDismissibleOverlay(`Wächter bezwungen — ${ZONES[state.zone + 1].name} ist jetzt offen.`, 4200);
+      showDismissibleOverlay(`${def.name} bezwungen — ${ZONES[state.zone + 1].name} ist jetzt offen.`, 4200);
     } else {
-      showDismissibleOverlay(`Wächter bezwungen — ${ZONES[state.zone].name} ist erreicht.`, 4200);
+      showDismissibleOverlay(`${def.name} bezwungen — ${ZONES[state.zone].name} ist erreicht.`, 4200);
     }
   }
   enemy = null;
@@ -1145,7 +1160,7 @@ function simulateKills(seconds) {
   while (remaining > 0 && guard < 1000000) {
     guard += 1;
     const isElite = state.zoneKills > 0 && state.zoneKills % ELITE_EVERY_KILLS === 0;
-    const def = scaledEnemy(isElite ? 'elite' : 'ratte');
+    const def = scaledEnemy(isElite ? 'elite' : 'normal');
     const hits = Math.max(1, Math.ceil(def.hp / heroDamage()));
     const duration = hits * (ATTACK_INTERVAL_MS / 1000) + ENEMY_RESPAWN_S;
     if (duration > remaining) break;
@@ -1154,7 +1169,7 @@ function simulateKills(seconds) {
     state.zoneKills += 1;
     state.ash += Math.round(def.ash * (1 + skillBonus('ash') / 100));
     gainXp(def.xp);
-    rollDrop(isElite ? 'elite' : 'ratte');
+    rollDrop(isElite ? 'elite' : 'normal');
   }
 }
 
