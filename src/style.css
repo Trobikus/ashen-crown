@@ -130,6 +130,12 @@ button:hover {
   right: clamp(1rem, 2vw, 2.5rem);
 }
 
+#hub-options {
+  position: absolute;
+  top: calc(clamp(1rem, 2vw, 2.5rem) + 2.3rem);
+  right: clamp(1rem, 2vw, 2.5rem);
+}
+
 #hub-tiles {
   width: 100%;
   display: flex;
