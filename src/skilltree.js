@@ -1,0 +1,288 @@
+import { SKILL_NODES, SKILL_EDGES, SKILL_NODES_BY_ID, SKILL_NODE_RADIUS, SKILL_EFFECT_LABELS } from './data.js';
+
+import { state } from './state.js';
+
+import { el } from './dom.js';
+
+
+
+function skillBonus(stat) {
+  let total = 0;
+  for (const id of state.skills) {
+    const node = SKILL_NODES_BY_ID[id];
+    if (!node) continue;
+    for (const effect of node.effects) {
+      if (effect.stat === stat) total += effect.value;
+    }
+  }
+  return total;
+}
+
+function isSkillable(id) {
+  return SKILL_EDGES.some(
+    ([a, b]) => (a === id && state.skills.includes(b)) || (b === id && state.skills.includes(a))
+  );
+}
+
+function skillPos(node) {
+  const rad = (node.angle * Math.PI) / 180;
+  return { x: Math.round(node.radius * Math.cos(rad)), y: Math.round(-node.radius * Math.sin(rad)) };
+}
+
+function buildSkillTree() {
+  if (skillTreeBuilt) return;
+  const ns = 'http://www.w3.org/2000/svg';
+  for (const [from, to] of SKILL_EDGES) {
+    const a = skillPos(SKILL_NODES_BY_ID[from]);
+    const b = skillPos(SKILL_NODES_BY_ID[to]);
+    const line = document.createElementNS(ns, 'line');
+    line.setAttribute('x1', a.x);
+    line.setAttribute('y1', a.y);
+    line.setAttribute('x2', b.x);
+    line.setAttribute('y2', b.y);
+    line.dataset.from = from;
+    line.dataset.to = to;
+    const fromBranch = SKILL_NODES_BY_ID[from].branch;
+    const toBranch = SKILL_NODES_BY_ID[to].branch;
+    const edgeBranch = [fromBranch, toBranch].find((b) => b !== 'start' && b !== 'bruecke') ?? 'bruecke';
+    line.classList.add('skill-edge', `edge-${edgeBranch}`);
+    if (SKILL_NODES_BY_ID[to].type === 'keystone') line.classList.add('edge-keystone');
+    el.skillTree.appendChild(line);
+  }
+  for (const node of SKILL_NODES) {
+    const { x, y } = skillPos(node);
+    const group = document.createElementNS(ns, 'g');
+    group.classList.add('skill-node', `branch-${node.branch}`, `type-${node.type}`);
+    group.dataset.id = node.id;
+    const circle = document.createElementNS(ns, 'circle');
+    circle.setAttribute('cx', x);
+    circle.setAttribute('cy', y);
+    circle.setAttribute('r', SKILL_NODE_RADIUS[node.type]);
+    group.appendChild(circle);
+    el.skillTree.appendChild(group);
+  }
+  skillTreeBuilt = true;
+}
+
+function renderSkillTree() {
+  for (const group of el.skillTree.querySelectorAll('.skill-node')) {
+    const id = group.dataset.id;
+    const allocated = state.skills.includes(id);
+    const canSkill = !allocated && isSkillable(id);
+    group.classList.toggle('allocated', allocated);
+    group.classList.toggle('available', canSkill && state.skillPoints > 0);
+    group.classList.toggle('locked', !allocated && !canSkill);
+  }
+  for (const line of el.skillTree.querySelectorAll('.skill-edge')) {
+    line.classList.toggle('active', state.skills.includes(line.dataset.from) && state.skills.includes(line.dataset.to));
+  }
+}
+
+function attemptAllocate(id, hooks) {
+  if (state.skills.includes(id)) return;
+  if (state.skillPoints <= 0 || !isSkillable(id)) return;
+  state.skills.push(id);
+  state.skillPoints -= 1;
+  hooks.after();
+}
+
+function skillTooltipHtml(node) {
+  const allocated = state.skills.includes(node.id);
+  const effects = node.effects
+    .map((effect) => `<div class="tt-stat">${SKILL_EFFECT_LABELS[effect.stat](effect.value)}</div>`)
+    .join('');
+  let status;
+  if (allocated) status = 'Geskillt.';
+  else if (!isSkillable(node.id)) status = 'Benötigt einen benachbarten geskillten Punkt.';
+  else if (state.skillPoints > 0) status = 'Klicken zum Freischalten.';
+  else status = 'Keine Skillpunkte.';
+  return `
+    ${node.name ? `<div class="tt-name">${node.name}</div>` : ''}
+    ${node.desc ? `<div class="tt-desc">${node.desc}</div>` : ''}
+    ${effects}
+    <div class="tt-hint">${status}</div>`;
+}
+
+const SKILL_VIEW_START = 320;
+
+const SKILL_VIEW_MIN = 180;
+
+const SKILL_VIEW_MAX = 1440;
+
+const SKILL_WORLD = 720;
+
+let skillView = { x: -SKILL_VIEW_START, y: -SKILL_VIEW_START, w: SKILL_VIEW_START * 2 };
+
+let skillDrag = null;
+let skillTreeBuilt = false;
+
+let suppressSkillClick = false;
+
+function applySkillView() {
+  el.skillTree.setAttribute('viewBox', `${skillView.x} ${skillView.y} ${skillView.w} ${skillView.w}`);
+}
+
+function clampSkillView() {
+  skillView.x = Math.max(-SKILL_WORLD, Math.min(SKILL_WORLD - skillView.w, skillView.x));
+  skillView.y = Math.max(-SKILL_WORLD, Math.min(SKILL_WORLD - skillView.w, skillView.y));
+}
+
+function dragClamp(value, w) {
+  return Math.max(-SKILL_WORLD, Math.min(SKILL_WORLD - w, value));
+}
+
+export function bindSkillTreeEvents(hooks) {
+
+  el.skillTree.addEventListener('click', (e) => {
+
+    if (suppressSkillClick) {
+
+      suppressSkillClick = false;
+
+      return;
+
+    }
+
+    const group = e.target.closest('.skill-node');
+
+    if (group) attemptAllocate(group.dataset.id, hooks);
+
+  });
+
+  el.skillTree.addEventListener('mousemove', (e) => {
+
+    if (skillDrag) {
+
+      el.skillTooltip.hidden = true;
+
+      return;
+
+    }
+
+    const group = e.target.closest('.skill-node');
+
+    const tooltip = el.skillTooltip;
+
+    if (!group) {
+
+      tooltip.hidden = true;
+
+      return;
+
+    }
+
+    tooltip.innerHTML = skillTooltipHtml(SKILL_NODES_BY_ID[group.dataset.id]);
+
+    tooltip.hidden = false;
+
+    const wrapRect = el.skillTreeWrap.getBoundingClientRect();
+
+    const left = Math.min(e.clientX - wrapRect.left + 14, wrapRect.width - tooltip.offsetWidth - 4);
+
+    const top = Math.min(e.clientY - wrapRect.top + 14, wrapRect.height - tooltip.offsetHeight - 4);
+
+    tooltip.style.left = `${Math.max(0, left)}px`;
+
+    tooltip.style.top = `${Math.max(0, top)}px`;
+
+  });
+
+  el.skillTree.addEventListener('mouseleave', () => {
+
+    el.skillTooltip.hidden = true;
+
+  });
+
+  el.skillTree.addEventListener('wheel', (e) => {
+
+    e.preventDefault();
+
+    const factor = e.deltaY > 0 ? 1.18 : 1 / 1.18;
+
+    const rect = el.skillTree.getBoundingClientRect();
+
+    const fx = (e.clientX - rect.left) / rect.width;
+
+    const fy = (e.clientY - rect.top) / rect.height;
+
+    const worldX = skillView.x + fx * skillView.w;
+
+    const worldY = skillView.y + fy * skillView.w;
+
+    const newW = Math.max(SKILL_VIEW_MIN, Math.min(SKILL_VIEW_MAX, skillView.w * factor));
+
+    skillView.x = worldX - fx * newW;
+
+    skillView.y = worldY - fy * newW;
+
+    skillView.w = newW;
+
+    clampSkillView();
+
+    applySkillView();
+
+    el.skillTooltip.hidden = true;
+
+  }, { passive: false });
+
+  el.skillTree.addEventListener('pointerdown', (e) => {
+
+    if (e.target.closest('.skill-node')) return;
+
+    skillDrag = { px: e.clientX, py: e.clientY, viewX: skillView.x, viewY: skillView.y, moved: false };
+
+    el.skillTree.setPointerCapture(e.pointerId);
+
+    el.skillTree.classList.add('dragging');
+
+  });
+
+  el.skillTree.addEventListener('pointermove', (e) => {
+
+    if (!skillDrag) return;
+
+    const rect = el.skillTree.getBoundingClientRect();
+
+    const dx = ((e.clientX - skillDrag.px) / rect.width) * skillView.w;
+
+    const dy = ((e.clientY - skillDrag.py) / rect.height) * skillView.w;
+
+    if (Math.abs(e.clientX - skillDrag.px) + Math.abs(e.clientY - skillDrag.py) > 5) skillDrag.moved = true;
+
+    skillView.x = dragClamp(skillDrag.viewX - dx, skillView.w);
+
+    skillView.y = dragClamp(skillDrag.viewY - dy, skillView.w);
+
+    applySkillView();
+
+    el.skillTooltip.hidden = true;
+
+  });
+
+  el.skillTree.addEventListener('pointerup', () => {
+
+    suppressSkillClick = skillDrag?.moved ?? false;
+
+    skillDrag = null;
+
+    el.skillTree.classList.remove('dragging');
+
+  });
+
+  el.skillTree.addEventListener('dblclick', (e) => {
+
+    if (e.target.closest('.skill-node')) return;
+
+    skillView = { x: -SKILL_VIEW_START, y: -SKILL_VIEW_START, w: SKILL_VIEW_START * 2 };
+
+    clampSkillView();
+
+    applySkillView();
+
+  });
+
+}
+
+
+
+export { skillBonus, buildSkillTree, renderSkillTree, attemptAllocate, applySkillView };
