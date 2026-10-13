@@ -907,7 +907,7 @@ function gainXp(amount) {
   while (state.xp >= xpNeeded(state.level)) {
     state.xp -= xpNeeded(state.level);
     state.level += 1;
-    state.statPoints += 5;
+    state.statPoints += 3;
     state.skillPoints += 1;
     heroHp = heroMaxHp();
   }
