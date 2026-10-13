@@ -204,7 +204,10 @@ function tooltipHtml(item, action, showValue = false) {
 function renderGear() {
   for (const slotEl of el.gearSlots) {
     const item = state.equipment[slotEl.dataset.slot];
-    slotEl.querySelector('.slot-value').textContent = item ? gearSlotOf(item.slot).abbrev : '—';
+    const slotDef = gearSlotOf(slotEl.dataset.slot);
+    const rarity = item ? rarityOf(item.rarity) : null;
+    slotEl.querySelector('.slot-value').innerHTML =
+      `<span class="slot-icon" style="--icon: url('${slotDef.icon}'); color:${rarity ? rarity.color : '#4a443b'}"></span>`;
     slotEl.querySelector('.tooltip').innerHTML = tooltipHtml(item, 'Ablegen');
   }
 }
@@ -227,7 +230,7 @@ function renderInventory() {
     cell.dataset.id = item.id;
     cell.style.borderColor = rarity.color;
     cell.innerHTML = `
-      <span class="inv-abbrev" style="color:${rarity.color}">${gearSlotOf(item.slot).abbrev}</span>
+      <span class="slot-icon inv-icon" style="--icon: url('${gearSlotOf(item.slot).icon}'); color:${rarity.color}"></span>
       <div class="tooltip">${tooltipHtml(item, sellMode ? 'Auswählen' : 'Anlegen', true)}</div>`;
     el.inventoryGrid.appendChild(cell);
   }

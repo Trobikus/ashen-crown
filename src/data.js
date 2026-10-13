@@ -1,3 +1,10 @@
+import waffeIcon from './assets/icons/waffe.svg';
+import brustIcon from './assets/icons/brust.svg';
+import helmIcon from './assets/icons/helm.svg';
+import hoseIcon from './assets/icons/hose.svg';
+import schuheIcon from './assets/icons/schuhe.svg';
+import handIcon from './assets/icons/hand.svg';
+
 const TICK_MS = 100;
 
 const ATTACK_INTERVAL_MS = 1500;
@@ -53,13 +60,13 @@ const ZONES = [
 ];
 
 const GEAR_SLOTS = [
-  { key: 'waffe', label: 'Waffe', base: 'Klinge', abbrev: 'KL', stat: 'damage' },
-  { key: 'brust', label: 'Brust', base: 'Brustplatte', abbrev: 'BP', stat: 'hp' },
-  { key: 'helm', label: 'Helm', base: 'Helm', abbrev: 'HE', stat: 'hp' },
-  { key: 'hose', label: 'Hose', base: 'Beinlinge', abbrev: 'BE', stat: 'hp' },
-  { key: 'schuhe', label: 'Schuhe', base: 'Stiefel', abbrev: 'ST', stat: 'hp' },
-  { key: 'hand-links', label: 'Handschuh Links', base: 'Handschuh', abbrev: 'HL', stat: 'damage' },
-  { key: 'hand-rechts', label: 'Handschuh Rechts', base: 'Handschuh', abbrev: 'HR', stat: 'damage' },
+  { key: 'waffe', label: 'Waffe', base: 'Klinge', abbrev: 'KL', stat: 'damage', icon: waffeIcon },
+  { key: 'brust', label: 'Brust', base: 'Brustplatte', abbrev: 'BP', stat: 'hp', icon: brustIcon },
+  { key: 'helm', label: 'Helm', base: 'Helm', abbrev: 'HE', stat: 'hp', icon: helmIcon },
+  { key: 'hose', label: 'Hose', base: 'Beinlinge', abbrev: 'BE', stat: 'hp', icon: hoseIcon },
+  { key: 'schuhe', label: 'Schuhe', base: 'Stiefel', abbrev: 'ST', stat: 'hp', icon: schuheIcon },
+  { key: 'hand-links', label: 'Handschuh Links', base: 'Handschuh', abbrev: 'HL', stat: 'damage', icon: handIcon },
+  { key: 'hand-rechts', label: 'Handschuh Rechts', base: 'Handschuh', abbrev: 'HR', stat: 'damage', icon: handIcon },
 ];
 
 const RARITIES = [
@@ -67,6 +74,9 @@ const RARITIES = [
   { key: 'selten', label: 'Selten', suffix: 'der Gebeine', color: '#6d8a7a', weight: 25, mult: 2 },
   { key: 'episch', label: 'Episch', suffix: 'der Krone', color: '#9d6d8a', weight: 5, mult: 4 },
 ];
+for (const slot of GEAR_SLOTS) {
+  slot.icon = slot.icon.replace(/'/g, '%27');
+}
 
 const DROP_CHANCES = { normal: 0.02, elite: 0.15, boss: 1 };
 

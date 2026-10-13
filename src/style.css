@@ -433,6 +433,21 @@ button:hover {
   position: relative;
 }
 
+.slot-icon {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  background-color: currentColor;
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
+  flex: none;
+}
+
+.inv-icon {
+  width: 24px;
+  height: 24px;
+}
+
 
 .tt-desc {
   font-style: italic;
