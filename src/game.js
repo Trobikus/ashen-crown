@@ -50,6 +50,22 @@ let resetTimer = null;
 
 let hooks = { after: () => {}, clampHp: () => {}, save: () => {}, render: () => {} };
 
+function flash(figure) {
+  if (!settings.hitFlash) return;
+  figure.classList.add('hit');
+  setTimeout(() => figure.classList.remove('hit'), 150);
+}
+
+function spawnDamageFloat(fighter, amount, isCrit = false) {
+  if (!settings.damageNumbers) return;
+  const span = document.createElement('span');
+  span.className = isCrit ? 'dmg-float crit' : 'dmg-float';
+  span.textContent = amount;
+  span.style.left = `${35 + Math.random() * 30}%`;
+  fighter.appendChild(span);
+  setTimeout(() => span.remove(), 900);
+}
+
 function showOverlay(text) {
   document.getElementById('overlay-text').textContent = text;
   document.getElementById('overlay').classList.add('show');
