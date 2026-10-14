@@ -6,6 +6,24 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [0.9.1] — 2026-10-14
+
+### Hinzugefügt
+- **Lebenspunktzahlen in der Arena** für Held und Gegner — bei langen
+  Bosskämpfen sieht man endlich, wie nah der Kill ist.
+- **Alpha-Vorbereitung**: Versionsanzeige jetzt auch im Web-Build
+  (statisch aus der package.json, Desktop bevorzugt weiter die Tauri-Abfrage),
+  Alpha-Zeile im Hauptmenü und ein „GitHub Issues"-Knopf unter Optionen →
+  Spiel — öffnet die Issue-Liste und legt die Adresse zusätzlich in die
+  Zwischenablage (Desktop-Webviews blocken Pop-ups teils).
+
+### Behoben
+- **Save-Härtung**: Korrupte Items (unbekannter Slot oder Seltenheit, fehlende
+  Namen, NaN-Werte, doppelte oder fehlende IDs) werden beim Laden repariert
+  oder verworfen, statt den Render-Loop zu crashen; Kernfelder wie Asche,
+  Stufe oder Lebenskraft werden auf sichere Grenzen gezogen. Die Backup-Kette
+  greift unverändert davor.
+
 ## [0.9.0] — 2026-10-14
 
 ### Hinzugefügt

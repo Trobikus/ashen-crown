@@ -23,6 +23,7 @@
         <button id="btn-update-skip" class="btn-small">Überspringen</button>
       </div>
       <p id="version-tag" hidden></p>
+      <p id="alpha-tag">Closed Alpha — alles Ungewöhnliche gern auf GitHub melden.</p>
     </main>
     <div id="hub" hidden>
       <button id="hub-menu" class="btn-small">Hauptmenü</button>
@@ -217,6 +218,10 @@
             <span class="option-label">Spielstand importieren<span class="option-desc">Überschreibt den aktuellen Spielstand — vorher wird automatisch ein Backup erstellt</span></span>
             <button class="btn-small btn-danger" id="btn-import-save">Importieren</button>
           </div>
+          <div class="option-row">
+            <span class="option-label">Feedback & Fehler<span class="option-desc">Fehler gefunden? Melde sie auf GitHub — jeder Bericht hilft.</span></span>
+            <button class="btn-small" id="btn-feedback">GitHub Issues</button>
+          </div>
           <div class="option-row danger-row">
             <span class="option-label">Spielstand zurücksetzen<span class="option-desc">Löscht Helden, Ausrüstung und Skillpunkte endgültig</span></span>
             <button class="btn-small btn-danger" id="btn-reset-save">Zurücksetzen</button>
@@ -279,12 +284,14 @@
           <div class="figure" id="hero-figure"></div>
           <div class="fighter-name">Der Erweckte</div>
           <div class="hp-bar"><div class="hp-fill hero-fill" id="hero-hp"></div></div>
+          <div class="hp-text" id="hero-hp-text">—</div>
         </div>
         <div class="fighter" id="enemy-fighter">
           <div class="figure" id="enemy-figure"></div>
           <div class="fighter-name" id="enemy-name">—</div>
           <div class="fighter-profile" id="enemy-profile"></div>
           <div class="hp-bar"><div class="hp-fill enemy-fill" id="enemy-hp"></div></div>
+          <div class="hp-text" id="enemy-hp-text">—</div>
         </div>
       </div>
       <div id="actions">

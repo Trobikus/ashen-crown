@@ -71,6 +71,21 @@ button:hover {
   color: #3f3a33;
 }
 
+#alpha-tag {
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #5f584e;
+}
+
+.hp-text {
+  margin-top: 0.3rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: #6b6255;
+  min-height: 1em;
+}
+
 .victory-text {
   font-style: italic;
   line-height: 1.7;

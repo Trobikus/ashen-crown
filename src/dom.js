@@ -20,6 +20,9 @@ function cacheDom() {
   el.enemyName = document.getElementById('enemy-name');
   el.enemyProfile = document.getElementById('enemy-profile');
   el.enemyHp = document.getElementById('enemy-hp');
+  el.heroHpText = document.getElementById('hero-hp-text');
+  el.enemyHpText = document.getElementById('enemy-hp-text');
+  el.feedbackButton = document.getElementById('btn-feedback');
   el.enemyFighter = document.getElementById('enemy-fighter');
   el.upDamage = document.getElementById('up-damage');
   el.costDamage = document.getElementById('cost-damage');

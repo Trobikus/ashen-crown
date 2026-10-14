@@ -3,6 +3,7 @@ import { initUpdater, suppressUpdate } from './updater.js';
 import { initAudio } from './audio.js';
 import { loadSettings } from './settings.js';
 import { applyFullscreenSetting } from './display.js';
+import { version as appVersion } from '../package.json';
 
 // Vollbild-Wunsch aus den Settings früh anwenden, damit nicht erst der
 // Start-Klick den Modus wechselt.
@@ -39,14 +40,17 @@ initUpdater();
 
 async function showVersion() {
   const el = document.getElementById('version-tag');
+  let version = null;
   const tauri = window.__TAURI__;
-  if (!tauri?.app?.getVersion) return;
-  try {
-    el.textContent = `Version ${await tauri.app.getVersion()}`;
-    el.hidden = false;
-  } catch {
-    // Version bleibt unsichtbar, wenn die Abfrage fehlschlägt.
+  if (tauri?.app?.getVersion) {
+    try {
+      version = await tauri.app.getVersion();
+    } catch {
+      // statischer Fallback unten (Web-Build)
+    }
   }
+  el.textContent = `Version ${version ?? appVersion}`;
+  el.hidden = false;
 }
 
 showVersion();

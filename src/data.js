@@ -742,6 +742,33 @@ function normalizeItem(item) {
   return item;
 }
 
+// Zahlen-Härtung: Nicht-Zahlen und Unendlichkeiten werden zu 0.
+const asCount = (value) => (typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.trunc(value)) : 0);
+
+// Sanitizing für Spielstand-Items: Ungültige werden verworfen (null), defekte
+// Felder repariert — ein korrupter Spielstand darf den Render-Loop nie crashen.
+function sanitizeItem(item) {
+  if (!item || typeof item !== 'object') return null;
+  const slot = gearSlotOf(item.slot);
+  const rarity = rarityOf(item.rarity);
+  if (!slot || !rarity) return null;
+  if (typeof item.name !== 'string' || !item.name) item.name = `${slot.base} ${rarity.suffix}`;
+  item.damage = asCount(item.damage);
+  item.hp = asCount(item.hp);
+  item.armor = asCount(item.armor);
+  item.critChance = asCount(item.critChance);
+  item.enhance = asCount(item.enhance);
+  item.enhanceBonus = item.enhanceBonus && typeof item.enhanceBonus === 'object'
+    ? { damage: asCount(item.enhanceBonus.damage), hp: asCount(item.enhanceBonus.hp), armor: asCount(item.enhanceBonus.armor) }
+    : null;
+  item.mastery = item.mastery && typeof item.mastery === 'object'
+    && Object.hasOwn(SKILL_EFFECT_LABELS, item.mastery.stat) && typeof item.mastery.value === 'number'
+    ? { stat: item.mastery.stat, value: asCount(item.mastery.value) }
+    : null;
+  normalizeItem(item);
+  return item;
+}
+
 function itemStats(item) {
   const stats = { damage: item.damage, hp: item.hp, armor: item.armor, critChance: item.critChance };
   for (const [stat, value] of Object.entries(item.enhanceBonus ?? {})) stats[stat] += value;
@@ -783,7 +810,7 @@ export {
 
   rollMastery, xpNeeded, upgradeCost, rarityOf, gearSlotOf, zoneDef, enemyDef, rollRarity, rollItemValues,
 
-  itemStats, itemScore, itemStatsText, normalizeItem,
+  itemStats, itemScore, itemStatsText, normalizeItem, sanitizeItem, asCount,
 
   DEATH_ASH_PENALTY, KILL_REGEN_PCT, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT,
 

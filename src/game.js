@@ -4,7 +4,7 @@ import { state, settings, SAVE_KEY, SAVE_VERSION } from './state.js';
 
 import { loadSettings, saveSettings, applySettings } from './settings.js';
 
-import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, INVENTORY_CAP, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, DEATH_ASH_PENALTY, KILL_REGEN_PCT, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, continentKeyOf, xpNeeded, upgradeCost, zoneDef, normalizeItem, formatNum } from './data.js';
+import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, INVENTORY_CAP, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, DEATH_ASH_PENALTY, KILL_REGEN_PCT, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, continentKeyOf, xpNeeded, upgradeCost, zoneDef, sanitizeItem, asCount, formatNum } from './data.js';
 
 import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier } from './stats.js';
 
@@ -424,11 +424,14 @@ function render() {
   el.modalHeroSpeed.textContent = `${heroAttackSpeed().toFixed(1).replace('.', ',')} / s`;
   el.modalHeroKills.textContent = formatNum(state.kills);
   el.heroHp.style.width = `${Math.max(0, heroHp / heroMaxHp()) * 100}%`;
+  el.heroHpText.textContent = `${formatNum(Math.max(0, heroHp))} / ${formatNum(heroMaxHp())}`;
   if (enemy) {
     el.enemyName.textContent = enemy.name;
     el.enemyHp.style.width = `${Math.max(0, enemy.hp / enemy.maxHp) * 100}%`;
+    el.enemyHpText.textContent = `${formatNum(Math.max(0, enemy.hp))} / ${formatNum(enemy.maxHp)}`;
   } else {
     el.enemyHp.style.width = '0%';
+    el.enemyHpText.textContent = '—';
   }
   const dmgCost = upgradeCost(10, state.damageUps);
   const hpCost = upgradeCost(15, state.hpUps);
@@ -445,11 +448,15 @@ function save() {
   localStorage.setItem(SAVE_KEY, JSON.stringify(state));
 }
 
+const asNumber = (value, fallback) => (typeof value === 'number' && Number.isFinite(value) ? value : fallback);
+
 function parseSave(raw) {
   if (!raw) return null;
   try {
     const data = JSON.parse(raw);
-    if (!data || typeof data.level !== 'number' || typeof data.ash !== 'number') return null;
+    if (!data || typeof data !== 'object') return null;
+    if (typeof data.level !== 'number' || !Number.isFinite(data.level)) return null;
+    if (typeof data.ash !== 'number' || !Number.isFinite(data.ash)) return null;
     return data;
   } catch {
     return null;
@@ -536,36 +543,73 @@ function rotateBackups(force = false) {
   localStorage.setItem(BACKUP_KEYS[0], JSON.stringify(current));
 }
 
+// Härtung: bereinigt ALLES auf dem rohen Spielstand-Objekt, bevor etwas davon
+// den echten Spielstand berührt — korrupte Werte werden repariert oder
+// verworfen, ein böser Spielstand darf nie den Render-Loop crashen.
+function prepareSave(data) {
+  migrateSave(data);
+  data.ash = Math.max(0, asNumber(data.ash, 0));
+  data.xp = Math.max(0, asNumber(data.xp, 0));
+  data.level = Math.max(1, asNumber(data.level, 1));
+  data.maxHp = Math.max(1, asNumber(data.maxHp, 30));
+  data.damage = Math.max(1, asNumber(data.damage, 2));
+  data.damageUps = Math.max(0, asNumber(data.damageUps, 0));
+  data.hpUps = Math.max(0, asNumber(data.hpUps, 0));
+  data.kills = Math.max(0, asNumber(data.kills, 0));
+  data.zoneKills = Math.max(0, asNumber(data.zoneKills, 0));
+  data.statPoints = Math.max(0, asNumber(data.statPoints, 0));
+  data.armorBase = Math.max(0, asNumber(data.armorBase, 0));
+  data.critBonus = Math.max(0, asNumber(data.critBonus, 0));
+  data.skillPoints = Math.max(0, asNumber(data.skillPoints, 0));
+  data.itemSeq = asCount(data.itemSeq);
+  const rawEquipment = data.equipment && typeof data.equipment === 'object' && !Array.isArray(data.equipment)
+    ? data.equipment
+    : {};
+  data.equipment = {};
+  const seenIds = new Set();
+  const ensureId = (item) => {
+    if (typeof item.id !== 'number' || !Number.isFinite(item.id) || seenIds.has(item.id)) {
+      data.itemSeq += 1;
+      item.id = data.itemSeq;
+    }
+    seenIds.add(item.id);
+  };
+  for (const slot of GEAR_SLOTS) {
+    data.equipment[slot.key] = sanitizeItem(rawEquipment[slot.key]);
+    if (data.equipment[slot.key]) ensureId(data.equipment[slot.key]);
+  }
+  data.inventory = (Array.isArray(data.inventory) ? data.inventory : [])
+    .map(sanitizeItem)
+    .filter(Boolean);
+  data.inventory.forEach(ensureId);
+  if (!Array.isArray(data.skills)) data.skills = ['start'];
+  if (!data.skills.includes('start')) data.skills.unshift('start');
+  data.skills = data.skills.filter((id) => SKILL_NODES_BY_ID[id]);
+  data.skillPoints = Math.max(0, data.level - data.skills.length);
+  data.zone = Math.max(0, Math.min(Math.trunc(asNumber(data.zone, 0)), MAX_ZONE));
+  data.cleared = Math.max(0, Math.min(Math.trunc(asNumber(data.cleared, 0)), MAX_ZONE));
+  data.zone = Math.min(data.zone, data.cleared);
+  data.crownWon = data.crownWon === true;
+  data.inField = data.inField === true;
+  data.seenContinents = Array.isArray(data.seenContinents)
+    ? data.seenContinents.filter((key) => typeof key === 'string')
+    : [];
+  data.hints = data.hints && typeof data.hints === 'object' && !Array.isArray(data.hints)
+    ? data.hints
+    : {};
+  return data;
+}
+
 function loadSave() {
   for (const [attempt, key] of [SAVE_KEY, ...BACKUP_KEYS].entries()) {
     const data = parseSave(localStorage.getItem(key));
     if (!data) continue;
-    Object.assign(state, migrateSave(data));
-    for (const slot of GEAR_SLOTS) {
-      normalizeItem(state.equipment[slot.key]);
+    try {
+      prepareSave(data);
+    } catch {
+      continue; // unerwartet Böses → nächste Backup-Generation probieren
     }
-    state.inventory.forEach(normalizeItem);
-    state.statPoints ??= 0;
-    state.armorBase ??= 0;
-    state.critBonus ??= 0;
-    if (!Array.isArray(state.skills)) state.skills = ['start'];
-    if (!state.skills.includes('start')) state.skills.unshift('start');
-    state.skills = state.skills.filter((id) => SKILL_NODES_BY_ID[id]);
-    state.skillPoints = Math.max(0, state.level - state.skills.length);
-    state.zone ??= 0;
-    state.cleared ??= 0;
-    state.zoneKills ??= 0;
-    state.crownWon ??= false;
-    state.inField ??= false;
-    state.seenContinents = Array.isArray(state.seenContinents)
-      ? state.seenContinents.filter((key) => typeof key === 'string')
-      : [];
-    state.hints = state.hints && typeof state.hints === 'object' && !Array.isArray(state.hints)
-      ? state.hints
-      : {};
-    state.zone = Math.max(0, Math.min(Math.trunc(state.zone), MAX_ZONE));
-    state.cleared = Math.max(0, Math.min(Math.trunc(state.cleared), MAX_ZONE));
-    state.zone = Math.min(state.zone, state.cleared);
+    Object.assign(state, data);
     if (attempt > 0) saveNotice = `Hauptspielstand war beschädigt — Backup ${attempt} geladen.`;
     return true;
   }
@@ -910,6 +954,16 @@ function bindEvents() {
       .catch(() => flashButton(el.exportButton, 'Fehlgeschlagen'));
   });
   el.importButton.addEventListener('click', importSave);
+  el.feedbackButton.addEventListener('click', () => {
+    const url = 'https://github.com/Trobikus/ashen-crown/issues';
+    navigator.clipboard?.writeText(url).catch(() => {});
+    try {
+      window.open(url, '_blank');
+    } catch {
+      // Desktop-Webview blockt evtl. Pop-ups — die Zwischenablage reicht.
+    }
+    flashButton(el.feedbackButton, 'Adresse kopiert ✓');
+  });
   document.getElementById('btn-options-back').addEventListener('click', () => {
     showScreen(optionsReturnScreen ?? el.hub);
   });
