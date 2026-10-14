@@ -97,6 +97,72 @@ button:hover {
   color: #5f584e;
 }
 
+#toasts {
+  position: fixed;
+  right: clamp(1rem, 2vw, 2.5rem);
+  bottom: clamp(1rem, 2vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 0.5rem 0.9rem;
+  background: #0b0a0c;
+  border: 1px solid #3a352e;
+  font-style: italic;
+  font-size: 0.9rem;
+  opacity: 0;
+  transform: translateX(14px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.toast.hide {
+  opacity: 0;
+  transform: translateX(14px);
+}
+
+.level-float {
+  position: absolute;
+  left: 50%;
+  top: -0.4rem;
+  transform: translateX(-50%);
+  color: #d9a03f;
+  font-size: 1.1rem;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: level-rise 1.2s ease-out forwards;
+}
+
+@keyframes level-rise {
+  from {
+    opacity: 1;
+    translate: 0 0;
+  }
+  to {
+    opacity: 0;
+    translate: 0 -46px;
+  }
+}
+
+input[type='range'] {
+  accent-color: #8a7f6d;
+  width: min(160px, 40vw);
+}
+
+#hud-progress-text.gold {
+  color: #d9a03f;
+}
+
 #scene-victory h2 {
   color: #d9a03f;
 }

@@ -6,6 +6,24 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-10-14
+
+### Hinzugefügt
+- **Sound** (prozedural über die Web Audio API, keine Assets): Treffer,
+  Kritische Treffer, Siege, Boss-Auftritte, Stufenaufstiege, Raritäten-
+  Beute, Tod und Sieg-Fanfare — dazu ein dunkler Ambient-Drone als
+  Musik. Neuer Optionen-Tab **Audio** mit Reglern für Gesamt, Effekte
+  und Musik.
+- **Feedback-Loop**: Boss-Fortschritt im HUD („7 / 30", Boss-Phase in
+  Gold), Goldener „Stufe X"-Schriftzug beim Aufstieg, Toasts für seltene
+  und epische Beute (in Seltenheitsfarbe) und einen gedrosselten
+  Hinweis, wenn das Inventar voll ist und Beute verfällt.
+
+### Behoben
+- Optionen wurden nie aus dem Speicher geladen und nie gespeichert
+  (fehlender `SETTINGS_KEY`-Import) — alle Einstellungen verhielten sich
+  wie Zurückgesetzt nach jedem Neustart.
+
 ## [0.4.0] — 2026-10-14
 
 ### Hinzugefügt
@@ -93,7 +111,8 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Desktop-Shell via Tauri 2, Vollbild-Start.
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
-[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/Trobikus/ashen-crown/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Trobikus/ashen-crown/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Trobikus/ashen-crown/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/Trobikus/ashen-crown/compare/v0.2.1...v0.2.2

@@ -9,6 +9,8 @@ function cacheDom() {
   el.hudLevel = document.getElementById('hud-level');
   el.hudAsh = document.getElementById('hud-ash');
   el.hudZone = document.getElementById('hud-zone');
+  el.hudProgress = document.getElementById('hud-progress');
+  el.hudProgressText = document.getElementById('hud-progress-text');
   el.tileMapSub = document.getElementById('tile-map-sub');
   el.zoneList = document.getElementById('zone-list');
   el.heroFigure = document.getElementById('hero-figure');

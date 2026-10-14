@@ -10,6 +10,10 @@ import { state } from './state.js';
 
 import { el } from './dom.js';
 
+import { sfx } from './audio.js';
+
+import { toast } from './feedback.js';
+
 const SLOT_ICONS = {
   waffe: waffeIcon,
   brust: brustIcon,
@@ -118,11 +122,27 @@ function generateItem() {
   };
 }
 
+let lastFullNotice = 0;
+
 function rollDrop(enemyType) {
   if (Math.random() >= (DROP_CHANCES[enemyType] ?? 0)) return;
-  if (state.inventory.length >= INVENTORY_CAP) return;
-  state.inventory.push(generateItem());
+  if (state.inventory.length >= INVENTORY_CAP) {
+    if (Date.now() - lastFullNotice > 30000) {
+      lastFullNotice = Date.now();
+      toast('Inventar voll — die Beute verfällt zu Asche.');
+    }
+    return;
+  }
+  const item = generateItem();
+  state.inventory.push(item);
   gearDirty = true;
+  if (item.rarity === 'episch') {
+    sfx.epic();
+    toast(`Episch: ${item.name}`, rarityOf('episch').color);
+  } else if (item.rarity === 'selten') {
+    sfx.rare();
+    toast(`Selten: ${item.name}`, rarityOf('selten').color);
+  }
 }
 
 function equipItem(id) {

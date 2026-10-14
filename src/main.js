@@ -1,5 +1,6 @@
 import { startGame, openOptions } from './game.js';
 import { initUpdater, suppressUpdate } from './updater.js';
+import { initAudio } from './audio.js';
 
 const notice = document.getElementById('notice');
 
@@ -10,6 +11,7 @@ function showNotice(text) {
 
 document.getElementById('btn-start').addEventListener('click', () => {
   suppressUpdate();
+  initAudio();
   startGame();
 });
 

@@ -161,6 +161,7 @@
       <nav id="options-tabs">
         <button class="options-tab active" data-tab="display">Anzeige</button>
         <button class="options-tab" data-tab="game">Spiel</button>
+        <button class="options-tab" data-tab="audio">Audio</button>
       </nav>
       <div id="options-panel">
         <div class="options-page" data-page="display">
@@ -175,6 +176,20 @@
           <label class="option-row">
             <span class="option-label">Pulsierende Fertigkeiten<span class="option-desc">Verfügbare Skillpunkte pulsieren im Baum</span></span>
             <span class="toggle"><input type="checkbox" data-setting="skillPulse" checked><span class="toggle-slider"></span></span>
+          </label>
+        </div>
+        <div class="options-page" data-page="audio" hidden>
+          <label class="option-row">
+            <span class="option-label">Gesamtlautstärke<span class="option-desc">Master-Regler — auf 0 ist alles stumm</span></span>
+            <input type="range" min="0" max="100" step="1" data-volume="volumeMaster">
+          </label>
+          <label class="option-row">
+            <span class="option-label">Effekte<span class="option-desc">Treffer, Beute, Stufenaufstiege, Bosse</span></span>
+            <input type="range" min="0" max="100" step="1" data-volume="volumeSfx">
+          </label>
+          <label class="option-row">
+            <span class="option-label">Musik<span class="option-desc">Dunkler Ambient-Drone</span></span>
+            <input type="range" min="0" max="100" step="1" data-volume="volumeMusic">
           </label>
         </div>
         <div class="options-page" data-page="game" hidden>
@@ -237,6 +252,7 @@
     <div id="game" hidden>
       <header id="hud">
         <span>Bereich <strong id="hud-zone">Aschenkrypta</strong></span>
+        <span id="hud-progress" hidden>Siege <strong id="hud-progress-text">0 / 30</strong></span>
         <span>Stufe <strong id="hud-level">1</strong></span>
         <span>Asche <strong id="hud-ash">0</strong></span>
         <button id="btn-shrine" class="btn-small">Schrein</button>
@@ -260,6 +276,7 @@
         </div>
         <button id="btn-door" hidden>Durch die Tür gehen</button>
       </div>
+      <div id="toasts"></div>
     </div>
     <div id="overlay"><p id="overlay-text"></p></div>
     <script type="module" src="/src/main.js"></script>

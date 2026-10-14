@@ -12,6 +12,10 @@ import { buildSkillTree, renderSkillTree, bindSkillTreeEvents, applySkillView } 
 
 import { buildZoneList, renderZones, resetZoneView, switchZoneView } from './zones.js';
 
+import { sfx } from './audio.js';
+
+import { toast, levelUpFloat } from './feedback.js';
+
 import { buildCraftSlots, renderCrafting, bindCraftEvents } from './crafting.js';
 
 import { initItems, rollDrop, equipItem, unequipItem, sortInventory, equipBest, sellSelected, toggleSellMode, exitSellMode, sellButtonAction, selectAllForSale, handleInventoryClick, renderGearIfDirty } from './items.js';
@@ -123,6 +127,7 @@ function spawnEnemy() {
   const def = scaledEnemy(type);
   enemy = { type, name: def.name, hp: def.hp, maxHp: def.hp, damage: def.damage };
   el.enemyFigure.classList.toggle('boss', !!def.boss);
+  if (def.boss) sfx.boss();
   render();
 }
 
@@ -134,6 +139,8 @@ function gainXp(amount) {
     state.statPoints += 3;
     state.skillPoints += 1;
     heroHp = heroMaxHp();
+    sfx.levelUp();
+    levelUpFloat(state.level);
   }
 }
 
@@ -179,6 +186,7 @@ function killEnemy() {
   state.ash += Math.round(def.ash * (1 + statBonus('ash') / 100));
   gainXp(def.xp);
   rollDrop(enemy.type);
+  sfx.kill();
   if (def.boss) {
     state.cleared = Math.max(state.cleared, state.zone + 1);
     if (!state.crownWon && state.zone === LAST_ZONE_INDEX) {
@@ -194,6 +202,7 @@ function killEnemy() {
       ? `Neuer Kontinent: ${next.continent}. `
       : '';
     showDismissibleOverlay(`${def.name} bezwungen — ${continentGate}${next.name} ist jetzt offen.`, 4200);
+    sfx.unlock();
   }
   enemy = null;
   save();
@@ -204,7 +213,12 @@ function killEnemy() {
 function heroAttack() {
   let damage = heroDamage();
   const isCrit = Math.random() * 100 < heroCritChance();
-  if (isCrit) damage = Math.round(damage * critMultiplier());
+  if (isCrit) {
+    damage = Math.round(damage * critMultiplier());
+    sfx.crit();
+  } else {
+    sfx.hit();
+  }
   enemy.hp -= damage;
   flash(el.heroFigure);
   spawnDamageFloat(el.enemyFighter, damage, isCrit);
@@ -232,6 +246,7 @@ function enemyAttack() {
 function die() {
   heroHp = 0;
   paused = true;
+  sfx.death();
   showOverlay('Die Asche nimmt dich zurück.');
   render();
   sceneTimer = setTimeout(() => {
@@ -294,6 +309,13 @@ function render() {
   el.tileSkillsSub.textContent = state.skillPoints > 0 ? `${state.skillPoints} Punkte frei` : 'Wähle weise';
   const zone = zoneDef(state.zone);
   el.hudZone.textContent = `${zone.continent} · ${zone.name}`;
+  const showProgress = state.cleared <= state.zone;
+  el.hudProgress.hidden = !showProgress;
+  if (showProgress) {
+    const bossPhase = state.zoneKills >= BOSS_AFTER_KILLS;
+    el.hudProgressText.textContent = bossPhase ? 'Boss!' : `${Math.min(state.zoneKills, BOSS_AFTER_KILLS)} / ${BOSS_AFTER_KILLS}`;
+    el.hudProgressText.classList.toggle('gold', bossPhase);
+  }
   el.tileMapSub.textContent = state.cleared < MAIN_ZONE_COUNT
     ? `${Math.min(state.cleared + 1, MAIN_ZONE_COUNT)} von ${MAIN_ZONE_COUNT} Gebieten offen`
     : `Tiefe ${state.cleared + 1 - MAIN_ZONE_COUNT} erreicht`;
@@ -572,6 +594,7 @@ function enterZone(index) {
 
 function showVictory() {
   paused = true;
+  sfx.victory();
   if (tickTimer) {
     clearInterval(tickTimer);
     tickTimer = null;
@@ -637,6 +660,13 @@ function bindEvents() {
     const input = e.target.closest('[data-setting]');
     if (!input) return;
     settings[input.dataset.setting] = input.checked;
+    saveSettings();
+    applySettings();
+  });
+  el.optionsPanel.addEventListener('input', (e) => {
+    const input = e.target.closest('[data-volume]');
+    if (!input) return;
+    settings[input.dataset.volume] = Number(input.value);
     saveSettings();
     applySettings();
   });

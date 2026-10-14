@@ -1,6 +1,8 @@
-import { settings, DEFAULT_SETTINGS } from './state.js';
+import { settings, DEFAULT_SETTINGS, SETTINGS_KEY } from './state.js';
 
 import { el } from './dom.js';
+
+import { setVolumes } from './audio.js';
 
 
 
@@ -21,6 +23,10 @@ function applySettings() {
   for (const input of el.optionsPanel.querySelectorAll('[data-setting]')) {
     input.checked = settings[input.dataset.setting];
   }
+  for (const input of el.optionsPanel.querySelectorAll('[data-volume]')) {
+    input.value = settings[input.dataset.volume];
+  }
+  setVolumes({ master: settings.volumeMaster, sfx: settings.volumeSfx, music: settings.volumeMusic });
 }
 
 export { loadSettings, saveSettings, applySettings };
