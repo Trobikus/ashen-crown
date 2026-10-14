@@ -13,6 +13,9 @@
   [![Lizenz](https://img.shields.io/badge/Lizenz-propriet%C3%A4r--alle%20Rechte%20vorbehalten-C14B3A)](LICENSE)
 
   *Web & Desktop — ohne Framework, ohne Server, mit Speicherstand im Browser.*
+
+  **🧪 Aktuell: Closed Alpha (v0.9.1)** — Installer über die
+  [Releases](releases), Updates installieren sich im Spiel von selbst.
 </div>
 
 ---
@@ -22,6 +25,7 @@
 Ashen Crown ist ein Idle-RPG: Der Kampf läuft von allein, die Entscheidungen triffst du.
 Erlege Kreaturen, sammle Asche, schärfe Klinge und Haut, rüste Beute aus — und steige
 Gebiet für Gebiet tiefer, bis dir am Ende der Leere die Aschenkrone selbst gegenübersteht.
+Denn die Asche erinnert sich — an jedes Reich, das vor dir versuchte, ihr zu entkommen.
 
 | Kampf | Fertigkeiten | Gebiete |
 | :---: | :---: | :---: |
@@ -39,6 +43,11 @@ Gebiet für Gebiet tiefer, bis dir am Ende der Leere die Aschenkrone selbst gege
   Kontinents. Jeder Sieg heilt 10 % deiner Lebenskraft; stirbst du, behält die Asche
   15 % deines Vorrats als Zoll. Im Feld kämpft dein Held weiter — am Schrein rastet
   und heilt er.
+  Die Bestiarien erzählen dabei ihre Reiche: der verbrannte Hof (Grabesdiener,
+  Ascheschreiber, Leichenprediger), das geflohene Frostvolk (Frostpilger,
+  Eiskämmerin, Winterbotschafter), die ertränkten Gelehrten (Archivarsleim,
+  Reliquienschwimmer), das blutbezahlende Kriegsvolk (Lanzknecht, Doppelgelder)
+  und die Aufgestiegenen (Sternwarter, Astrolabit).
   Die Gebiete-Karte zeigt jeden Kontinent groß im Überblick; mit den Pfeilen blätterst
   du zwischen den Kontinenten, und für sicheres Farmen reist du in freigeschaltete
   Ebenen zurück.
@@ -64,16 +73,27 @@ Gebiet für Gebiet tiefer, bis dir am Ende der Leere die Aschenkrone selbst gege
 - **Chronik & Lore** — Die Asche erinnert sich: Intro-Erzählung beim Erwachen,
   eine Annale pro Kontinent beim ersten Betreten, ein Epitaph über jedem der
   **50 bezwungenen Bosse** — alles gesammelt in der Chronik am Schrein.
+- **Klang & Feedback** — Prozeduraler Sound aus der Web Audio API (keine Assets):
+  Treffer, Krits, Bosse, Beute, Aufstiege, Enrage, dazu ein dunkler Ambient-Drone
+  — mit Reglern für Gesamt, Effekte und Musik. Schadenszahlen (jetzt auch
+  Lebenspunktzahlen in der Arena), Aufblitzen und Toasts lassen sich trennen.
+- **Spielstand mit Sicherheitsnetz** — Versioniert (aktuell v4), drei rotierende
+  Backups, Export/Import als JSON, Migrationen für alte Helden. Korrupte Items
+  repariert das Spiel beim Laden — oder es greift zum Backup.
+- **Onboarding ohne Tutorial-Zwang** — Einmal-Hinweise im richtigen Moment:
+  Feld & Schrein beim ersten Abstieg, der Rast-Tipp beim ersten Boss, Punkte-,
+  Beute- und Meisterschafts-Hinweise, Einsteige in Fertigkeiten, Gebiete und
+  Werkstatt. Bestehende Helden bekommen nur, was sie verpasst haben.
 
 ## 🌍 Die fünf Kontinente
 
-| # | Kontinent | Gebiete | Bestie an der Spitze |
+| # | Kontinent | Gebiete (ilvl) | Bestie an der Spitze |
 | --- | --- | --- | --- |
-| 1 | **Die Aschenlande** | 1–182 | *Der Aschegott* im Herz der Asche |
-| 2 | **Das Frostreich** | 222–762 | *Der Frostgott* im Herz des Winters |
-| 3 | **Das Faulmoor** | 842–1742 | *Der Moorgott* im Herz des Moores |
-| 4 | **Das Blutmark** | 1862–3122 | *Der Blutgott* im Herz des Blutes |
-| 5 | **Die Sternenleere** | 3282–4902 | *Die Aschenkrone* im Herz der Leere |
+| 1 | **Die Aschenlande** | 2–18 | *Der Aschegott* im Herz der Asche |
+| 2 | **Das Frostreich** | 27–218 | *Der Frostgott* im Herz des Winters |
+| 3 | **Das Faulmoor** | 321–2.571 | *Der Moorgott* im Herz des Moores |
+| 4 | **Das Blutmark** | 3.785–30.354 | *Der Blutgott* im Herz des Blutes |
+| 5 | **Die Sternenleere** | 44.681–358.359 | *Die Aschenkrone* im Herz der Leere |
 
 Die Zahlen hinter jedem Kontinent sind die Gegenstandsstufen (ilvl) seiner zehn
 Gebiete — je tiefer die Ebene, desto besser Beute und Werkstatt.
@@ -86,6 +106,30 @@ Gebiete — je tiefer die Ebene, desto besser Beute und Werkstatt.
 | 🛡️ **Haut** | Lebenskraft, Rüstung | *Blutzoll* — +150 Lebenskraft, −8 % Tempo |
 | 🏺 **Asche** | Beute & Erfahrung | *Midashand* — +45 % Asche, −10 % Schaden |
 | 👁️ **Geist** | Krit, Kritschaden, Tempo | *Zeitraffung* — +35 % Angriffstempo, −8 Rüstung |
+
+## 🧪 Closed Alpha
+
+Ashen Crown befindet sich im geschlossenen Alpha-Stadium (aktuell **v0.9.1**):
+
+- **Mitmachen:** Installer aus den [Releases](releases) laden und installieren —
+  das Spiel aktualisiert sich danach bei neuen Versionen von selbst.
+- **Spielstand:** Liegt sicher im Browser-Speicher der App, mit Backups;
+  unter Optionen → Spiel lässt er sich als JSON exportieren und wieder
+  einspielen (z. B. vor Experimenten).
+- **Feedback:** Am liebsten als [Issue](issues) — der Knopf dafür steckt auch
+  im Spiel unter Optionen → Spiel. Drei Fragen interessieren uns am meisten:
+  1. Wo hängst du fest oder weißt nicht weiter?
+  2. Wo langweilt es dich?
+  3. Wann stirbst du, ohne zu verstehen warum?
+- **Empfehlung:** Desktop-Build spielen; der Web-Build (`pnpm dev`) ist
+  Dev-Vorschau ohne Touch-Feinschliff.
+
+## 🗺️ Auf dem Weg zu 1.0
+
+- Automatisierung: Auto-Tür nach Bosskämpfen, Auto-Verkauf fürs Inventar
+- Statistik-Seite und Bestiarium (der Chronik Schwester)
+- Prestige/Meta-Progression und Belohnungen in den Aschentiefen
+- Achievements
 
 ## 🚀 Entwicklung
 
@@ -109,11 +153,16 @@ pnpm build          # Produktions-Build nach dist/
 │   ├── crafting.js       # Werkstatt: Verstärken & Umschmieden
 │   ├── skilltree.js      # Fertigkeitenbaum: Graph & Punktevergabe
 │   ├── stats.js          # Heldenwerte aus Basis, Gear, Skills & Meisterschaft
+│   ├── lore.js           # Chronik: Intro, Kontinent-Annalen, Boss-Epitaphe
 │   ├── state.js          # Spielstand & Einstellungen (localStorage)
 │   ├── dom.js            # DOM-Cache
 │   ├── settings.js       # Optionen laden/speichern/anwenden
+│   ├── audio.js          # Prozeduraler Sound (Web Audio API)
+│   ├── feedback.js       # Toasts & Levelup-Einblendungen
+│   ├── display.js        # Vollbild-Steuerung (Desktop & Web)
+│   ├── updater.js        # Auto-Update über GitHub Releases
 │   ├── style.css         # Basis-Styling
-│   └── scenes.css        # Szenen: Inventar, Karte, Werkstatt, Optionen
+│   └── scenes.css        # Szenen: Inventar, Karte, Werkstatt, Chronik, Optionen
 ├── docs/                 # Banner & Screenshots für dieses README
 └── src-tauri/            # Tauri-2-Desktop-Shell (Rust)
 ```
