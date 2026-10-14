@@ -18,6 +18,8 @@ import { toast, levelUpFloat } from './feedback.js';
 
 import { buildCraftSlots, renderCrafting, bindCraftEvents } from './crafting.js';
 
+import { INTRO_PAGES, CONTINENT_LORE, epitaphOf, continentLoreKeyOf, renderChronicle } from './lore.js';
+
 import { initItems, rollDrop, equipItem, unequipItem, sortInventory, equipBest, sellSelected, toggleSellMode, exitSellMode, sellButtonAction, selectAllForSale, handleInventoryClick, renderGearIfDirty } from './items.js';
 
 
@@ -90,29 +92,48 @@ function spawnHealFloat(fighter, amount) {
   setTimeout(() => span.remove(), 900);
 }
 
-function showOverlay(text) {
-  document.getElementById('overlay-text').textContent = text;
+function showOverlay(text, html = false) {
+  const target = document.getElementById('overlay-text');
+  if (html) target.innerHTML = text;
+  else target.textContent = text;
   document.getElementById('overlay').classList.add('show');
   overlayDismissible = false;
 }
 
-function showDismissibleOverlay(text, duration) {
-  showOverlay(text);
+let overlayDone = null;
+
+function finishDismissible() {
+  hideOverlay();
+  overlayDismissible = false;
+  const done = overlayDone;
+  overlayDone = null;
+  if (done) done();
+}
+
+function showDismissibleOverlay(text, duration, html = false, onDone = null) {
+  // Überholt ein laufendes Overlay (z. B. Boss-Gate → Kontinent-Annale):
+  // dessen Timer stoppen, sonst blättert es das neue vorzeitig weg.
+  if (sceneTimer) {
+    clearTimeout(sceneTimer);
+    sceneTimer = null;
+  }
+  overlayDone = null;
+  showOverlay(text, html);
   overlayDismissible = true;
+  overlayDone = onDone;
   sceneTimer = setTimeout(() => {
     sceneTimer = null;
-    hideOverlay();
+    finishDismissible();
   }, duration);
 }
 
 function dismissOverlay() {
   if (!overlayDismissible) return;
-  overlayDismissible = false;
   if (sceneTimer) {
     clearTimeout(sceneTimer);
     sceneTimer = null;
   }
-  hideOverlay();
+  finishDismissible();
 }
 
 function hideOverlay() {
@@ -121,7 +142,7 @@ function hideOverlay() {
 
 function showScreen(target) {
   if (target !== el.sceneHero) exitSellMode();
-  for (const screen of [el.menu, el.hub, el.sceneHero, el.sceneSkills, el.sceneOptions, el.sceneMap, el.sceneCrafting, el.sceneVictory, el.game]) {
+  for (const screen of [el.menu, el.hub, el.sceneHero, el.sceneSkills, el.sceneOptions, el.sceneMap, el.sceneCrafting, el.sceneChronik, el.sceneVictory, el.game]) {
     screen.hidden = screen !== target;
   }
 }
@@ -233,7 +254,12 @@ function killEnemy() {
     const continentGate = next.continent !== zoneDef(state.zone).continent
       ? `Neuer Kontinent: ${next.continent}. `
       : '';
-    showDismissibleOverlay(`${def.name} bezwungen — ${continentGate}${next.name} ist jetzt offen.`, 4200);
+    const epitaph = epitaphOf(state.zone);
+    showDismissibleOverlay(
+      `${epitaph}<br><br>${def.name} bezwungen — ${continentGate}${next.name} ist jetzt offen.`,
+      5000,
+      true,
+    );
     sfx.unlock();
   }
   enemy = null;
@@ -465,6 +491,9 @@ function loadSave() {
     state.zoneKills ??= 0;
     state.crownWon ??= false;
     state.inField ??= false;
+    state.seenContinents = Array.isArray(state.seenContinents)
+      ? state.seenContinents.filter((key) => typeof key === 'string')
+      : [];
     state.zone = Math.max(0, Math.min(Math.trunc(state.zone), MAX_ZONE));
     state.cleared = Math.max(0, Math.min(Math.trunc(state.cleared), MAX_ZONE));
     state.zone = Math.min(state.zone, state.cleared);
@@ -681,11 +710,33 @@ function descend() {
   beginCombat();
 }
 
+// Beim ersten Betreten eines Kontinents (oder der Tiefen): seine Annale.
+function announceContinent(index) {
+  const key = continentLoreKeyOf(index);
+  if (state.seenContinents.includes(key)) return;
+  const lore = CONTINENT_LORE[key];
+  if (!lore) return;
+  state.seenContinents.push(key);
+  showDismissibleOverlay(lore, 6800, true);
+}
+
 function enterZone(index) {
   if (index < 0 || index > state.cleared) return;
   state.zone = index;
   state.zoneKills = 0;
+  announceContinent(index);
   save();
+}
+
+// Das Erwachen: Intro-Seiten für frisch Geformte, klickbar zum Weiterblättern.
+function playIntro() {
+  const pages = [...INTRO_PAGES];
+  const next = () => {
+    if (!pages.length) return;
+    const page = pages.shift();
+    showDismissibleOverlay(`<em>${page}</em>`, pages.length ? 4200 : 3400, true, next);
+  };
+  next();
 }
 
 function showVictory() {
@@ -801,6 +852,10 @@ function bindEvents() {
     renderZones();
   });
   el.tileCrafting.addEventListener('click', () => showScreen(el.sceneCrafting));
+  el.tileChronik.addEventListener('click', () => {
+    renderChronicle();
+    showScreen(el.sceneChronik);
+  });
   bindCraftEvents(hooks);
   el.zoneList.addEventListener('click', (e) => {
     const pager = e.target.closest('.zone-pager');
@@ -870,7 +925,7 @@ export function startGame() {
     visited = true;
     if (!hasSave) {
       paused = true;
-      showDismissibleOverlay('Du erwachst in Asche. Die Krone ruft.', 2600);
+      playIntro();
     } else if (saveNotice) {
       showDismissibleOverlay(saveNotice, 5000);
       saveNotice = null;

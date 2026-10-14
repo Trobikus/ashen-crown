@@ -61,6 +61,9 @@ Gebiet für Gebiet tiefer, bis dir am Ende der Leere die Aschenkrone selbst gege
 - **Offline-Fortschritt** — Wer im Feld aufhört, kämpft bis zu **8 Stunden** ohne dich
   weiter (mit Todesrisiko; Bosse warten auf dich) und meldet dir bei der Rückkehr,
   was er erlegt, gefunden und gelernt hat.
+- **Chronik & Lore** — Die Asche erinnert sich: Intro-Erzählung beim Erwachen,
+  eine Annale pro Kontinent beim ersten Betreten, ein Epitaph über jedem der
+  **50 bezwungenen Bosse** — alles gesammelt in der Chronik am Schrein.
 
 ## 🌍 Die fünf Kontinente
 

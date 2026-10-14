@@ -35,6 +35,9 @@ function cacheDom() {
   el.sceneOptions = document.getElementById('scene-options');
   el.sceneMap = document.getElementById('scene-map');
   el.sceneCrafting = document.getElementById('scene-crafting');
+  el.sceneChronik = document.getElementById('scene-chronik');
+  el.chronicleList = document.getElementById('chronicle-list');
+  el.tileChronik = document.getElementById('tile-chronik');
   el.sceneVictory = document.getElementById('scene-victory');
   el.victoryContinue = document.getElementById('btn-victory-continue');
   el.victoryKills = document.getElementById('victory-kills');

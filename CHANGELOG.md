@@ -6,6 +6,41 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-10-14
+
+### Hinzugefügt
+- **Chronik** (neues Hub-Tile): Die Asche erinnert sich — eine wachsende
+  Sammlung der Erzählung, unterteilt in Die Erweckung, die fünf Kontinent-
+  Annalen mit den Epitaphen ihrer bezwungenen Bosse, die Tiefen und den
+  Thron. Freigeschaltet wird durchs Spielen (Zone frei → Annale, Boss
+  gefallen → Epitaph); Versiegeltes kündigt sich an.
+- **Intro-Erzählung**: Neue Helden erwachen nicht mehr in einem Satz, sondern
+  in vier klickbaren Seiten — vom Reich vor der Asche bis zum Ruf der Krone.
+- **Kontinent-Annalen**: Beim ersten Betreten jedes Kontinents (und der
+  Tiefen) erzählt eine Einblendung, welches Reich hier versuchte, der Asche
+  zu entkommen — der Hof im Frost, die Gelehrten im Moor, die Blutwährung
+  des Ostens, der Aufstieg zu den Sternen.
+- **50 Boss-Epitaphe**: Jeder Boss-Kill öffnet sein Epitaph über dem
+  Gate-Text — von Grabwächter („Er bewacht ein Grab, das nie gegraben
+  wurde: sein eigenes.“) bis zur Aschenkrone. Die Tiefen-Bosse flüstern
+  vier rotierende Zeilen.
+- Sieg-Text erweitert („Vier Reiche sind auf dem Weg hierher verbrannt.“).
+
+### Geändert
+- **Gegnernamen loretreu**: Die Normal- und Elite-Gegner aller Kontinente sind
+  jetzt die Menschen und Ränge der untergegangenen Reiche — der verbrannte Hof
+  (Grabesdiener, Ascheschreiber, Leichenprediger, Staubkämmerer), das geflohene
+  Frostvolk (Frostpilger, Eiskämmerin, Schneewaise, Winterbotschafter), die
+  ertränkten Gelehrten des Moores (Archivarsleim, Heilkundiger, Reliquien-
+  schwimmer, Seuchenärztin), das blutbezahlende Kriegsvolk (Lanzknecht,
+  Doppelgelder, Rostfähnrich, Zahlmeister) und die Aufgestiegenen (Leerenpilger,
+  Sternwarter, Astrolabit, Sternenschürfer). Die 50 Boss-Namen bleiben — sie
+  tragen den Erzählbogen und die Epitaphe.
+
+### Behoben
+- Überholt ein Overlay ein anderes (Boss-Gate → Kontinent-Annale), stoppte
+  dessen Timer nicht und blätterte den Nachfolger vorzeitig weg.
+
 ## [0.7.0] — 2026-10-14
 
 ### Hinzugefügt

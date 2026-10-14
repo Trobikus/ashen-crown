@@ -44,6 +44,7 @@ const state = {
   skillPoints: 0,
   skills: ['start'],
   inField: false,
+  seenContinents: [],
 };
 
 export { SAVE_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, SAVE_VERSION, settings, state };
