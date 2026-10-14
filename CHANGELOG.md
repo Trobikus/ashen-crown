@@ -6,6 +6,11 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-10-14
+
+### Hinzugefügt
+- Versionsnummer im Hauptmenü angezeigt (nur Desktop-App).
+
 ## [0.2.0] — 2026-10-14
 
 ### Hinzugefügt
@@ -39,6 +44,7 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Desktop-Shell via Tauri 2, Vollbild-Start.
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
-[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/Trobikus/ashen-crown/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Trobikus/ashen-crown/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Trobikus/ashen-crown/releases/tag/v0.1.0

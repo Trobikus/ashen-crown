@@ -27,3 +27,17 @@ document.getElementById('btn-quit').addEventListener('click', () => {
 });
 
 initUpdater();
+
+async function showVersion() {
+  const el = document.getElementById('version-tag');
+  const tauri = window.__TAURI__;
+  if (!tauri?.app?.getVersion) return;
+  try {
+    el.textContent = `Version ${await tauri.app.getVersion()}`;
+    el.hidden = false;
+  } catch {
+    // Version bleibt unsichtbar, wenn die Abfrage fehlschlägt.
+  }
+}
+
+showVersion();
