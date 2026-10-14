@@ -2,8 +2,8 @@
   <img src="docs/banner.svg" alt="Ashen Crown" width="840" />
 
   **Ashen Crown** ist ein inkrementelles Dark-Fantasy-RPG: Du erwachst in der Asche,
-  kämpfst dich Ebene für Ebene tiefer in die Krypta — und formst dabei einen Helden,
-  der ganz nach deinem Willen geformt ist.
+  kämpfst dich Gebiet für Gebiet durch **fünf Kontinente** — und formst dabei einen
+  Helden, der ganz nach deinem Willen geformt ist.
 
   [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev)
   [![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)](https://tauri.app)
@@ -19,7 +19,7 @@
 
 Ashen Crown ist ein Idle-RPG: Der Kampf läuft von allein, die Entscheidungen triffst du.
 Erlege Kreaturen, sammle Asche, schärfe Klinge und Haut, rüste Beute aus — und steige
-Ebene für Ebene tiefer, bis du dem Wächter des Thrones gegenüberstehst.
+Gebiet für Gebiet tiefer, bis dir am Ende der Leere die Aschenkrone selbst gegenübersteht.
 
 | Kampf | Fertigkeiten | Gebiete |
 | :---: | :---: | :---: |
@@ -32,7 +32,9 @@ Ebene für Ebene tiefer, bis du dem Wächter des Thrones gegenüberstehst.
   Ascheratte bis zur Aschenkrone.
   Pro Ebene wartet nach 30 Siegen ein Boss; sein Fall öffnet die Tür in die Tiefe —
   und irgendwann das Tor zum nächsten Kontinent.
-  Über die Gebiete-Karte reist du für sicheres Farmen in freigeschaltete Ebenen zurück.
+  Die Gebiete-Karte zeigt jeden Kontinent groß im Überblick; mit den Pfeilen blätterst
+  du zwischen den Kontinenten, und für sicheres Farmen reist du in freigeschaltete
+  Ebenen zurück.
 - **Fertigkeitenbaum** — **217 Knoten** im Path-of-Exile-Stil: vier Pfade
   (Krieg, Haut, Asche, Geist) mit kleinen Passives, Notables und **12 Keystones mit
   Tradeoffs**. **12 Brücken** verbinden die Pfade miteinander — für Misch-Builds,
@@ -47,21 +49,23 @@ Ebene für Ebene tiefer, bis du dem Wächter des Thrones gegenüberstehst.
 - **Stufen & Asche** — Jede Stufe bringt 3 Statpunkte und 1 Skillpunkt; Asche finanziert
   Klinge und Haut im Kampf selbst — oder in der Werkstatt Verstärkung und Umschmieden.
   Beide Wege stärken denselben Helden, keinen zweiten.
+- **Zahlen, die mitwachsen** — Spät werden Werte astronomisch; das Spiel hält sie
+  lesbar: kompakte Kurzschreibweise mit deutschem Komma („12,4K", „3,2M", „1,5B").
 - **Offline-Fortschritt** — Bis zu **8 Stunden** kämpft dein Held ohne dich weiter und
   meldet dir bei der Rückkehr, was er erlegt, gefunden und gelernt hat.
 
-## 🗺️ Die fünf Ebenen
+## 🌍 Die fünf Kontinente
 
-1. **Aschenkrypta** — Hier beginnt und endet jeder Weg.
-   *Ascheratte · Knochenfresser · Grabwächter*
-2. **Knochengewölbe** — Was hier knirscht, war einmal Ritter.
-   *Knochenkriecher · Beinhausritter · Gebeinwächter*
-3. **Aschekatakomben** — Die Wände atmen Asche aus.
-   *Aschenwicht · Glutgeist · Aschenmutter*
-4. **Grabestiefe** — Selbst die Ratten haben aufgehört zu wimmern.
-   *Grabwurm · Aaskrone · Der Bestattete*
-5. **Thronhalle der Asche** — Die Krone wartet. Sie wartet immer noch.
-   *Hofschatten · Kronenritter · Der Thronende*
+| # | Kontinent | Gebiete | Bestie an der Spitze |
+| --- | --- | --- | --- |
+| 1 | **Die Aschenlande** | 1–182 | *Der Aschegott* im Herz der Asche |
+| 2 | **Das Frostreich** | 222–762 | *Der Frostgott* im Herz des Winters |
+| 3 | **Das Faulmoor** | 842–1742 | *Der Moorgott* im Herz des Moores |
+| 4 | **Das Blutmark** | 1862–3122 | *Der Blutgott* im Herz des Blutes |
+| 5 | **Die Sternenleere** | 3282–4902 | *Die Aschenkrone* im Herz der Leere |
+
+Die Zahlen hinter jedem Kontinent sind die Gegenstandsstufen (ilvl) seiner zehn
+Gebiete — je tiefer die Ebene, desto besser Beute und Werkstatt.
 
 ## 🌳 Die vier Pfade
 
@@ -87,11 +91,27 @@ pnpm build          # Produktions-Build nach dist/
 ├── index.html            # UI-Grundgerüst (Menü, Schrein, Szenen)
 ├── src/
 │   ├── main.js           # Einstieg: Menü und Spielstart
-│   ├── game.js           # Spiellogik: Kampf, Zonen, Loot, Skilltree, Speicherung
-│   └── style.css         # Styling
+│   ├── data.js           # Spieldaten: Kontinente, Gegner, Loot, Skilltree
+│   ├── game.js           # Spielloop: Kampf, Fortschritt, Speicherung
+│   ├── zones.js          # Gebiete-Karte: Kontinente & Durchschalten
+│   ├── items.js          # Loot, Inventar, Vergleiche, Verkauf
+│   ├── crafting.js       # Werkstatt: Verstärken & Umschmieden
+│   ├── skilltree.js      # Fertigkeitenbaum: Graph & Punktevergabe
+│   ├── stats.js          # Heldenwerte aus Basis, Gear, Skills & Meisterschaft
+│   ├── state.js          # Spielstand & Einstellungen (localStorage)
+│   ├── dom.js            # DOM-Cache
+│   ├── settings.js       # Optionen laden/speichern/anwenden
+│   ├── style.css         # Basis-Styling
+│   └── scenes.css        # Szenen: Inventar, Karte, Werkstatt, Optionen
 ├── docs/                 # Banner & Screenshots für dieses README
 └── src-tauri/            # Tauri-2-Desktop-Shell (Rust)
 ```
+
+## 📜 Credits
+
+Ausrüstungs-Icons von [game-icons.net](https://game-icons.net) (Lorc, Delapouite),
+Lizenz [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) — Details in
+[CREDITS.md](CREDITS.md).
 
 ---
 
