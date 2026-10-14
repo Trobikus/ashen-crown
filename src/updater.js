@@ -23,16 +23,13 @@ async function runUpdate(tauri) {
 
   const text = document.getElementById('update-text');
   const bar = document.getElementById('update-bar');
-  const notes = (update.body || '').split('\n')[0].trim();
-  text.textContent = notes
-    ? `Update ${update.version}: ${truncate(notes, 110)}`
-    : `Update auf Version ${update.version}`;
 
   document
     .getElementById('btn-update-skip')
     .addEventListener('click', suppressUpdate, { once: true });
 
   document.getElementById('update-banner').hidden = false;
+  text.textContent = 'Updating 0 %';
   await delay(600);
 
   let downloaded = 0;
@@ -41,11 +38,17 @@ async function runUpdate(tauri) {
     if (event === 'Started') total = data.contentLength ?? 0;
     if (event === 'Progress') {
       downloaded += data.chunkLength;
-      if (total > 0) bar.style.width = `${Math.round((downloaded / total) * 100)}%`;
+      if (total > 0) {
+        const pct = Math.min(100, Math.floor((downloaded / total) * 100));
+        text.textContent = `Updating ${pct} %`;
+        bar.style.width = `${pct}%`;
+      } else {
+        text.textContent = 'Updating …';
+      }
     }
     if (event === 'Finished') {
-      text.textContent = `Update ${update.version} wird installiert…`;
-      document.getElementById('update-progress').hidden = true;
+      text.textContent = 'Updating 100 %';
+      bar.style.width = '100%';
     }
   });
   if (suppressed) {
@@ -56,10 +59,6 @@ async function runUpdate(tauri) {
   await update.install();
   update.close();
   await tauri.process.relaunch();
-}
-
-function truncate(text, max) {
-  return text.length > max ? `${text.slice(0, max)}…` : text;
 }
 
 function delay(ms) {
