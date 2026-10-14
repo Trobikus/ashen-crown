@@ -4,6 +4,8 @@ import { el } from './dom.js';
 
 import { setVolumes } from './audio.js';
 
+import { applyFullscreenSetting } from './display.js';
+
 
 
 function loadSettings() {
@@ -27,6 +29,7 @@ function applySettings() {
     input.value = settings[input.dataset.volume];
   }
   setVolumes({ master: settings.volumeMaster, sfx: settings.volumeSfx, music: settings.volumeMusic });
+  applyFullscreenSetting();
 }
 
 export { loadSettings, saveSettings, applySettings };

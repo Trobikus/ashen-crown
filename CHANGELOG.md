@@ -6,6 +6,15 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-10-14
+
+### Hinzugefügt
+- **Vollbild-Option** unter Optionen → Anzeige: Das Spiel startet jetzt im
+  Fenster (1280×800) statt erzwungen im Vollbild; der Toggle wechselt
+  live (Desktop über die Tauri-Window-API, Web über die
+  Browser-Fullscreen-API) und die Wahl wird persistiert und beim
+  nächsten Start wiederhergestellt.
+
 ## [0.5.0] — 2026-10-14
 
 ### Hinzugefügt
@@ -111,7 +120,8 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Desktop-Shell via Tauri 2, Vollbild-Start.
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
-[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/Trobikus/ashen-crown/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/Trobikus/ashen-crown/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Trobikus/ashen-crown/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Trobikus/ashen-crown/compare/v0.2.2...v0.3.0

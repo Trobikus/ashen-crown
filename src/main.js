@@ -1,6 +1,13 @@
 import { startGame, openOptions } from './game.js';
 import { initUpdater, suppressUpdate } from './updater.js';
 import { initAudio } from './audio.js';
+import { loadSettings } from './settings.js';
+import { applyFullscreenSetting } from './display.js';
+
+// Vollbild-Wunsch aus den Settings früh anwenden, damit nicht erst der
+// Start-Klick den Modus wechselt.
+loadSettings();
+applyFullscreenSetting();
 
 const notice = document.getElementById('notice');
 

@@ -12,6 +12,7 @@ const DEFAULT_SETTINGS = {
   skillPulse: true,
   offlineProgress: true,
   offlineSummary: true,
+  displayFullscreen: false,
   volumeMaster: 80,
   volumeSfx: 85,
   volumeMusic: 60,
