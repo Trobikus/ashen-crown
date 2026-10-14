@@ -1,4 +1,4 @@
-import { GEAR_SLOTS, RARITIES, ZONES, SKILL_EFFECT_LABELS, gearSlotOf, rarityOf, rollItemValues, itemStatsText, rollMastery, formatNum } from './data.js';
+import { GEAR_SLOTS, RARITIES, LAST_ZONE_INDEX, SKILL_EFFECT_LABELS, gearSlotOf, rarityOf, zoneDef, rollItemValues, itemStatsText, rollMastery, formatNum } from './data.js';
 
 import { state } from './state.js';
 
@@ -6,7 +6,9 @@ import { el } from './dom.js';
 
 
 
-const craftIlvl = () => ZONES[Math.min(state.cleared, ZONES.length - 1)].ilvl;
+// Die Werkstatt skaliert bewusst nur bis zum letzten Hauptspiel-Ziel:
+// in den Tiefen wächst sie nicht mehr mit (Balance-Siehe tools/balance-sim.mjs).
+const craftIlvl = () => zoneDef(Math.min(state.cleared, LAST_ZONE_INDEX)).ilvl;
 
 let selectedCraftSlot = null;
 

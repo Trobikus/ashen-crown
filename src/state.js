@@ -25,6 +25,7 @@ const state = {
   kills: 0,
   zone: 0,
   cleared: 0,
+  crownWon: false,
   zoneKills: 0,
   lastSeen: 0,
   itemSeq: 0,

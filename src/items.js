@@ -1,8 +1,26 @@
-import { INVENTORY_CAP, GEAR_SLOTS, ZONES, RARITIES, DROP_CHANCES, gearSlotOf, rarityOf, rollRarity, rollItemValues, itemStats, itemStatsText, itemScore, SKILL_EFFECT_LABELS, formatNum } from './data.js';
+import waffeIcon from './assets/icons/waffe.svg';
+import brustIcon from './assets/icons/brust.svg';
+import helmIcon from './assets/icons/helm.svg';
+import hoseIcon from './assets/icons/hose.svg';
+import schuheIcon from './assets/icons/schuhe.svg';
+import handIcon from './assets/icons/hand.svg';
+import { INVENTORY_CAP, GEAR_SLOTS, RARITIES, DROP_CHANCES, zoneDef, gearSlotOf, rarityOf, rollRarity, rollItemValues, itemStats, itemStatsText, itemScore, SKILL_EFFECT_LABELS, formatNum } from './data.js';
 
 import { state } from './state.js';
 
 import { el } from './dom.js';
+
+const SLOT_ICONS = {
+  waffe: waffeIcon,
+  brust: brustIcon,
+  helm: helmIcon,
+  hose: hoseIcon,
+  schuhe: schuheIcon,
+  'hand-links': handIcon,
+  'hand-rechts': handIcon,
+};
+
+const iconOf = (slotKey) => SLOT_ICONS[slotKey].replace(/'/g, '%27');
 
 
 
@@ -96,7 +114,7 @@ function generateItem() {
     rarity: rarity.key,
     enhance: 0,
     mastery: rarity.key === 'episch' ? rollMastery(slot.stat) : null,
-    ...rollItemValues(slot, rarity, ZONES[state.zone].ilvl),
+    ...rollItemValues(slot, rarity, zoneDef(state.zone).ilvl),
   };
 }
 
@@ -207,7 +225,7 @@ function renderGear() {
     const slotDef = gearSlotOf(slotEl.dataset.slot);
     const rarity = item ? rarityOf(item.rarity) : null;
     slotEl.querySelector('.slot-value').innerHTML =
-      `<span class="slot-icon" style="--icon: url('${slotDef.icon}'); color:${rarity ? rarity.color : '#4a443b'}"></span>`;
+      `<span class="slot-icon" style="--icon: url('${iconOf(slotDef.key)}'); color:${rarity ? rarity.color : '#4a443b'}"></span>`;
     slotEl.querySelector('.tooltip').innerHTML = tooltipHtml(item, 'Ablegen');
   }
 }
@@ -230,7 +248,7 @@ function renderInventory() {
     cell.dataset.id = item.id;
     cell.style.borderColor = rarity.color;
     cell.innerHTML = `
-      <span class="slot-icon inv-icon" style="--icon: url('${gearSlotOf(item.slot).icon}'); color:${rarity.color}"></span>
+      <span class="slot-icon inv-icon" style="--icon: url('${iconOf(item.slot)}'); color:${rarity.color}"></span>
       <div class="tooltip">${tooltipHtml(item, sellMode ? 'Auswählen' : 'Anlegen', true)}</div>`;
     el.inventoryGrid.appendChild(cell);
   }

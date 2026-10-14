@@ -32,6 +32,11 @@ function cacheDom() {
   el.sceneOptions = document.getElementById('scene-options');
   el.sceneMap = document.getElementById('scene-map');
   el.sceneCrafting = document.getElementById('scene-crafting');
+  el.sceneVictory = document.getElementById('scene-victory');
+  el.victoryContinue = document.getElementById('btn-victory-continue');
+  el.victoryKills = document.getElementById('victory-kills');
+  el.victoryLevel = document.getElementById('victory-level');
+  el.victoryAsh = document.getElementById('victory-ash');
   el.craftSlots = document.getElementById('craft-slots');
   el.craftDetail = document.getElementById('craft-detail');
   el.craftAsh = document.getElementById('craft-ash');

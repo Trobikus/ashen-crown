@@ -71,6 +71,17 @@ button:hover {
   color: #3f3a33;
 }
 
+.victory-text {
+  font-style: italic;
+  line-height: 1.7;
+  color: #c9c2b8;
+  max-width: 560px;
+}
+
+#scene-victory h2 {
+  color: #d9a03f;
+}
+
 #update-banner {
   display: flex;
   flex-direction: column;

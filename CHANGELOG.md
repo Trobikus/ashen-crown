@@ -6,6 +6,32 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-10-14
+
+### Hinzugefügt
+- **Ende und Endlos-Spiel**: Nach „Herz der Leere" wartet der
+  Sieg-Bildschirm „Die Aschenkrone" mit Runenstatistik; dahinter öffnen
+  sich die prozeduralen **Aschentiefen** (Zone 51+) mit eigenen Gegnern
+  und römisch nummerierten Ebenen — eine Endlos-Wand mit gedämpftem
+  XP-Wachstum, damit der Treadmill nie kippt.
+- **Balance-Simulator** (`tools/balance-sim.mjs`): spielt die echten
+  Spiel-Formeln mit Spieler-Richtlinien durch und misst Kill-Zeiten,
+  Tode und Überfarm-Aufwand pro Zone (`--verify` gegen die echte data.js,
+  `--depths` für die Tiefen, `--sweep` für Kurvensuche).
+
+### Geändert
+- **Komplettes Rebalancing**: Gegner-Wachstum von ×3,7 pro Zone auf ×1,4
+  gedämpft. Das alte Modell brach real ab Zone ~12 zusammen (Sim-Befund:
+  10–60 Stunden Zwangsgrind je Zone ab Zone 8, danach unspielbar). Neu:
+  Hauptspiel ~6–12 h mit stetigem Anstieg (Killzeiten 1,5 s → ~50 s),
+  kein forciertes Überfarmen, alle Zahlen bleiben präzise (unter 2^53).
+- Item-Level wachsen geometrisch (×1,28/Zone, Kontinent-Sprünge) statt
+  der alten Handkurve; Elite/Boss-Verhältnisse leicht nachjustiert
+  (Elite HP ×2,4, Boss HP ×4). Werkstatt skaliert bewusst nur bis zum
+  Hauptspiel-Ende weiter.
+- Alte Spielstände bleiben kompatibel; Helden der alten Kurve stürmen
+  die flacheren Zonen schneller durch.
+
 ## [0.2.2] — 2026-10-14
 
 ### Geändert
@@ -50,7 +76,8 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Desktop-Shell via Tauri 2, Vollbild-Start.
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
-[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/Trobikus/ashen-crown/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/Trobikus/ashen-crown/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/Trobikus/ashen-crown/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Trobikus/ashen-crown/compare/v0.1.0...v0.2.0

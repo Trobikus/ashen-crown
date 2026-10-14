@@ -1,10 +1,3 @@
-import waffeIcon from './assets/icons/waffe.svg';
-import brustIcon from './assets/icons/brust.svg';
-import helmIcon from './assets/icons/helm.svg';
-import hoseIcon from './assets/icons/hose.svg';
-import schuheIcon from './assets/icons/schuhe.svg';
-import handIcon from './assets/icons/hand.svg';
-
 const TICK_MS = 100;
 
 const ATTACK_INTERVAL_MS = 1500;
@@ -28,142 +21,133 @@ const CONTINENTS = [
     key: 'aschenlande',
     name: 'Die Aschenlande',
     zones: [
-      { name: 'Aschenkrypta', ilvl: 1 },
-      { name: 'Knochengewölbe', ilvl: 6 },
-      { name: 'Aschekatakomben', ilvl: 14 },
-      { name: 'Grabestiefe', ilvl: 26 },
-      { name: 'Thronhalle der Asche', ilvl: 42 },
-      { name: 'Glutgruft', ilvl: 62 },
-      { name: 'Knochenlabyrinth', ilvl: 86 },
-      { name: 'Aschenabgrund', ilvl: 114 },
-      { name: 'Knochenkathedrale', ilvl: 146 },
-      { name: 'Herz der Asche', ilvl: 182 },
+      { name: 'Aschenkrypta' },
+      { name: 'Knochengewölbe' },
+      { name: 'Aschekatakomben' },
+      { name: 'Grabestiefe' },
+      { name: 'Thronhalle der Asche' },
+      { name: 'Glutgruft' },
+      { name: 'Knochenlabyrinth' },
+      { name: 'Aschenabgrund' },
+      { name: 'Knochenkathedrale' },
+      { name: 'Herz der Asche' },
     ],
   },
   {
     key: 'frostreich',
     name: 'Das Frostreich',
     zones: [
-      { name: 'Frostkrypta', ilvl: 222 },
-      { name: 'Reifgewölbe', ilvl: 266 },
-      { name: 'Eiskatakomben', ilvl: 314 },
-      { name: 'Schneetiefe', ilvl: 366 },
-      { name: 'Halle des Frosts', ilvl: 422 },
-      { name: 'Frostgruft', ilvl: 482 },
-      { name: 'Eisverlies', ilvl: 546 },
-      { name: 'Winterabgrund', ilvl: 614 },
-      { name: 'Eiskathedrale', ilvl: 686 },
-      { name: 'Herz des Winters', ilvl: 762 },
+      { name: 'Frostkrypta' },
+      { name: 'Reifgewölbe' },
+      { name: 'Eiskatakomben' },
+      { name: 'Schneetiefe' },
+      { name: 'Halle des Frosts' },
+      { name: 'Frostgruft' },
+      { name: 'Eisverlies' },
+      { name: 'Winterabgrund' },
+      { name: 'Eiskathedrale' },
+      { name: 'Herz des Winters' },
     ],
   },
   {
     key: 'faulmoor',
     name: 'Das Faulmoor',
     zones: [
-      { name: 'Moorkrypta', ilvl: 842 },
-      { name: 'Faulgewölbe', ilvl: 926 },
-      { name: 'Sumpfkatakomben', ilvl: 1014 },
-      { name: 'Modertiefe', ilvl: 1106 },
-      { name: 'Halle der Fäulnis', ilvl: 1202 },
-      { name: 'Pestgruft', ilvl: 1302 },
-      { name: 'Schlinglabyrinth', ilvl: 1406 },
-      { name: 'Moorabgrund', ilvl: 1514 },
-      { name: 'Moorkathedrale', ilvl: 1626 },
-      { name: 'Herz des Moores', ilvl: 1742 },
+      { name: 'Moorkrypta' },
+      { name: 'Faulgewölbe' },
+      { name: 'Sumpfkatakomben' },
+      { name: 'Modertiefe' },
+      { name: 'Halle der Fäulnis' },
+      { name: 'Pestgruft' },
+      { name: 'Schlinglabyrinth' },
+      { name: 'Moorabgrund' },
+      { name: 'Moorkathedrale' },
+      { name: 'Herz des Moores' },
     ],
   },
   {
     key: 'blutmark',
     name: 'Das Blutmark',
     zones: [
-      { name: 'Blutkrypta', ilvl: 1862 },
-      { name: 'Rostgewölbe', ilvl: 1986 },
-      { name: 'Eisenkatakomben', ilvl: 2114 },
-      { name: 'Kriegstiefe', ilvl: 2246 },
-      { name: 'Halle des Blutes', ilvl: 2382 },
-      { name: 'Rostgruft', ilvl: 2522 },
-      { name: 'Klingenlabyrinth', ilvl: 2666 },
-      { name: 'Blutabgrund', ilvl: 2814 },
-      { name: 'Eisenkathedrale', ilvl: 2966 },
-      { name: 'Herz des Blutes', ilvl: 3122 },
+      { name: 'Blutkrypta' },
+      { name: 'Rostgewölbe' },
+      { name: 'Eisenkatakomben' },
+      { name: 'Kriegstiefe' },
+      { name: 'Halle des Blutes' },
+      { name: 'Rostgruft' },
+      { name: 'Klingenlabyrinth' },
+      { name: 'Blutabgrund' },
+      { name: 'Eisenkathedrale' },
+      { name: 'Herz des Blutes' },
     ],
   },
   {
     key: 'sternenleere',
     name: 'Die Sternenleere',
     zones: [
-      { name: 'Leerenkrypta', ilvl: 3282 },
-      { name: 'Nachtgewölbe', ilvl: 3446 },
-      { name: 'Sternenkatakomben', ilvl: 3614 },
-      { name: 'Leerentiefe', ilvl: 3786 },
-      { name: 'Halle der Leere', ilvl: 3962 },
-      { name: 'Finsternisgruft', ilvl: 4142 },
-      { name: 'Sternenlabyrinth', ilvl: 4326 },
-      { name: 'Leerenabgrund', ilvl: 4514 },
-      { name: 'Sternenkathedrale', ilvl: 4706 },
-      { name: 'Herz der Leere', ilvl: 4902 },
+      { name: 'Leerenkrypta' },
+      { name: 'Nachtgewölbe' },
+      { name: 'Sternenkatakomben' },
+      { name: 'Leerentiefe' },
+      { name: 'Halle der Leere' },
+      { name: 'Finsternisgruft' },
+      { name: 'Sternenlabyrinth' },
+      { name: 'Leerenabgrund' },
+      { name: 'Sternenkathedrale' },
+      { name: 'Herz der Leere' },
     ],
   },
 ];
 
-const ZONES = CONTINENTS.flatMap((continent) => continent.zones.map((zone) => ({ ...zone, continent: continent.name })));
+// Gegenstände skalieren über das Item-Level der Zone; Kontinent-Eintritte
+// (jede 10. Zone) führen kleine Sprünge ein, damit sich neue Kontinente
+// spürbar anfühlen. Werte verifiziert über tools/balance-sim.mjs (Kandidat A:
+// Hauptspiel ~6,5 h simulierte Spielzeit, Tiefen als Endlos-Wand mit
+// gedämpftem XP-Wachstum).
+const MAIN_ZONE_COUNT = 50;
 
-const ZONE_ENEMIES = [
-  {
-    normal: { name: 'Ascheratte', hp: 10, damage: 1, ash: 4, xp: 30 },
-    elite: { name: 'Knochenfresser', hp: 25, damage: 2, ash: 14, xp: 90 },
-    boss: { name: 'Grabwächter', hp: 50, damage: 2, ash: 48, xp: 300, boss: true },
-  },
-  {
-    normal: { name: 'Knochenkriecher', hp: 40, damage: 2, ash: 15, xp: 110 },
-    elite: { name: 'Beinhausritter', hp: 100, damage: 3, ash: 52, xp: 330 },
-    boss: { name: 'Gebeinwächter', hp: 200, damage: 3, ash: 180, xp: 1100, boss: true },
-  },
-  {
-    normal: { name: 'Aschenwicht', hp: 150, damage: 6, ash: 53, xp: 400 },
-    elite: { name: 'Glutgeist', hp: 375, damage: 8, ash: 186, xp: 1200 },
-    boss: { name: 'Aschenmutter', hp: 750, damage: 10, ash: 636, xp: 4000, boss: true },
-  },
-  {
-    normal: { name: 'Grabwurm', hp: 550, damage: 16, ash: 200, xp: 1500 },
-    elite: { name: 'Aaskrone', hp: 1375, damage: 21, ash: 700, xp: 4500 },
-    boss: { name: 'Der Bestattete', hp: 2750, damage: 26, ash: 2400, xp: 15000, boss: true },
-  },
-  {
-    normal: { name: 'Hofschatten', hp: 2000, damage: 42, ash: 750, xp: 5600 },
-    elite: { name: 'Kronenritter', hp: 5000, damage: 55, ash: 2625, xp: 16800 },
-    boss: { name: 'Der Thronende', hp: 10000, damage: 67, ash: 9000, xp: 56000, boss: true },
-  },
-  {
-    normal: { name: 'Glutschleicher', hp: 7400, damage: 113, ash: 2800, xp: 21000 },
-    elite: { name: 'Aschenbrut', hp: 18500, damage: 148, ash: 9800, xp: 63000 },
-    boss: { name: 'Glutfürst', hp: 37000, damage: 181, ash: 33600, xp: 210000, boss: true },
-  },
-  {
-    normal: { name: 'Knochenläufer', hp: 27400, damage: 305, ash: 10500, xp: 78000 },
-    elite: { name: 'Knochenweber', hp: 68500, damage: 400, ash: 36750, xp: 234000 },
-    boss: { name: 'Knochenkoloss', hp: 137000, damage: 488, ash: 126000, xp: 780000, boss: true },
-  },
-  {
-    normal: { name: 'Aschenwanderer', hp: 101000, damage: 825, ash: 39200, xp: 291000 },
-    elite: { name: 'Staubschreiter', hp: 252500, damage: 1080, ash: 137200, xp: 873000 },
-    boss: { name: 'Der Verschluckte', hp: 505000, damage: 1320, ash: 470400, xp: 2910000, boss: true },
-  },
-  {
-    normal: { name: 'Knochenchor', hp: 375000, damage: 2230, ash: 147000, xp: 1085000 },
-    elite: { name: 'Grabesorganist', hp: 937500, damage: 2920, ash: 514500, xp: 3255000 },
-    boss: { name: 'Der Knochenkönig', hp: 1875000, damage: 3570, ash: 1764000, xp: 10850000, boss: true },
-  },
-  {
-    normal: { name: 'Ascheavatar', hp: 1390000, damage: 6020, ash: 546000, xp: 4040000 },
-    elite: { name: 'Ewige Glut', hp: 3475000, damage: 7890, ash: 1911000, xp: 12120000 },
-    boss: { name: 'Der Aschegott', hp: 6950000, damage: 9630, ash: 6552000, xp: 40400000, boss: true },
-  },
+const MAX_ZONE = 9999;
+
+const LAST_ZONE_INDEX = MAIN_ZONE_COUNT - 1;
+
+const CONTINENT_BUMP = { hp: 1.12, damage: 1.08, ilvl: 1.15 };
+
+const ENEMY_GROWTH = { hp: 1.4, damage: 1.26, ash: 1.48, xp: 1.38 };
+
+const DEPTH_GROWTH = { hp: 1.4, damage: 1.24, ash: 1.48, xp: 1.12 };
+
+const ELITE_RATIOS = { hp: 2.4, damage: 1.25, ash: 3.5, xp: 2.8 };
+
+const BOSS_RATIOS = { hp: 4, damage: 1.5, ash: 10, xp: 8 };
+
+const BASE_NORMAL = { hp: 10, damage: 1, ash: 4, xp: 30 };
+
+const ILVL_BASE = 2;
+
+const ILVL_GROWTH = 1.28;
+
+const ilvlOf = (n) => Math.max(1, Math.round(ILVL_BASE * ILVL_GROWTH ** n * (n > 0 && n % 10 === 0 ? CONTINENT_BUMP.ilvl : 1)));
+
+const ZONES = (() => {
+  let globalIndex = 0;
+  return CONTINENTS.flatMap((continent) => continent.zones.map((zone) => ({ ...zone, ilvl: ilvlOf(globalIndex++), continent: continent.name })));
+})();
+
+// Namen der Bestien der Aschenlande (handgesetzt); alle weiteren Kontinente
+// führen die Namenstabellen fort, das Wachstum ist vollständig generiert.
+const ASCHENLANDE_ENEMIES = [
+  ['Ascheratte', 'Knochenfresser', 'Grabwächter'],
+  ['Knochenkriecher', 'Beinhausritter', 'Gebeinwächter'],
+  ['Aschenwicht', 'Glutgeist', 'Aschenmutter'],
+  ['Grabwurm', 'Aaskrone', 'Der Bestattete'],
+  ['Hofschatten', 'Kronenritter', 'Der Thronende'],
+  ['Glutschleicher', 'Aschenbrut', 'Glutfürst'],
+  ['Knochenläufer', 'Knochenweber', 'Knochenkoloss'],
+  ['Aschenwanderer', 'Staubschreiter', 'Der Verschluckte'],
+  ['Knochenchor', 'Grabesorganist', 'Der Knochenkönig'],
+  ['Ascheavatar', 'Ewige Glut', 'Der Aschegott'],
 ];
 
-// Hand abgestimmt sind nur die Bestien der Aschenlande; jeder weitere Kontinent
-// führt deren Progression mit denselben Verhältnissen fort
-// (Elite: HP ×2,5 · Boss: HP ×5 · Elite-Asche ×3,5 · Boss-Asche ×12 · Elite-EP ×3 · Boss-EP ×10).
 const CONTINENT_ENEMIES = {
   frostreich: [
     ['Frostschleicher', 'Eisbrut', 'Der Frostherzog'],
@@ -215,55 +199,128 @@ const CONTINENT_ENEMIES = {
   ],
 };
 
-const ENEMY_GROWTH = { hp: 3.7, damage: 2.7, ash: 3.73, xp: 3.73 };
+const DEPTH_ENEMY_NAMES = {
+  normal: ['Aschenecho', 'Tiefenschleicher', 'Nachtasche', 'Staubgeborener', 'Echo der Gebeine'],
+  elite: ['Grabanomalie', 'Leerenspross', 'Ascheprime', 'Tiefenwächter'],
+  boss: ['Hüter der Tiefe', 'Der Namelose', 'Wächter der Aschenkrone', 'Das stille Herz'],
+};
 
 const sig3 = (value) => Number(value.toPrecision(3));
 
-const followUpEnemies = ([normalName, eliteName, bossName], prevNormal) => {
-  const normal = {
-    name: normalName,
-    hp: sig3(prevNormal.hp * ENEMY_GROWTH.hp),
-    damage: Math.max(1, Math.round(prevNormal.damage * ENEMY_GROWTH.damage)),
-    ash: sig3(prevNormal.ash * ENEMY_GROWTH.ash),
-    xp: sig3(prevNormal.xp * ENEMY_GROWTH.xp),
-  };
-  return {
-    normal,
-    elite: {
-      name: eliteName,
-      hp: normal.hp * 2.5,
-      damage: Math.max(1, Math.round(normal.damage * 1.31)),
-      ash: Math.round(normal.ash * 3.5),
-      xp: normal.xp * 3,
-    },
-    boss: {
-      name: bossName,
-      hp: normal.hp * 5,
-      damage: Math.max(1, Math.round(normal.damage * 1.6)),
-      ash: normal.ash * 12,
-      xp: normal.xp * 10,
-      boss: true,
-    },
-  };
-};
+const growNormal = (stats, growth) => ({
+  hp: sig3(stats.hp * growth.hp),
+  damage: Math.max(1, Math.round(stats.damage * growth.damage)),
+  ash: sig3(stats.ash * growth.ash),
+  xp: sig3(stats.xp * growth.xp),
+});
 
-for (const continent of CONTINENTS.slice(1)) {
-  let prevNormal = ZONE_ENEMIES[ZONE_ENEMIES.length - 1].normal;
-  for (const names of CONTINENT_ENEMIES[continent.key]) {
-    const entry = followUpEnemies(names, prevNormal);
-    ZONE_ENEMIES.push(entry);
-    prevNormal = entry.normal;
+const enemiesOf = (normalName, eliteName, bossName, stats) => ({
+  normal: { name: normalName, ...stats },
+  elite: {
+    name: eliteName,
+    hp: stats.hp * ELITE_RATIOS.hp,
+    damage: Math.max(1, Math.round(stats.damage * ELITE_RATIOS.damage)),
+    ash: Math.round(stats.ash * ELITE_RATIOS.ash),
+    xp: Math.round(stats.xp * ELITE_RATIOS.xp),
+  },
+  boss: {
+    name: bossName,
+    hp: stats.hp * BOSS_RATIOS.hp,
+    damage: Math.max(1, Math.round(stats.damage * BOSS_RATIOS.damage)),
+    ash: stats.ash * BOSS_RATIOS.ash,
+    xp: stats.xp * BOSS_RATIOS.xp,
+    boss: true,
+  },
+});
+
+const CONTINENT_KEYS = CONTINENTS.slice(1).map((continent) => continent.key);
+
+const enemyNamesOf = (n) => (n < 10 ? ASCHENLANDE_ENEMIES[n] : CONTINENT_ENEMIES[CONTINENT_KEYS[Math.floor(n / 10) - 1]][n % 10]);
+
+const ZONE_ENEMIES = [];
+{
+  let stats = { ...BASE_NORMAL };
+  for (let n = 0; n < MAIN_ZONE_COUNT; n += 1) {
+    if (n > 0) {
+      stats = growNormal(stats, ENEMY_GROWTH);
+      if (n % 10 === 0) {
+        stats = {
+          hp: sig3(stats.hp * CONTINENT_BUMP.hp),
+          damage: Math.max(1, Math.round(stats.damage * CONTINENT_BUMP.damage)),
+          ash: stats.ash,
+          xp: stats.xp,
+        };
+      }
+    }
+    const [normalName, eliteName, bossName] = enemyNamesOf(n);
+    ZONE_ENEMIES.push(enemiesOf(normalName, eliteName, bossName, stats));
   }
 }
 
+// Die Tiefen (Zone 51+) werden prozedural erzeugt: Gegner wachsen weiter,
+// aber XP gedämpft — so entsteht eine Endlos-Wand statt eines zweiten
+// Hauptspiels (Balance: tools/balance-sim.mjs, Modus --depths).
+const depthRows = [];
+
+let depthStats = null;
+
+function ensureDepthRows(index) {
+  if (!depthStats) {
+    const last = ZONE_ENEMIES[LAST_ZONE_INDEX].normal;
+    depthStats = { hp: last.hp, damage: last.damage, ash: last.ash, xp: last.xp };
+  }
+  while (depthRows.length <= index - MAIN_ZONE_COUNT) {
+    depthStats = growNormal(depthStats, DEPTH_GROWTH);
+    const depth = depthRows.length + 1;
+    depthRows.push(enemiesOf(
+      DEPTH_ENEMY_NAMES.normal[(depth - 1) % DEPTH_ENEMY_NAMES.normal.length],
+      DEPTH_ENEMY_NAMES.elite[(depth - 1) % DEPTH_ENEMY_NAMES.elite.length],
+      DEPTH_ENEMY_NAMES.boss[(depth - 1) % DEPTH_ENEMY_NAMES.boss.length],
+      depthStats,
+    ));
+  }
+}
+
+function enemyDef(index) {
+  const i = Math.max(0, Math.min(Math.trunc(index) || 0, MAX_ZONE));
+  if (i < MAIN_ZONE_COUNT) return ZONE_ENEMIES[i];
+  ensureDepthRows(i);
+  return depthRows[i - MAIN_ZONE_COUNT];
+}
+
+const ROMAN_STEPS = [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];
+
+function romanize(num) {
+  if (num >= 4000) return `${num}`;
+  let out = '';
+  for (const [value, symbol] of ROMAN_STEPS) {
+    while (num >= value) {
+      out += symbol;
+      num -= value;
+    }
+  }
+  return out;
+}
+
+function zoneDef(index) {
+  const i = Math.max(0, Math.min(Math.trunc(index) || 0, MAX_ZONE));
+  if (i < MAIN_ZONE_COUNT) return ZONES[i];
+  const depth = i - MAIN_ZONE_COUNT + 1;
+  return {
+    name: `Aschentiefe ${romanize(depth)}`,
+    ilvl: Math.max(1, Math.round(ZONES[LAST_ZONE_INDEX].ilvl * ILVL_GROWTH ** depth)),
+    continent: 'Die Tiefen',
+  };
+}
+
 const GEAR_SLOTS = [
-  { key: 'waffe', label: 'Waffe', base: 'Klinge', abbrev: 'KL', stat: 'damage', icon: waffeIcon },
-  { key: 'brust', label: 'Brust', base: 'Brustplatte', abbrev: 'BP', stat: 'hp', icon: brustIcon },
-  { key: 'helm', label: 'Helm', base: 'Helm', abbrev: 'HE', stat: 'hp', icon: helmIcon },
-  { key: 'hose', label: 'Hose', base: 'Beinlinge', abbrev: 'BE', stat: 'hp', icon: hoseIcon },
-  { key: 'schuhe', label: 'Schuhe', base: 'Stiefel', abbrev: 'ST', stat: 'hp', icon: schuheIcon },
-  { key: 'hand-links', label: 'Handschuh Links', base: 'Handschuh', abbrev: 'HL', stat: 'damage', icon: handIcon },
-  { key: 'hand-rechts', label: 'Handschuh Rechts', base: 'Handschuh', abbrev: 'HR', stat: 'damage', icon: handIcon },
+  { key: 'waffe', label: 'Waffe', base: 'Klinge', abbrev: 'KL', stat: 'damage' },
+  { key: 'brust', label: 'Brust', base: 'Brustplatte', abbrev: 'BP', stat: 'hp' },
+  { key: 'helm', label: 'Helm', base: 'Helm', abbrev: 'HE', stat: 'hp' },
+  { key: 'hose', label: 'Hose', base: 'Beinlinge', abbrev: 'BE', stat: 'hp' },
+  { key: 'schuhe', label: 'Schuhe', base: 'Stiefel', abbrev: 'ST', stat: 'hp' },
+  { key: 'hand-links', label: 'Handschuh Links', base: 'Handschuh', abbrev: 'HL', stat: 'damage' },
+  { key: 'hand-rechts', label: 'Handschuh Rechts', base: 'Handschuh', abbrev: 'HR', stat: 'damage' },
 ];
 
 const RARITIES = [
@@ -271,9 +328,6 @@ const RARITIES = [
   { key: 'selten', label: 'Selten', suffix: 'der Gebeine', color: '#6d8a7a', weight: 25, mult: 2 },
   { key: 'episch', label: 'Episch', suffix: 'der Krone', color: '#9d6d8a', weight: 5, mult: 4 },
 ];
-for (const slot of GEAR_SLOTS) {
-  slot.icon = slot.icon.replace(/'/g, '%27');
-}
 
 const DROP_CHANCES = { normal: 0.02, elite: 0.15, boss: 1 };
 
@@ -613,8 +667,6 @@ const rarityOf = (key) => RARITIES.find((rarity) => rarity.key === key);
 
 const gearSlotOf = (key) => GEAR_SLOTS.find((slot) => slot.key === key);
 
-const zoneOf = (index) => ZONES[Math.max(0, Math.min(index, ZONES.length - 1))];
-
 function rollRarity() {
   const total = RARITIES.reduce((sum, rarity) => sum + rarity.weight, 0);
   let roll = Math.random() * total;
@@ -691,10 +743,10 @@ export {
 
   SKILL_NODES, SKILL_EDGES, SKILL_NODES_BY_ID, skillSigned, SKILL_EFFECT_LABELS, MASTERY_POOL,
 
-  rollMastery, xpNeeded, upgradeCost, rarityOf, gearSlotOf, zoneOf, rollRarity, rollItemValues,
+  rollMastery, xpNeeded, upgradeCost, rarityOf, gearSlotOf, zoneDef, enemyDef, rollRarity, rollItemValues,
 
   itemStats, itemScore, itemStatsText, normalizeItem,
 
-  CONTINENTS, formatNum,
+  CONTINENTS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, formatNum,
 
 };

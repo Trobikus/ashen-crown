@@ -1,10 +1,9 @@
-import { GEAR_SLOTS, ZONE_ENEMIES, ZONES, BASE_CRIT_CHANCE, CRIT_MULTIPLIER, BASE_ATTACK_SPEED, ARMOR_RESISTANCE, itemStats } from './data.js';
+import { GEAR_SLOTS, enemyDef, BASE_CRIT_CHANCE, CRIT_MULTIPLIER, BASE_ATTACK_SPEED, ARMOR_RESISTANCE, itemStats } from './data.js';
 import { state } from './state.js';
 import { skillBonus } from './skilltree.js';
 
 export function scaledEnemy(type) {
-  const zone = Math.max(0, Math.min(state.zone, ZONE_ENEMIES.length - 1));
-  return { ...ZONE_ENEMIES[zone][type] };
+  return { ...enemyDef(state.zone)[type] };
 }
 
 export function masteryBonus(stat) {

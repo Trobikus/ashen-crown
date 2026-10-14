@@ -4,7 +4,7 @@ import { state, settings, SAVE_KEY } from './state.js';
 
 import { loadSettings, saveSettings, applySettings } from './settings.js';
 
-import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, INVENTORY_CAP, ZONES, GEAR_SLOTS, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, xpNeeded, upgradeCost, zoneOf, normalizeItem, formatNum } from './data.js';
+import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, INVENTORY_CAP, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, xpNeeded, upgradeCost, zoneDef, normalizeItem, formatNum } from './data.js';
 
 import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier } from './stats.js';
 
@@ -97,7 +97,7 @@ function hideOverlay() {
 
 function showScreen(target) {
   if (target !== el.sceneHero) exitSellMode();
-  for (const screen of [el.menu, el.hub, el.sceneHero, el.sceneSkills, el.sceneOptions, el.sceneMap, el.sceneCrafting, el.game]) {
+  for (const screen of [el.menu, el.hub, el.sceneHero, el.sceneSkills, el.sceneOptions, el.sceneMap, el.sceneCrafting, el.sceneVictory, el.game]) {
     screen.hidden = screen !== target;
   }
 }
@@ -171,15 +171,19 @@ function killEnemy() {
   rollDrop(enemy.type);
   if (def.boss) {
     state.cleared = Math.max(state.cleared, state.zone + 1);
-    const next = ZONES[state.zone + 1];
-    if (next) {
-      const continentGate = next.continent !== ZONES[state.zone].continent
-        ? `Neuer Kontinent: ${next.continent}. `
-        : '';
-      showDismissibleOverlay(`${def.name} bezwungen — ${continentGate}${next.name} ist jetzt offen.`, 4200);
-    } else {
-      showDismissibleOverlay(`${def.name} bezwungen — ${ZONES[state.zone].name} ist erreicht.`, 4200);
+    if (!state.crownWon && state.zone === LAST_ZONE_INDEX) {
+      state.crownWon = true;
+      enemy = null;
+      save();
+      showVictory();
+      render();
+      return;
     }
+    const next = zoneDef(state.zone + 1);
+    const continentGate = next.continent !== zoneDef(state.zone).continent
+      ? `Neuer Kontinent: ${next.continent}. `
+      : '';
+    showDismissibleOverlay(`${def.name} bezwungen — ${continentGate}${next.name} ist jetzt offen.`, 4200);
   }
   enemy = null;
   save();
@@ -278,12 +282,15 @@ function render() {
   el.skillPointsHud.textContent = state.skillPoints;
   el.skillPointsHud.classList.toggle('has-points', state.skillPoints > 0);
   el.tileSkillsSub.textContent = state.skillPoints > 0 ? `${state.skillPoints} Punkte frei` : 'Wähle weise';
-  const zone = zoneOf(state.zone);
+  const zone = zoneDef(state.zone);
   el.hudZone.textContent = `${zone.continent} · ${zone.name}`;
-  el.tileMapSub.textContent = `${Math.min(state.cleared + 1, ZONES.length)} von ${ZONES.length} Gebieten offen`;
+  el.tileMapSub.textContent = state.cleared < MAIN_ZONE_COUNT
+    ? `${Math.min(state.cleared + 1, MAIN_ZONE_COUNT)} von ${MAIN_ZONE_COUNT} Gebieten offen`
+    : `Tiefe ${state.cleared + 1 - MAIN_ZONE_COUNT} erreicht`;
   renderZones();
   renderCrafting();
-  el.doorButton.hidden = !(state.zone + 1 <= Math.min(state.cleared, ZONES.length - 1));
+  el.doorButton.hidden = !(state.zone + 1 <= state.cleared);
+  el.doorButton.textContent = state.zone + 1 === MAIN_ZONE_COUNT ? 'In die Tiefen hinabsteigen' : 'Durch die Tür gehen';
   renderSkillTree();
   el.modalHeroLevel.textContent = state.level;
   el.modalHeroXp.textContent = `${formatNum(state.xp)} / ${formatNum(xpNeeded(state.level))}`;
@@ -334,8 +341,9 @@ function loadSave() {
     state.zone ??= 0;
     state.cleared ??= 0;
     state.zoneKills ??= 0;
-    state.zone = Math.max(0, Math.min(Math.trunc(state.zone), ZONES.length - 1));
-    state.cleared = Math.max(0, Math.min(Math.trunc(state.cleared), ZONES.length - 1));
+    state.crownWon ??= false;
+    state.zone = Math.max(0, Math.min(Math.trunc(state.zone), MAX_ZONE));
+    state.cleared = Math.max(0, Math.min(Math.trunc(state.cleared), MAX_ZONE));
     state.zone = Math.min(state.zone, state.cleared);
     return true;
   } catch {
@@ -412,10 +420,22 @@ function descend() {
 }
 
 function enterZone(index) {
-  if (index < 0 || index >= ZONES.length || index > state.cleared) return;
+  if (index < 0 || index > state.cleared) return;
   state.zone = index;
   state.zoneKills = 0;
   save();
+}
+
+function showVictory() {
+  paused = true;
+  if (tickTimer) {
+    clearInterval(tickTimer);
+    tickTimer = null;
+  }
+  el.victoryKills.textContent = formatNum(state.kills);
+  el.victoryLevel.textContent = formatNum(state.level);
+  el.victoryAsh.textContent = formatNum(state.ash);
+  showScreen(el.sceneVictory);
 }
 
 function returnToHub() {
@@ -446,7 +466,7 @@ function bindEvents() {
   el.shrineButton.addEventListener('click', returnToHub);
   el.btnDescend.addEventListener('click', descend);
   el.doorButton.addEventListener('click', () => {
-    if (state.zone + 1 >= ZONES.length || state.zone + 1 > state.cleared) return;
+    if (state.zone + 1 > state.cleared) return;
     enterZone(state.zone + 1);
     enemy = null;
     heroAttackProgress = 0;
@@ -456,6 +476,7 @@ function bindEvents() {
     render();
   });
   el.hubMenu.addEventListener('click', returnToMenu);
+  el.victoryContinue.addEventListener('click', returnToHub);
   el.hubOptions.addEventListener('click', () => openOptions('hub'));
   el.overlay.addEventListener('click', dismissOverlay);
   el.optionsTabs.addEventListener('click', (e) => {
