@@ -1,4 +1,12 @@
+# Abhängigkeiten & Build
 node_modules/
 dist/
 src-tauri/target/
 src-tauri/gen/
+
+# Editor & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log

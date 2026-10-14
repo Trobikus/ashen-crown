@@ -9,6 +9,8 @@
   [![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)](https://tauri.app)
   [![pnpm](https://img.shields.io/badge/pnpm-Paketmanager-F69220?logo=pnpm&logoColor=white)](https://pnpm.io)
   [![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/de/docs/Web/JavaScript)
+  [![CI](https://github.com/Trobikus/ashen-crown/actions/workflows/ci.yml/badge.svg)](https://github.com/Trobikus/ashen-crown/actions/workflows/ci.yml)
+  [![Lizenz](https://img.shields.io/badge/Lizenz-propriet%C3%A4r--alle%20Rechte%20vorbehalten-C14B3A)](LICENSE)
 
   *Web & Desktop — ohne Framework, ohne Server, mit Speicherstand im Browser.*
 </div>
@@ -112,6 +114,14 @@ pnpm build          # Produktions-Build nach dist/
 Ausrüstungs-Icons von [game-icons.net](https://game-icons.net) (Lorc, Delapouite),
 Lizenz [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) — Details in
 [CREDITS.md](CREDITS.md).
+
+## ⚖️ Lizenz
+
+Copyright © 2026 Grimoire Interactive / Trobikus — **alle Rechte vorbehalten**
+(siehe [LICENSE](LICENSE)). Das Spiel darf privat gespielt und auf GitHub
+eingesehen/geforkt werden; kommerzielle Nutzung, Weiterverbreitung und
+Entfernen von Urheberangaben sind ohne schriftliche Genehmigung nicht
+gestattet.
 
 ---
 

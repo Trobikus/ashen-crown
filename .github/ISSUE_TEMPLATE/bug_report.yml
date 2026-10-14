@@ -1,0 +1,37 @@
+name: Fehlerbericht
+description: Etwas funktioniert nicht? Hilf mir, es nachzuvollziehen.
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Was ist passiert?
+      description: Was hast du getan, was hast du erwartet, was ist stattdessen passiert?
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Plattform
+      options:
+        - Desktop (Tauri)
+        - Web (Browser)
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Schritte zum Nachstellen
+      placeholder: |
+        1. Spiel starten
+        2. …
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshots
+      description: Falls hilfreich — Bilder sagen mehr als Worte.
+  - type: textarea
+    id: context
+    attributes:
+      label: Sonstiges
+      description: Spielstand beteiligt? Konsole/F12-Ausgabe? Browser/OS?

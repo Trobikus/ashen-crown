@@ -1,0 +1,16 @@
+name: Idee / Vorschlag
+description: Was würdest du in Ashen Crown gerne sehen?
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Deine Idee
+      description: Was soll passieren, und welches Problem löst es?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Warum passt es ins Spiel?
+      description: Kurzer Plausibilitätscheck — Ton, Balance, Aufwand.

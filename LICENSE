@@ -1,0 +1,48 @@
+Ashen Crown — proprietäre Lizenz
+Copyright (c) 2026 Grimoire Interactive / Trobikus
+
+Alle Rechte vorbehalten / All rights reserved.
+
+1. GESTATTETE NUTZUNG
+   Du darfst den Quelltext dieses Repositorys einsehen, ein Fork auf GitHub
+   anlegen und das Spiel für private, nicht-kommerzielle Zwecke ausführen
+   („persönliche Nutzung“).
+
+2. UNTERSAGT
+   Ohne vorherige schriftliche Genehmigung des Rechteinhabers ist es nicht
+   gestattet:
+   a) den Quelltext, Teile davon oder die enthaltenen Assets (Grafiken, Icons,
+      Texte, Namen, Spielmechanik-Umsetzungen) zu kopieren, zu verbreiten oder
+      öffentlich zugänglich zu machen, außer im Rahmen eines GitHub-Forks;
+   b) den Quelltext, abgeleitete Werke oder das Spiel kommerziell zu nutzen,
+      zu lizenzieren, zu verkaufen oder in kommerzielle Produkte einzubinden
+      (einschließlich Werbung, Spendenwällen und Paywalls);
+   c) Urheber- oder Herkunftsangaben (README, CREDITS.md, Lizenzhinweise)
+      zu entfernen oder zu verändern;
+   d) Assets (Icons, Banner, Screenshots) außerhalb dieses Projekts oder von
+      ihm abgeleiteter Forks zu verwenden.
+
+3. FORKS
+   Ein Fork nach §1 bleibt an diese Lizenz gebunden. Ein Fork begründet keine
+   Übertragung von Verwertungsrechten und darf nicht so verwendet werden, dass
+   Dritte das Spiel oder den Quelltext außerhalb GitHub kommerziell beziehen
+   können.
+
+4. BEITRÄGE
+   Zugelassene Beiträge (z. B. nach vorheriger Abstimmung angenommene Pull
+   Requests) gehen ohne Vergütung in das Eigentum des Rechteinhabers über,
+   soweit im Einzelfall nichts anderes vereinbart ist.
+
+5. HAFTUNGSAUSSCHLUSS
+   DIE SOFTWARE WIRD „WIE BESEHEN“ BEREITGESTELLT, OHNE JEGLICHE GARANTIE.
+   DER AUTOR HAFTET NICHT FÜR SCHÄDEN, DIE AUS DER NUTZUNG DER SOFTWARE
+   ENTSTEHEN.
+
+6. ENTFERNUNG / ÄNDERUNG
+   Der Rechteinhaber darf diese Lizenz für künftige Versionen jederzeit
+   ändern oder widerrufen. Bereits gewährte Rechte erlöschen mit schriftlichem
+   Widerruf im Falle eines Verstoßes gegen diese Bestimmungen.
+
+Kontakt / Lizenzanfragen: siehe GitHub-Repository „Trobikus/ashen-crown“.
+Hinweis: Ausrüstungs-Icons stammen von game-icons.net (Lorc, Delapouite) und
+stehen unter CC BY 3.0 — siehe CREDITS.md; §2 gilt für diese nicht.
