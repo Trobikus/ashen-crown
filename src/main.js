@@ -17,9 +17,9 @@ document.getElementById('btn-options').addEventListener('click', () => {
 
 document.getElementById('btn-quit').addEventListener('click', () => {
   const tauriWindow = window.__TAURI__?.window?.getCurrentWindow?.();
-  if (tauriWindow) {
-    tauriWindow.close();
-  } else {
+  if (!tauriWindow) {
     showNotice('Beenden ist nur in der Desktop-App möglich.');
+    return;
   }
+  tauriWindow.close().catch(() => showNotice('Beenden fehlgeschlagen.'));
 });
