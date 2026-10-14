@@ -18,6 +18,12 @@ export const INTRO_PAGES = [
   'Jetzt erwachst du daraus — ohne Namen, ohne Grab. Die Asche hat dich geformt, und die Krone ruft nach ihrem nächsten Haupt.',
 ];
 
+// Onboarding: die zwei Seiten beim ersten Abstieg ins Feld.
+export const COMBAT_INTRO_PAGES = [
+  'Dein Held kämpft von allein. Du lenkst: Asche ausgeben, Türen öffnen, tiefer steigen.',
+  'Und er kämpft nur hier im Feld. Am Schrein rastet er — und heilt.',
+];
+
 // ——— Kontinent-Annalen: beim ersten Betreten ———
 
 export const CONTINENT_LORE = {

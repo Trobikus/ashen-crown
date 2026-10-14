@@ -6,6 +6,18 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [0.9.0] — 2026-10-14
+
+### Hinzugefügt
+- **Onboarding für neue Helden**: Einmal-Hinweise im richtigen Moment statt
+  eines Tutorials — eine zweiseitige Feld-Einführung beim ersten Abstieg
+  (pausiert den Kampf), ein Rast-Tipp beim ersten Boss (pausiert ebenfalls),
+  der Punkte-Hinweis beim ersten Aufstieg, der Beute-Hinweis beim ersten Drop,
+  der Meisterschafts-Hinweis beim ersten epischen Stück und Einsteig-Hinweise
+  für Fertigkeiten, Gebiete und Werkstatt. Jeder Hinweis erscheint genau
+  einmal und wird im Spielstand gemerkt (Save-Version 4): Bestehende Helden
+  erhalten nur die Hinweise, die sie noch nicht verpasst haben.
+
 ## [0.8.0] — 2026-10-14
 
 ### Hinzugefügt

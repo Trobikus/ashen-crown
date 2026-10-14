@@ -4,7 +4,7 @@ const SAVE_KEY = 'ashen-crown-save';
 
 const SETTINGS_KEY = 'ashen-crown-settings';
 
-const SAVE_VERSION = 3;
+const SAVE_VERSION = 4;
 
 const DEFAULT_SETTINGS = {
   damageNumbers: true,
@@ -45,6 +45,7 @@ const state = {
   skills: ['start'],
   inField: false,
   seenContinents: [],
+  hints: {},
 };
 
 export { SAVE_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, SAVE_VERSION, settings, state };

@@ -18,7 +18,7 @@ import { toast, levelUpFloat } from './feedback.js';
 
 import { buildCraftSlots, renderCrafting, bindCraftEvents } from './crafting.js';
 
-import { INTRO_PAGES, CONTINENT_LORE, epitaphOf, continentLoreKeyOf, renderChronicle } from './lore.js';
+import { INTRO_PAGES, COMBAT_INTRO_PAGES, CONTINENT_LORE, epitaphOf, continentLoreKeyOf, renderChronicle } from './lore.js';
 
 import { initItems, rollDrop, equipItem, unequipItem, sortInventory, equipBest, sellSelected, toggleSellMode, exitSellMode, sellButtonAction, selectAllForSale, handleInventoryClick, renderGearIfDirty } from './items.js';
 
@@ -171,7 +171,10 @@ function spawnEnemy() {
   el.enemyProfile.textContent = def.profileLabel;
   el.enemyProfile.classList.remove('enraged-label');
   enemyAttackProgress = 0;
-  if (def.boss) sfx.boss();
+  if (def.boss) {
+    sfx.boss();
+    hintOnce('hint-boss', 'Ein Boss hütet den Ausgang — zäh und unerbittlich. Kehr notfalls zum Schrein zurück, heile, und stelle ihn vorbereitet.', { pauseCombat: true });
+  }
   render();
 }
 
@@ -409,6 +412,7 @@ function render() {
   renderCrafting();
   el.doorButton.hidden = !(state.zone + 1 <= state.cleared);
   el.doorButton.textContent = state.zone + 1 === MAIN_ZONE_COUNT ? 'In die Tiefen hinabsteigen' : 'Durch die Tür gehen';
+  checkOnboardingHints();
   renderSkillTree();
   el.modalHeroLevel.textContent = state.level;
   el.modalHeroXp.textContent = `${formatNum(state.xp)} / ${formatNum(xpNeeded(state.level))}`;
@@ -452,9 +456,71 @@ function parseSave(raw) {
   }
 }
 
+// ——— Onboarding: Einmal-Hinweise im richtigen Moment ———
+
+const ONBOARDING_HINT_KEYS = ['hint-combat', 'hint-levelup', 'hint-drop', 'hint-epic', 'hint-boss', 'hint-skills', 'hint-map', 'hint-crafting'];
+
+function hintOnce(key, text, { duration = 4400, pauseCombat = false } = {}) {
+  if (state.hints[key]) return;
+  // Kein Hinweis überdeckt laufende Overlays (Tod, Boss-Gate, Annalen).
+  if (el.overlay.classList.contains('show')) return;
+  state.hints[key] = true;
+  const resume = pauseCombat && tickTimer && !paused;
+  if (resume) paused = true;
+  showDismissibleOverlay(text, duration, false, () => {
+    if (resume) paused = false;
+  });
+  save();
+}
+
+// Zustandsbasierte Hinweise: in jedem render geprüft, fire-once.
+function checkOnboardingHints() {
+  if (state.level >= 2) {
+    hintOnce('hint-levelup', 'Jede Stufe bringt 3 Statpunkte (Held-Screen) und 1 Runenpunkt (Fertigkeiten). Verteile sie, wann du willst.');
+  }
+  if (state.inventory.length > 0) {
+    hintOnce('hint-drop', 'Beute landet im Inventar deines Helden — „Bestes anlegen" rüstet das Stärkste in einem Klick an.');
+  }
+  if (ownsEpic()) {
+    hintOnce('hint-epic', 'Epische Stücke tragen eine goldene Meisterschaft — einen Prozentbonus, den es sonst nirgends gibt. Halte ihn in Ehren.');
+  }
+}
+
+function ownsEpic() {
+  for (const slot of GEAR_SLOTS) {
+    if (state.equipment[slot.key]?.rarity === 'episch') return true;
+  }
+  return state.inventory.some((item) => item.rarity === 'episch');
+}
+
+function playCombatIntro() {
+  if (state.hints['hint-combat']) return;
+  state.hints['hint-combat'] = true;
+  const resume = () => {
+    if (tickTimer) paused = false;
+  };
+  const page = (i) => () => (i + 1 < COMBAT_INTRO_PAGES.length
+    ? showDismissibleOverlay(COMBAT_INTRO_PAGES[i + 1], 4400, false, page(i + 1))
+    : resume());
+  paused = true;
+  showDismissibleOverlay(COMBAT_INTRO_PAGES[0], 4400, false, page(0));
+  save();
+}
+
 function migrateSave(data) {
   if (typeof data.saveVersion !== 'number') data.saveVersion = 1; // Spielstände vor 0.4.0
   if (data.saveVersion < 3) data.inField ??= true; // Spielstände vor 0.7.0: Held galt stets als im Feld
+  if (data.saveVersion < 4) {
+    // Spielstände vor 0.9.0: Onboarding nur nachholen, was wirklich verpasst wurde.
+    data.hints = {};
+    if ((data.kills ?? 0) > 0 || (data.cleared ?? 0) > 0) data.hints['hint-combat'] = true;
+    if ((data.level ?? 1) >= 2) data.hints['hint-levelup'] = true;
+    if ((data.itemSeq ?? 0) > 0) data.hints['hint-drop'] = true;
+    if ((data.cleared ?? 0) > 0) data.hints['hint-boss'] = true;
+    if ((data.kills ?? 0) > 30) {
+      for (const key of ONBOARDING_HINT_KEYS) data.hints[key] = true;
+    }
+  }
   // Künftige Migrationen hier anhängen (if (data.saveVersion === n) …).
   data.saveVersion = SAVE_VERSION;
   return data;
@@ -494,6 +560,9 @@ function loadSave() {
     state.seenContinents = Array.isArray(state.seenContinents)
       ? state.seenContinents.filter((key) => typeof key === 'string')
       : [];
+    state.hints = state.hints && typeof state.hints === 'object' && !Array.isArray(state.hints)
+      ? state.hints
+      : {};
     state.zone = Math.max(0, Math.min(Math.trunc(state.zone), MAX_ZONE));
     state.cleared = Math.max(0, Math.min(Math.trunc(state.cleared), MAX_ZONE));
     state.zone = Math.min(state.zone, state.cleared);
@@ -702,12 +771,12 @@ function descend() {
   if (!state.inField) {
     state.inField = true;
     heroHp = heroMaxHp();
-    if (state.kills === 0) showDismissibleOverlay('Dein Held kämpft nur im Feld. Am Schrein rastet und heilt er.', 4200);
     save();
   }
   showScreen(el.game);
   render();
   beginCombat();
+  if (state.kills === 0) playCombatIntro();
 }
 
 // Beim ersten Betreten eines Kontinents (oder der Tiefen): seine Annale.
@@ -845,13 +914,20 @@ function bindEvents() {
     showScreen(optionsReturnScreen ?? el.hub);
   });
   el.tileHero.addEventListener('click', () => showScreen(el.sceneHero));
-  el.tileSkills.addEventListener('click', () => showScreen(el.sceneSkills));
+  el.tileSkills.addEventListener('click', () => {
+    showScreen(el.sceneSkills);
+    hintOnce('hint-skills', 'Benachbarte Runen schalten andere frei — klicke verfügbare an. „Runen neu schneiden" bricht alles zurück und erstattet die Punkte.');
+  });
   el.tileMap.addEventListener('click', () => {
     resetZoneView();
     showScreen(el.sceneMap);
     renderZones();
+    hintOnce('hint-map', 'Errungene Ebenen bleiben offen — reise zurück, um sicher Asche und Beute zu farmen.');
   });
-  el.tileCrafting.addEventListener('click', () => showScreen(el.sceneCrafting));
+  el.tileCrafting.addEventListener('click', () => {
+    showScreen(el.sceneCrafting);
+    hintOnce('hint-crafting', 'Die Werkstatt stärkt getragene Ausrüstung: Verstärken hebt die Werte, Umschmieden die Seltenheit. Beides kostet Asche.');
+  });
   el.tileChronik.addEventListener('click', () => {
     renderChronicle();
     showScreen(el.sceneChronik);
