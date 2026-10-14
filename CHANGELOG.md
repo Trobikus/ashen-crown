@@ -6,6 +6,36 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-10-14
+
+### Hinzugefügt
+- **Feld & Schrein**: Fortschritt gibt es nur im Feld — die Kampfszene läuft
+  weiter, solange sie offen ist, am Schrein und in allen Menüs rastet der Held
+  (und heilt). Der Offline-Fortschritt bleibt: Wer im Feld aufhört, kämpft beim
+  nächsten Start bis zu 8 Stunden nach — inklusive Todesrisiko und Boss-Stopp
+  (Bosse verlangen deine Anwesenheit).
+- **Todeszoll**: Beim Fallen behält die Asche **15 % der aktuellen Asche** ein —
+  live wie offline. Rasten am Schrein vor einem Boss ist jetzt die kluge Wahl.
+- **Gegnerprofile**: Jede Zone trägt ein Temperament — **Flink** (weniger Leben,
+  schneller Angriff) oder **Massiv** (mehr Leben, härterer Schlag), Standard als
+  drittes im Wechsel. Bosse verfallen unter 35 % Lebenskraft in **Wut**
+  (beschleunigte Angriffe, rotes Glühen, goldener „Wütend"-Schriftzug).
+- **Kontinent-Färbung**: Jeder Gegner trägt die Tönung seiner Heimat
+  (Aschenbraun, Frostanthrazit, Moorgrün, Blutrot, Sternenviolett, Tiefenschwarz).
+- **Kill-Regeneration**: Jeder Sieg heilt **10 % der maximalen Lebenskraft**
+  (grüne Heil-Zahlen) — Zonen-Farming ist durchhaltbar, Bosskämfe bleiben die
+  Nagelprobe, weil während des Kampfs nichts heilt.
+- Sound für die Enrage-Phase; Erst-Abstieg-Hinweis, der das Feld-Schrein-
+  Prinzip erklärt.
+
+### Geändert
+- **Offline-Simulation auf Live-Formeln gebracht**: Sie rechnet jetzt mit Krit,
+  Angriffstempo, Gegnerprofilen, erlittenem Schaden und Kill-Regeneration statt
+  mit idealisierten Werten; die Zusammenfassung meldet gefallene Helden und
+  wartende Bosse. Save-Version 3 (alte Spielstände gelten als im Feld).
+- Balance-Simulator (`tools/balance-sim.mjs`) modelliert Profile, Enrage,
+  Regeneration und Todeszoll mit.
+
 ## [0.6.0] — 2026-10-14
 
 ### Hinzugefügt

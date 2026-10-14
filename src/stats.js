@@ -1,9 +1,21 @@
-import { GEAR_SLOTS, enemyDef, BASE_CRIT_CHANCE, CRIT_MULTIPLIER, BASE_ATTACK_SPEED, ARMOR_RESISTANCE, itemStats } from './data.js';
+import { GEAR_SLOTS, enemyDef, BASE_CRIT_CHANCE, CRIT_MULTIPLIER, BASE_ATTACK_SPEED, ARMOR_RESISTANCE, ATTACK_INTERVAL_MS, itemStats, profileOf } from './data.js';
 import { state } from './state.js';
 import { skillBonus } from './skilltree.js';
 
 export function scaledEnemy(type) {
-  return { ...enemyDef(state.zone)[type] };
+  const base = enemyDef(state.zone)[type];
+  const profile = profileOf(state.zone, type);
+  return {
+    name: base.name,
+    hp: Math.max(1, Math.round(base.hp * profile.hp)),
+    damage: Math.max(1, Math.round(base.damage * profile.damage)),
+    ash: base.ash,
+    xp: base.xp,
+    boss: !!base.boss,
+    profileKey: profile.key,
+    profileLabel: profile.label,
+    attackIntervalMs: Math.round(ATTACK_INTERVAL_MS * profile.interval),
+  };
 }
 
 export function masteryBonus(stat) {

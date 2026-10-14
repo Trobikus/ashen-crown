@@ -331,6 +331,41 @@ const RARITIES = [
 
 const DROP_CHANCES = { normal: 0.02, elite: 0.15, boss: 1 };
 
+// Tod kostet Zoll: Anteil der aktuellen Asche, den die Asche beim Fallen einbehält.
+const DEATH_ASH_PENALTY = 0.15;
+
+// Nachhaltigkeit: Anteil der maximalen Lebenskraft, den jeder Kill heilt.
+const KILL_REGEN_PCT = 0.1;
+
+// Enrage: Bosse attackieren beschleunigt, sobald ihre Lebenskraft unter die
+// Schwelle fällt — Phase zwei jedes Bosskampfs.
+const ENRAGE_THRESHOLD = 0.35;
+
+const ENRAGE_INTERVAL_MULT = 0.65;
+
+// Verhaltensprofile: Alle Gegner einer Zone teilen ein Temperament (rotiert
+// pro Zone), Bosse kämpfen standardisiert und verfallen in Wut.
+const ENEMY_PROFILES = {
+  standard: { label: '', hp: 1, damage: 1, interval: 1 },
+  flink: { label: 'Flink', hp: 0.75, damage: 0.8, interval: 0.65 },
+  massiv: { label: 'Massiv', hp: 1.5, damage: 1.2, interval: 1.5 },
+};
+
+const PROFILE_CYCLE = ['standard', 'flink', 'massiv'];
+
+function profileOf(zoneIndex, type) {
+  if (type === 'boss') return { key: 'standard', label: 'Boss', hp: 1, damage: 1, interval: 1 };
+  const index = ((Math.trunc(zoneIndex) % PROFILE_CYCLE.length) + PROFILE_CYCLE.length) % PROFILE_CYCLE.length;
+  const key = PROFILE_CYCLE[index];
+  return { key, ...ENEMY_PROFILES[key] };
+}
+
+function continentKeyOf(zoneIndex) {
+  const i = Math.max(0, Math.min(Math.trunc(zoneIndex) || 0, MAX_ZONE));
+  if (i >= MAIN_ZONE_COUNT) return 'tiefen';
+  return CONTINENTS[Math.floor(i / 10)].key;
+}
+
 const BASE_CRIT_CHANCE = 5;
 
 const CRIT_MULTIPLIER = 2;
@@ -746,6 +781,10 @@ export {
   rollMastery, xpNeeded, upgradeCost, rarityOf, gearSlotOf, zoneDef, enemyDef, rollRarity, rollItemValues,
 
   itemStats, itemScore, itemStatsText, normalizeItem,
+
+  DEATH_ASH_PENALTY, KILL_REGEN_PCT, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT,
+
+  ENEMY_PROFILES, PROFILE_CYCLE, profileOf, continentKeyOf,
 
   CONTINENTS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, formatNum,
 

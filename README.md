@@ -34,6 +34,11 @@ Gebiet für Gebiet tiefer, bis dir am Ende der Leere die Aschenkrone selbst gege
   Ascheratte bis zur Aschenkrone.
   Pro Ebene wartet nach 30 Siegen ein Boss; sein Fall öffnet die Tür in die Tiefe —
   und irgendwann das Tor zum nächsten Kontinent.
+  Jede Zone kämpft mit eigenem Temperament (*Flink* oder *Massiv*), Bosse verfallen
+  unter 35 % Lebenskraft in **Wut** — und jeder Gegner trägt die Färbung seines
+  Kontinents. Jeder Sieg heilt 10 % deiner Lebenskraft; stirbst du, behält die Asche
+  15 % deines Vorrats als Zoll. Im Feld kämpft dein Held weiter — am Schrein rastet
+  und heilt er.
   Die Gebiete-Karte zeigt jeden Kontinent groß im Überblick; mit den Pfeilen blätterst
   du zwischen den Kontinenten, und für sicheres Farmen reist du in freigeschaltete
   Ebenen zurück.
@@ -53,8 +58,9 @@ Gebiet für Gebiet tiefer, bis dir am Ende der Leere die Aschenkrone selbst gege
   Beide Wege stärken denselben Helden, keinen zweiten.
 - **Zahlen, die mitwachsen** — Spät werden Werte astronomisch; das Spiel hält sie
   lesbar: kompakte Kurzschreibweise mit deutschem Komma („12,4K", „3,2M", „1,5B").
-- **Offline-Fortschritt** — Bis zu **8 Stunden** kämpft dein Held ohne dich weiter und
-  meldet dir bei der Rückkehr, was er erlegt, gefunden und gelernt hat.
+- **Offline-Fortschritt** — Wer im Feld aufhört, kämpft bis zu **8 Stunden** ohne dich
+  weiter (mit Todesrisiko; Bosse warten auf dich) und meldet dir bei der Rückkehr,
+  was er erlegt, gefunden und gelernt hat.
 
 ## 🌍 Die fünf Kontinente
 

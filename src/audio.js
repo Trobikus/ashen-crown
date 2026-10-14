@@ -133,6 +133,10 @@ export const sfx = {
     tone({ type: 'sawtooth', from: 61, to: 57, dur: 0.7, gain: 0.12 });
     noiseBurst({ dur: 0.5, gain: 0.1, cutoff: 300 });
   },
+  enrage: () => {
+    tone({ type: 'sawtooth', from: 70, to: 150, dur: 0.35, gain: 0.14 });
+    noiseBurst({ dur: 0.3, gain: 0.1, cutoff: 600 });
+  },
   levelUp: () => {
     tone({ type: 'sine', from: 523, to: 523, dur: 0.12, gain: 0.14 });
     tone({ type: 'sine', from: 784, to: 784, dur: 0.2, gain: 0.14, delay: 0.1 });

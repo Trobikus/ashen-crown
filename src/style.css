@@ -444,12 +444,61 @@ input[type='range'] {
   height: clamp(128px, 15vw, 220px);
 }
 
+/* Kontinent-Färbung: jeder Gegner trägt die Tönung seiner Heimat. */
+.figure.cont-aschenlande {
+  background: #262019;
+  border-color: #3d362c;
+}
+
+.figure.cont-frostreich {
+  background: #22303c;
+  border-color: #40566a;
+}
+
+.figure.cont-faulmoor {
+  background: #26301f;
+  border-color: #465c38;
+}
+
+.figure.cont-blutmark {
+  background: #381f22;
+  border-color: #6b3a3f;
+}
+
+.figure.cont-sternenleere {
+  background: #262138;
+  border-color: #474066;
+}
+
+.figure.cont-tiefen {
+  background: #201a22;
+  border-color: #3f3547;
+}
+
+#enemy-figure.enraged {
+  border-color: #a04b3a;
+  box-shadow: 0 0 16px rgba(160, 75, 58, 0.5);
+}
+
 .fighter-name {
   margin: 0.6rem 0 0.4rem;
   font-size: 0.8rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: #8a7f6d;
+}
+
+.fighter-profile {
+  margin: -0.25rem 0 0.4rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #6b6255;
+  min-height: 1em;
+}
+
+.fighter-profile.enraged-label {
+  color: #d9a03f;
 }
 
 .hp-bar {
@@ -486,6 +535,10 @@ input[type='range'] {
 .dmg-float.crit {
   color: #d9a03f;
   font-size: 1.7rem;
+}
+
+.dmg-float.heal {
+  color: #7fae7a;
 }
 
 @keyframes dmg-float {

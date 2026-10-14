@@ -4,7 +4,7 @@ import { state, settings, SAVE_KEY, SAVE_VERSION } from './state.js';
 
 import { loadSettings, saveSettings, applySettings } from './settings.js';
 
-import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, INVENTORY_CAP, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, xpNeeded, upgradeCost, zoneDef, normalizeItem, formatNum } from './data.js';
+import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, INVENTORY_CAP, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, DEATH_ASH_PENALTY, KILL_REGEN_PCT, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, continentKeyOf, xpNeeded, upgradeCost, zoneDef, normalizeItem, formatNum } from './data.js';
 
 import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier } from './stats.js';
 
@@ -80,6 +80,16 @@ function spawnDamageFloat(fighter, amount, isCrit = false) {
   setTimeout(() => span.remove(), 900);
 }
 
+function spawnHealFloat(fighter, amount) {
+  if (!settings.damageNumbers) return;
+  const span = document.createElement('span');
+  span.className = 'dmg-float heal';
+  span.textContent = `+${formatNum(amount)}`;
+  span.style.left = `${35 + Math.random() * 30}%`;
+  fighter.appendChild(span);
+  setTimeout(() => span.remove(), 900);
+}
+
 function showOverlay(text) {
   document.getElementById('overlay-text').textContent = text;
   document.getElementById('overlay').classList.add('show');
@@ -116,6 +126,15 @@ function showScreen(target) {
   }
 }
 
+const CONTINENT_FIGURE_CLASSES = ['cont-aschenlande', 'cont-frostreich', 'cont-faulmoor', 'cont-blutmark', 'cont-sternenleere', 'cont-tiefen'];
+
+function setEnemyFigure(zoneIndex, isBoss) {
+  for (const cls of CONTINENT_FIGURE_CLASSES) el.enemyFigure.classList.remove(cls);
+  el.enemyFigure.classList.remove('enraged');
+  el.enemyFigure.classList.add(`cont-${continentKeyOf(zoneIndex)}`);
+  el.enemyFigure.classList.toggle('boss', isBoss);
+}
+
 function spawnEnemy() {
   let type = 'normal';
   const zoneCleared = state.cleared > state.zone;
@@ -125,8 +144,12 @@ function spawnEnemy() {
     type = 'elite';
   }
   const def = scaledEnemy(type);
-  enemy = { type, name: def.name, hp: def.hp, maxHp: def.hp, damage: def.damage };
-  el.enemyFigure.classList.toggle('boss', !!def.boss);
+  enemy = { type, name: def.name, hp: def.hp, maxHp: def.hp, damage: def.damage, attackIntervalMs: def.attackIntervalMs, enraged: false };
+  setEnemyFigure(state.zone, def.boss);
+  el.enemyName.textContent = def.name;
+  el.enemyProfile.textContent = def.profileLabel;
+  el.enemyProfile.classList.remove('enraged-label');
+  enemyAttackProgress = 0;
   if (def.boss) sfx.boss();
   render();
 }
@@ -179,12 +202,21 @@ function bindHoldToRepeat(button, action) {
   button.addEventListener('pointercancel', stop);
 }
 
+function healFromKill() {
+  const heal = Math.round(heroMaxHp() * KILL_REGEN_PCT);
+  if (heal <= 0) return;
+  const before = heroHp;
+  heroHp = Math.min(heroMaxHp(), heroHp + heal);
+  if (heroHp > before) spawnHealFloat(el.heroFighter, heroHp - before);
+}
+
 function killEnemy() {
   const def = scaledEnemy(enemy.type);
   state.kills += 1;
   state.zoneKills += 1;
   state.ash += Math.round(def.ash * (1 + statBonus('ash') / 100));
   gainXp(def.xp);
+  healFromKill();
   rollDrop(enemy.type);
   sfx.kill();
   if (def.boss) {
@@ -243,12 +275,24 @@ function enemyAttack() {
   }
 }
 
+// Der Todeszoll: Die Asche einbehält einen Anteil der getragenen Asche.
+function takeDeathToll() {
+  const toll = Math.min(state.ash, Math.round(state.ash * DEATH_ASH_PENALTY));
+  state.ash -= toll;
+  return toll;
+}
+
 function die() {
   heroHp = 0;
   paused = true;
+  state.inField = false;
+  const toll = takeDeathToll();
   sfx.death();
-  showOverlay('Die Asche nimmt dich zurück.');
+  showOverlay(toll > 0
+    ? `Die Asche nimmt dich zurück — und ihren Zoll: ${formatNum(toll)} Asche.`
+    : 'Die Asche nimmt dich zurück.');
   render();
+  save();
   sceneTimer = setTimeout(() => {
     sceneTimer = null;
     hideOverlay();
@@ -275,15 +319,31 @@ function buyUpgrade(kind) {
   render();
 }
 
+function enemyAttackInterval() {
+  return enemy.attackIntervalMs * (enemy.enraged ? ENRAGE_INTERVAL_MULT : 1);
+}
+
+function updateEnrage() {
+  if (!enemy || enemy.type !== 'boss') return;
+  const enraged = enemy.hp / enemy.maxHp <= ENRAGE_THRESHOLD;
+  if (enraged === enemy.enraged) return;
+  enemy.enraged = enraged;
+  el.enemyFigure.classList.toggle('enraged', enraged);
+  el.enemyProfile.textContent = enraged ? 'Wütend' : 'Boss';
+  el.enemyProfile.classList.toggle('enraged-label', enraged);
+  if (enraged) sfx.enrage();
+}
+
 function tick() {
   if (paused || !enemy) return;
+  updateEnrage();
   heroAttackProgress += TICK_MS * heroAttackSpeed();
   enemyAttackProgress += TICK_MS;
   if (heroAttackProgress >= ATTACK_INTERVAL_MS) {
     heroAttackProgress = 0;
     heroAttack();
   }
-  if (!paused && enemy && enemyAttackProgress >= ATTACK_INTERVAL_MS) {
+  if (enemy && enemyAttackProgress >= enemyAttackInterval()) {
     enemyAttackProgress = 0;
     enemyAttack();
   }
@@ -368,6 +428,7 @@ function parseSave(raw) {
 
 function migrateSave(data) {
   if (typeof data.saveVersion !== 'number') data.saveVersion = 1; // Spielstände vor 0.4.0
+  if (data.saveVersion < 3) data.inField ??= true; // Spielstände vor 0.7.0: Held galt stets als im Feld
   // Künftige Migrationen hier anhängen (if (data.saveVersion === n) …).
   data.saveVersion = SAVE_VERSION;
   return data;
@@ -403,6 +464,7 @@ function loadSave() {
     state.cleared ??= 0;
     state.zoneKills ??= 0;
     state.crownWon ??= false;
+    state.inField ??= false;
     state.zone = Math.max(0, Math.min(Math.trunc(state.zone), MAX_ZONE));
     state.cleared = Math.max(0, Math.min(Math.trunc(state.cleared), MAX_ZONE));
     state.zone = Math.min(state.zone, state.cleared);
@@ -518,55 +580,84 @@ async function importSave() {
   location.reload();
 }
 
-function formatDuration(ms) {  const totalMinutes = Math.floor(ms / 60000);
+function formatDuration(ms) {
+  const totalMinutes = Math.floor(ms / 60000);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   return hours > 0 ? `${hours} h ${minutes} min` : `${minutes} min`;
 }
 
+// Simulierter Kampf (Offline-Fortschritt): rechnet mit denselben Formeln wie
+// das Live-Gefecht — Krit, Tempo, Gegnerprofile, erlittener Schaden, Kill-
+// Regeneration. Stoppt am Boss (Bosse verlangen deine Anwesenheit) oder beim
+// Tod. Rückgabe: 'time' | 'boss' | 'died'.
 function simulateKills(seconds) {
+  const speed = heroAttackSpeed();
+  const critFactor = 1 + (Math.min(100, heroCritChance()) / 100) * (critMultiplier() - 1);
+  const avgHit = heroDamage() * critFactor;
   let remaining = seconds;
   let guard = 0;
-  while (remaining > 0 && guard < 1000000) {
+  while (remaining > 0 && guard < 200000) {
     guard += 1;
+    if (state.cleared <= state.zone && state.zoneKills >= BOSS_AFTER_KILLS) return 'boss';
     const isElite = state.zoneKills > 0 && state.zoneKills % ELITE_EVERY_KILLS === 0;
     const def = scaledEnemy(isElite ? 'elite' : 'normal');
-    const hits = Math.max(1, Math.ceil(def.hp / heroDamage()));
-    const duration = hits * (ATTACK_INTERVAL_MS / 1000) + ENEMY_RESPAWN_S;
-    if (duration > remaining) break;
+    const fightS = Math.max(1, Math.ceil(def.hp / avgHit)) * (ATTACK_INTERVAL_MS / 1000) / speed;
+    const duration = fightS + ENEMY_RESPAWN_S;
+    if (duration > remaining) return 'time';
     remaining -= duration;
+    const swings = Math.max(0, Math.floor(fightS / (def.attackIntervalMs / 1000)) - 1);
+    const reduction = heroArmor() / (heroArmor() + ARMOR_RESISTANCE * def.damage);
+    const taken = Math.max(1, Math.round(def.damage * (1 - reduction)));
+    if (swings * taken >= heroHp) return 'died';
+    heroHp -= swings * taken;
     state.kills += 1;
     state.zoneKills += 1;
     state.ash += Math.round(def.ash * (1 + statBonus('ash') / 100));
     gainXp(def.xp);
+    healFromKill();
     rollDrop(isElite ? 'elite' : 'normal');
   }
+  return 'time';
 }
 
 function applyOfflineProgress() {
-  if (!settings.offlineProgress) return;
+  if (!state.inField) return;
+  state.inField = false;
+  if (!settings.offlineProgress) {
+    save();
+    return;
+  }
   const elapsed = Date.now() - (state.lastSeen || Date.now());
-  if (elapsed < OFFLINE_MIN_GAP_MS) return;
+  if (elapsed < OFFLINE_MIN_GAP_MS) {
+    save();
+    return;
+  }
   const capped = Math.min(elapsed, OFFLINE_CAP_MS);
   const ashBefore = state.ash;
   const levelBefore = state.level;
   const killsBefore = state.kills;
-  simulateKills(capped / 1000);
+  const result = simulateKills(capped / 1000);
   const ash = state.ash - ashBefore;
   const levels = state.level - levelBefore;
   const kills = state.kills - killsBefore;
-  if (kills <= 0) return;
   const levelsPart = levels > 0 ? `, +${levels} ${levels === 1 ? 'Stufe' : 'Stufen'}` : '';
-  offlineSummary = `Während du fort warst (${formatDuration(capped)}): ${kills} Kämpfe, +${formatNum(ash)} Asche${levelsPart}.`;
-  save();
+  let summary = `Während du fort warst (${formatDuration(capped)}): ${kills} Kämpfe, +${formatNum(ash)} Asche${levelsPart}`;
+  if (result === 'died') {
+    const toll = takeDeathToll();
+    summary += ` — gefallen. Die Asche nahm ${formatNum(toll)} Asche.`;
+  } else if (result === 'boss') {
+    summary += '. Ein Boss versperrt den Weg.';
+  } else {
+    summary += '.';
+  }
+  if (kills > 0 || result === 'died') {
+    offlineSummary = summary;
+    save();
+  }
 }
 
 function idleTick() {
-  if (el.game.hidden === false) {
-    render();
-    return;
-  }
-  simulateKills(STATS_SYNC_INTERVAL_MS / 1000);
   save();
   render();
 }
@@ -579,8 +670,13 @@ function beginCombat() {
 }
 
 function descend() {
+  if (!state.inField) {
+    state.inField = true;
+    heroHp = heroMaxHp();
+    if (state.kills === 0) showDismissibleOverlay('Dein Held kämpft nur im Feld. Am Schrein rastet und heilt er.', 4200);
+    save();
+  }
   showScreen(el.game);
-  heroHp = heroMaxHp();
   render();
   beginCombat();
 }
@@ -594,6 +690,7 @@ function enterZone(index) {
 
 function showVictory() {
   paused = true;
+  state.inField = false;
   sfx.victory();
   if (tickTimer) {
     clearInterval(tickTimer);
@@ -612,6 +709,7 @@ function returnToHub() {
     hideOverlay();
   }
   paused = true;
+  state.inField = false;
   if (tickTimer) {
     clearInterval(tickTimer);
     tickTimer = null;
@@ -757,7 +855,10 @@ function ensureInit() {
   loadSettings();
   applySettings();
   hasSave = loadSave();
-  if (hasSave) applyOfflineProgress();
+  if (hasSave) {
+    heroHp = heroMaxHp();
+    applyOfflineProgress();
+  }
   setInterval(idleTick, STATS_SYNC_INTERVAL_MS);
 }
 

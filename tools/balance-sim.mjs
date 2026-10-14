@@ -19,6 +19,20 @@ const CRIT_MULTIPLIER = 2;
 const BASE_ATTACK_SPEED = 1;
 const ARMOR_RESISTANCE = 12;
 
+// Kampfmodelle aus 0.7.0: Verhaltensprofile (rotieren pro Zone), Boss-Enrage,
+// Kill-Regeneration und Todeszoll — spiegeln src/data.js.
+const KILL_REGEN_PCT = 0.1;
+const DEATH_ASH_PENALTY = 0.15;
+const ENRAGE_THRESHOLD = 0.35;
+const ENRAGE_INTERVAL_MULT = 0.65;
+const PROFILES = {
+  standard: { hp: 1, damage: 1, interval: 1 },
+  flink: { hp: 0.75, damage: 0.8, interval: 0.65 },
+  massiv: { hp: 1.5, damage: 1.2, interval: 1.5 },
+};
+const PROFILE_CYCLE = ['standard', 'flink', 'massiv'];
+const profileOf = (zone, type) => (type === 'boss' ? PROFILES.standard : PROFILES[PROFILE_CYCLE[((zone % 3) + 3) % 3]]);
+
 const GEAR_SLOT_STATS = {
   waffe: 'damage',
   brust: 'hp',
@@ -282,7 +296,13 @@ function simulate(world, { depthTarget = 0 } = {}) {
   };
 
   const fight = (type) => {
-    const def = world.enemies[Math.min(zone, world.enemies.length - 1)][type];
+    const base = world.enemies[Math.min(zone, world.enemies.length - 1)][type];
+    const prof = profileOf(zone, type);
+    const def = {
+      ...base,
+      hp: Math.max(1, Math.round(base.hp * prof.hp)),
+      damage: Math.max(1, Math.round(base.damage * prof.damage)),
+    };
     maxTracked = Math.max(maxTracked, def.hp, def.ash, def.xp);
     const hits = Math.max(1, Math.ceil(def.hp / avgHit()));
     const seconds = hits * (ATTACK_INTERVAL_MS / 1000) / attackSpeed();
@@ -290,7 +310,10 @@ function simulate(world, { depthTarget = 0 } = {}) {
       debugged = true;
       console.error(`⚠ NaN bei Zone ${zone + 1} (${type}): def.hp=${def.hp} avgHit=${avgHit()} heroDamage=${heroDamage()} speed=${attackSpeed()} ash=${hero.ash} level=${hero.level} enhanceW=${hero.enhance.waffe} craftIlvl=${craftIlvl()}`);
     }
-    const swings = Math.max(0, Math.floor(seconds / (ATTACK_INTERVAL_MS / 1000) - 1));
+    const intervalS = (ATTACK_INTERVAL_MS / 1000) * prof.interval;
+    let swings = Math.max(0, Math.floor(seconds / intervalS) - 1);
+    // Enrage: im letzten HP-Drittel greift der Boss schneller an.
+    if (def.boss) swings = Math.round(swings * (1 - ENRAGE_THRESHOLD + ENRAGE_THRESHOLD / ENRAGE_INTERVAL_MULT));
     const armor = heroArmor();
     const reduction = armor / (armor + ARMOR_RESISTANCE * def.damage);
     const taken = Math.max(1, Math.round(def.damage * (1 - reduction)));
@@ -298,10 +321,12 @@ function simulate(world, { depthTarget = 0 } = {}) {
     maxTracked = Math.max(maxTracked, hero.ash + def.ash, hero.xp + def.xp);
     if (dmgTaken >= hero.hp) {
       deaths += 1;
+      hero.ash -= Math.min(hero.ash, Math.round(hero.ash * DEATH_ASH_PENALTY));
       hero.hp = heroMaxHp();
       return { killed: false, seconds: seconds + 2 };
     }
     hero.hp -= dmgTaken;
+    hero.hp = Math.min(heroMaxHp(), hero.hp + heroMaxHp() * KILL_REGEN_PCT);
     kills += 1;
     zoneKills += 1;
     hero.ash += Math.round(def.ash * (1 + skills().ash / 100));
@@ -355,7 +380,8 @@ function simulate(world, { depthTarget = 0 } = {}) {
       level: hero.level,
       killTimeNormal: (() => {
         const def = world.enemies[zone].normal;
-        return Math.max(1, Math.ceil(def.hp / avgHit())) * 1.5 / attackSpeed();
+        const prof = profileOf(zone, 'normal');
+        return Math.max(1, Math.ceil(def.hp * prof.hp / avgHit())) * 1.5 / attackSpeed();
       })(),
     });
     if (zone + 1 === 50 && depthTarget === 0) break;
