@@ -494,6 +494,14 @@
   z-index: 5;
 }
 
+#scene-skills .skill-respec {
+  position: absolute;
+  top: calc(clamp(0.75rem, 1.5vw, 1.5rem) + 5.4rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
 #scene-skills .tagline {
   position: absolute;
   bottom: clamp(0.75rem, 1.5vw, 1.5rem);

@@ -4,6 +4,8 @@ const SAVE_KEY = 'ashen-crown-save';
 
 const SETTINGS_KEY = 'ashen-crown-settings';
 
+const SAVE_VERSION = 2;
+
 const DEFAULT_SETTINGS = {
   damageNumbers: true,
   hitFlash: true,
@@ -15,6 +17,7 @@ const DEFAULT_SETTINGS = {
 const settings = { ...DEFAULT_SETTINGS };
 
 const state = {
+  saveVersion: SAVE_VERSION,
   ash: 0,
   xp: 0,
   level: 1,
@@ -38,4 +41,4 @@ const state = {
   skills: ['start'],
 };
 
-export { SAVE_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, settings, state };
+export { SAVE_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, SAVE_VERSION, settings, state };

@@ -1,4 +1,4 @@
-import { SKILL_NODES, SKILL_EDGES, SKILL_NODES_BY_ID, SKILL_NODE_RADIUS, SKILL_EFFECT_LABELS } from './data.js';
+import { SKILL_NODES, SKILL_EDGES, SKILL_NODES_BY_ID, SKILL_NODE_RADIUS, SKILL_EFFECT_LABELS, LAST_ZONE_INDEX, zoneDef, formatNum } from './data.js';
 
 import { state } from './state.js';
 
@@ -76,6 +76,12 @@ function renderSkillTree() {
   for (const line of el.skillTree.querySelectorAll('.skill-edge')) {
     line.classList.toggle('active', state.skills.includes(line.dataset.from) && state.skills.includes(line.dataset.to));
   }
+  const cost = respecCost();
+  el.respecCost.textContent = formatNum(cost);
+  el.respecButton.disabled = state.ash < cost || state.skills.length <= 1;
+  el.respecButton.textContent = respecArmed
+    ? 'Wirklich? Die Runen brechen.'
+    : `Runen neu schneiden · ${formatNum(cost)} Asche`;
 }
 
 function attemptAllocate(id, hooks) {
@@ -83,6 +89,43 @@ function attemptAllocate(id, hooks) {
   if (state.skillPoints <= 0 || !isSkillable(id)) return;
   state.skills.push(id);
   state.skillPoints -= 1;
+  hooks.after();
+}
+
+// Respec: Asche-Kosten skalieren mit Item-Level (bis zum Hauptspiel-Ende,
+// wie die Werkstatt) und mit der Zahl der geskillten Runen.
+export function respecCost() {
+  const ilvl = zoneDef(Math.min(state.cleared, LAST_ZONE_INDEX)).ilvl;
+  return Math.round(150 * (1 + 0.1 * ilvl) * (1 + 0.15 * (state.skills.length - 1)));
+}
+
+let respecArmed = false;
+
+let respecArmTimer = null;
+
+function attemptRespec(hooks) {
+  if (state.skills.length <= 1) return;
+  if (!respecArmed) {
+    respecArmed = true;
+    el.respecButton.classList.add('armed');
+    respecArmTimer = setTimeout(() => {
+      respecArmed = false;
+      el.respecButton.classList.remove('armed');
+      renderSkillTree();
+    }, 4000);
+    return;
+  }
+  clearTimeout(respecArmTimer);
+  respecArmed = false;
+  el.respecButton.classList.remove('armed');
+  const cost = respecCost();
+  if (state.ash < cost) {
+    renderSkillTree();
+    return;
+  }
+  state.ash -= cost;
+  state.skillPoints += state.skills.length - 1;
+  state.skills = ['start'];
   hooks.after();
 }
 
@@ -132,6 +175,8 @@ function dragClamp(value, w) {
 }
 
 export function bindSkillTreeEvents(hooks) {
+
+  el.respecButton.addEventListener('click', () => attemptRespec(hooks));
 
   el.skillTree.addEventListener('click', (e) => {
 

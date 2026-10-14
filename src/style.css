@@ -78,6 +78,25 @@ button:hover {
   max-width: 560px;
 }
 
+.armed {
+  border-color: #d9a03f !important;
+  color: #d9a03f !important;
+}
+
+.skill-respec {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  text-align: center;
+}
+
+.skill-respec-hint {
+  font-size: 0.72rem;
+  font-style: italic;
+  color: #5f584e;
+}
+
 #scene-victory h2 {
   color: #d9a03f;
 }

@@ -1,6 +1,6 @@
 import { el, cacheDom } from './dom.js';
 
-import { state, settings, SAVE_KEY } from './state.js';
+import { state, settings, SAVE_KEY, SAVE_VERSION } from './state.js';
 
 import { loadSettings, saveSettings, applySettings } from './settings.js';
 
@@ -48,7 +48,17 @@ let resetArmed = false;
 
 let resetTimer = null;
 
+let importArmed = false;
+
+let importTimer = null;
+
+let saveNotice = null;
+
 let hooks = { after: () => {}, clampHp: () => {}, save: () => {}, render: () => {} };
+
+const BACKUP_KEYS = ['ashen-crown-save.bak1', 'ashen-crown-save.bak2', 'ashen-crown-save.bak3'];
+
+const BACKUP_MIN_GAP_MS = 10 * 60 * 1000;
 
 function flash(figure) {
   if (!settings.hitFlash) return;
@@ -319,14 +329,43 @@ function render() {
 
 function save() {
   state.lastSeen = Date.now();
+  rotateBackups();
   localStorage.setItem(SAVE_KEY, JSON.stringify(state));
 }
 
-function loadSave() {
+function parseSave(raw) {
+  if (!raw) return null;
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return false;
-    Object.assign(state, JSON.parse(raw));
+    const data = JSON.parse(raw);
+    if (!data || typeof data.level !== 'number' || typeof data.ash !== 'number') return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function migrateSave(data) {
+  if (typeof data.saveVersion !== 'number') data.saveVersion = 1; // Spielstände vor 0.4.0
+  // Künftige Migrationen hier anhängen (if (data.saveVersion === n) …).
+  data.saveVersion = SAVE_VERSION;
+  return data;
+}
+
+function rotateBackups(force = false) {
+  const current = parseSave(localStorage.getItem(SAVE_KEY));
+  if (!current) return;
+  const newest = parseSave(localStorage.getItem(BACKUP_KEYS[0]));
+  if (!force && newest && Date.now() - (newest.lastSeen ?? 0) < BACKUP_MIN_GAP_MS) return;
+  localStorage.setItem(BACKUP_KEYS[2], localStorage.getItem(BACKUP_KEYS[1]) ?? '');
+  localStorage.setItem(BACKUP_KEYS[1], localStorage.getItem(BACKUP_KEYS[0]) ?? '');
+  localStorage.setItem(BACKUP_KEYS[0], JSON.stringify(current));
+}
+
+function loadSave() {
+  for (const [attempt, key] of [SAVE_KEY, ...BACKUP_KEYS].entries()) {
+    const data = parseSave(localStorage.getItem(key));
+    if (!data) continue;
+    Object.assign(state, migrateSave(data));
     for (const slot of GEAR_SLOTS) {
       normalizeItem(state.equipment[slot.key]);
     }
@@ -345,14 +384,119 @@ function loadSave() {
     state.zone = Math.max(0, Math.min(Math.trunc(state.zone), MAX_ZONE));
     state.cleared = Math.max(0, Math.min(Math.trunc(state.cleared), MAX_ZONE));
     state.zone = Math.min(state.zone, state.cleared);
+    if (attempt > 0) saveNotice = `Hauptspielstand war beschädigt — Backup ${attempt} geladen.`;
     return true;
+  }
+  return false;
+}
+
+const tauriSaveApi = () => (window.__TAURI__?.dialog && window.__TAURI__?.fs ? window.__TAURI__ : null);
+
+function flashButton(button, text) {
+  const original = button.textContent;
+  button.textContent = text;
+  button.disabled = true;
+  setTimeout(() => {
+    button.textContent = original;
+    button.disabled = false;
+  }, 2000);
+}
+
+async function exportSave() {
+  const raw = localStorage.getItem(SAVE_KEY);
+  if (!raw) return false;
+  const payload = JSON.stringify({
+    game: 'ashen-crown',
+    saveVersion: SAVE_VERSION,
+    exportedAt: new Date().toISOString(),
+    state: JSON.parse(raw),
+  }, null, 2);
+  const fileName = `ashen-crown-spielstand-${new Date().toISOString().slice(0, 10)}.json`;
+  const tauri = tauriSaveApi();
+  if (tauri) {
+    const path = await tauri.dialog.save({
+      defaultPath: fileName,
+      filters: [{ name: 'JSON', extensions: ['json'] }],
+    });
+    if (!path) return false;
+    await tauri.fs.writeTextFile(path, payload);
+    return true;
+  }
+  const url = URL.createObjectURL(new Blob([payload], { type: 'application/json' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(url);
+  return true;
+}
+
+function unwrapSave(text) {
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed?.game === 'ashen-crown' && parsed.state) return parsed.state;
+    if (parsed && typeof parsed.level === 'number' && typeof parsed.ash === 'number') return parsed;
+    return null;
   } catch {
-    return false;
+    return null;
   }
 }
 
-function formatDuration(ms) {
-  const totalMinutes = Math.floor(ms / 60000);
+function pickSaveFile() {
+  return new Promise((resolve) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,application/json';
+    input.addEventListener('change', async () => {
+      const file = input.files?.[0];
+      resolve(file ? await file.text() : null);
+    });
+    input.addEventListener('cancel', () => resolve(null));
+    input.click();
+  });
+}
+
+async function importSave() {
+  const button = el.importButton;
+  if (!importArmed) {
+    importArmed = true;
+    button.classList.add('armed');
+    button.textContent = 'Wirklich? Überschreibt den Spielstand.';
+    importTimer = setTimeout(() => {
+      importArmed = false;
+      button.classList.remove('armed');
+      button.textContent = 'Importieren';
+    }, 4000);
+    return;
+  }
+  clearTimeout(importTimer);
+  importArmed = false;
+  button.classList.remove('armed');
+  button.textContent = 'Importieren';
+  const tauri = tauriSaveApi();
+  let text = null;
+  if (tauri) {
+    const path = await tauri.dialog.open({
+      multiple: false,
+      filters: [{ name: 'JSON', extensions: ['json'] }],
+    });
+    if (!path) return;
+    text = await tauri.fs.readTextFile(path);
+  } else {
+    text = await pickSaveFile();
+  }
+  if (!text) return;
+  const data = unwrapSave(text);
+  if (!data) {
+    flashButton(button, 'Ungültige Datei');
+    return;
+  }
+  rotateBackups(true);
+  localStorage.setItem(SAVE_KEY, JSON.stringify(migrateSave(data)));
+  location.reload();
+}
+
+function formatDuration(ms) {  const totalMinutes = Math.floor(ms / 60000);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   return hours > 0 ? `${hours} h ${minutes} min` : `${minutes} min`;
@@ -512,6 +656,12 @@ function bindEvents() {
     localStorage.removeItem(SAVE_KEY);
     location.reload();
   });
+  el.exportButton.addEventListener('click', () => {
+    exportSave()
+      .then((ok) => flashButton(el.exportButton, ok ? 'Exportiert ✓' : 'Abgebrochen'))
+      .catch(() => flashButton(el.exportButton, 'Fehlgeschlagen'));
+  });
+  el.importButton.addEventListener('click', importSave);
   document.getElementById('btn-options-back').addEventListener('click', () => {
     showScreen(optionsReturnScreen ?? el.hub);
   });
@@ -590,6 +740,9 @@ export function startGame() {
     if (!hasSave) {
       paused = true;
       showDismissibleOverlay('Du erwachst in Asche. Die Krone ruft.', 2600);
+    } else if (saveNotice) {
+      showDismissibleOverlay(saveNotice, 5000);
+      saveNotice = null;
     } else if (offlineSummary) {
       if (settings.offlineSummary) showDismissibleOverlay(offlineSummary, 4500);
       offlineSummary = null;

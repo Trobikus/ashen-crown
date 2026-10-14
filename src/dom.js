@@ -43,6 +43,10 @@ function cacheDom() {
   el.optionsTabs = document.getElementById('options-tabs');
   el.optionsPanel = document.getElementById('options-panel');
   el.resetButton = document.getElementById('btn-reset-save');
+  el.exportButton = document.getElementById('btn-export-save');
+  el.importButton = document.getElementById('btn-import-save');
+  el.respecButton = document.getElementById('btn-respec');
+  el.respecCost = document.getElementById('respec-cost');
   el.tileHero = document.getElementById('tile-hero');
   el.tileSkills = document.getElementById('tile-skills');
   el.tileMap = document.getElementById('tile-map');

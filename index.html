@@ -143,6 +143,10 @@
       </header>
       <h2>Fertigkeiten</h2>
       <p class="skill-hud">Skillpunkte: <strong id="skill-points-hud">0</strong></p>
+      <div class="skill-respec">
+        <button class="btn-small" id="btn-respec">Runen neu schneiden · <span id="respec-cost">0</span> Asche</button>
+        <span class="skill-respec-hint">Bricht alle Fertigkeiten und erstattet alle Punkte.</span>
+      </div>
       <div id="skill-tree-wrap">
         <svg id="skill-tree" viewBox="-300 -300 600 600"></svg>
         <div class="skill-tooltip" id="skill-tooltip" hidden></div>
@@ -182,6 +186,14 @@
             <span class="option-label">Offline-Zusammenfassung<span class="option-desc">Beim Start anzeigen, was offline passiert ist</span></span>
             <span class="toggle"><input type="checkbox" data-setting="offlineSummary" checked><span class="toggle-slider"></span></span>
           </label>
+          <div class="option-row">
+            <span class="option-label">Spielstand exportieren<span class="option-desc">Fortschritt als JSON-Datei sichern</span></span>
+            <button class="btn-small" id="btn-export-save">Exportieren</button>
+          </div>
+          <div class="option-row">
+            <span class="option-label">Spielstand importieren<span class="option-desc">Überschreibt den aktuellen Spielstand — vorher wird automatisch ein Backup erstellt</span></span>
+            <button class="btn-small btn-danger" id="btn-import-save">Importieren</button>
+          </div>
           <div class="option-row danger-row">
             <span class="option-label">Spielstand zurücksetzen<span class="option-desc">Löscht Helden, Ausrüstung und Skillpunkte endgültig</span></span>
             <button class="btn-small btn-danger" id="btn-reset-save">Zurücksetzen</button>

@@ -6,6 +6,23 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-10-14
+
+### Hinzugefügt
+- **Save-Schutz**: Spielstände tragen jetzt eine Version (Migration-Hook
+  für künftige Formate). Automatische **rotierende Backups** (3
+  Generationen, min. 10 Minuten Abstand) — ist der Hauptspielstand
+  beschädigt, lädt das Spiel den jüngsten Backup automatisch und weist
+  darauf hin.
+- **Export/Import** unter Optionen → Spiel: Spielstand als JSON-Datei
+  sichern und wieder einlesen (Desktop mit nativen Datei-Dialogen,
+  Web-Build über Download/Auswahl). Vor jedem Import wird automatisch
+  ein Backup des aktuellen Standes erstellt.
+- **Runen-Respec**: Im Fertigkeiten-Baum lassen sich alle Fertigkeiten
+  gegen Asche neu schneiden (zweimal klicken zur Bestätigung) — Kosten
+  skalieren mit Item-Level und Zahl der Runen, Punkte werden voll
+  erstattet.
+
 ## [0.3.0] — 2026-10-14
 
 ### Hinzugefügt
@@ -76,7 +93,8 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Desktop-Shell via Tauri 2, Vollbild-Start.
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
-[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/Trobikus/ashen-crown/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Trobikus/ashen-crown/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/Trobikus/ashen-crown/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/Trobikus/ashen-crown/compare/v0.2.0...v0.2.1
