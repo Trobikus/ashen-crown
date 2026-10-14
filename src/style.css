@@ -64,6 +64,33 @@ button:hover {
   color: #5f584e;
 }
 
+#update-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  width: clamp(200px, 22vw, 280px);
+}
+
+#update-text {
+  font-style: italic;
+  color: #8a7f6d;
+  font-size: 0.9rem;
+}
+
+#update-progress {
+  width: 100%;
+  height: 4px;
+  background: #262219;
+}
+
+#update-bar {
+  width: 0%;
+  height: 100%;
+  background: #8a7f6d;
+  transition: width 0.2s ease;
+}
+
 [hidden] {
   display: none !important;
 }

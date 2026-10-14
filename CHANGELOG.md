@@ -9,6 +9,10 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 ## [0.2.0] — 2026-10-14
 
 ### Hinzugefügt
+- **Auto-Update**: Beim Öffnen prüft das Spiel auf neue GitHub-Releases und
+  installiert gefundene Patches selbst (Fortschrittsbalken im Hauptmenü,
+  überspringbar) — signiert über den offiziellen Tauri-Updater, mit
+  automatischer Release-Pipeline für Windows-Installer.
 - **Fünf Kontinente** mit je zehn Gebieten (50 Gebiete, 150 Gegner): die
   Aschenlande, das Frostreich, das Faulmoor, das Blutmark und die
   Sternenleere — Bestien der neuen Kontinente folgen generatorisch der
@@ -35,6 +39,6 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Desktop-Shell via Tauri 2, Vollbild-Start.
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
-[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/0.2.0...HEAD
-[0.2.0]: https://github.com/Trobikus/ashen-crown/compare/0.1.0...0.2.0
-[0.1.0]: https://github.com/Trobikus/ashen-crown/releases/tag/0.1.0
+[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Trobikus/ashen-crown/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/Trobikus/ashen-crown/releases/tag/v0.1.0

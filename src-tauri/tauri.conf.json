@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Ashen Crown",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "identifier": "com.dabros.ashencrown",
   "build": {
     "frontendDist": "../dist",
@@ -24,8 +24,20 @@
       "csp": null
     }
   },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDZDOUE5MTBFOEUyNzJENjMKUldSakxTZU9EcEdhYkxyczhVREtiM2x3aS9KQ3RsdHBVaVlPbktvNkFzSXZueUZ6dnlqbmhJdFoK",
+      "endpoints": [
+        "https://github.com/Trobikus/ashen-crown/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  },
   "bundle": {
     "active": true,
+    "createUpdaterArtifacts": true,
     "targets": "all",
     "icon": [
       "icons/32x32.png",
