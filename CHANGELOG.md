@@ -23,6 +23,16 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Inventar-Obergrenze und Todeszoll sind keine Konstanten mehr, sondern
   folgen den Ruhm-Käufen (`inventoryCap()` / `deathPenalty()`).
 
+### Geändert
+- **Safedrops**: Elite und Boss droppen jetzt **garantiert** ein Stück —
+  Normal-Gegner bleiben das seltene Ereignis (1 %). Auslöser war die
+  Testermeldung „halbe Story durch, keine einzige Waffe gehabt": Bei 8 %
+  Elite- und 50 % Boss-Chance war ein Waffen-Blackout über Dutzende
+  Gebiete reines Pech. Sim-Impact der gefluteten Beute: Kampagne
+  24,7 h → **14,2 h**, Tode 278 → **45**, Überfarm-Knappheit praktisch
+  weg. Falls sich das zu schnell anfühlt, ist der Stellhebel bekannt
+  (z. B. Safedrop nur beim ersten Elite-/Boss-Kill je Gebiet).
+
 ### Behoben
 - **Heldenlevel hält konstant ~3 Stufen Abstand zu den Gegnern**: Bisher
   wuchsen die Gegner-EP exponentiell mit der Zone, während der
