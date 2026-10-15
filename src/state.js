@@ -4,7 +4,7 @@ const SAVE_KEY = 'ashen-crown-save';
 
 const SETTINGS_KEY = 'ashen-crown-settings';
 
-const SAVE_VERSION = 7;
+const SAVE_VERSION = 8;
 
 const DEFAULT_SETTINGS = {
   damageNumbers: true,
@@ -29,6 +29,8 @@ const state = {
   xp: 0,
   level: 1,
   maxHp: 35,
+  // Persistierte Lebenskraft (beim Laden gegen das Maximum geklemmt); 0 = voll.
+  hp: 0,
   damage: 2,
   kills: 0,
   zone: 0,

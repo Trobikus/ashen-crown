@@ -43,10 +43,13 @@ Denn die Asche erinnert sich — an jedes Reich, das vor dir versuchte, ihr zu e
   Kontinents. Kämpfen ist Handwerk: **Gegner greifen gelegentlich daneben** (15 %),
   dein Held verfehlt auch (12 %), die Kritchance deckelt bei 75 %, und Rüstung
   mindert nie mehr als die Hälfte — mindestens 50 % jedes Schlags kommen durch.
-  Im Feld regeneriert dein Held nie von selbst: Kämpfe zehren, und stirbst du,
-  behält die Asche 15 % deines Vorrats als Zoll. Nur das Rasten am Schrein
-  heilt — und **Lifeleech**, das es ausschließlich auf epischen und legendären
-  Waffen gibt: als Prozente deines Schadens oder als feste Zahl pro Treffer.
+  Im Feld regeneriert dein Held nie von selbst: Kämpfe zehren — wer
+  angeschlagen aufbricht, trägt die Rest-Lebenskraft mit in den Kampf.
+  Am Schrein kehrt sie mit 2 % pro Sekunde zurück; nach dem Tod erwachst
+  du mit einem Viertel, und die Asche behält 15 % deines Vorrats als Zoll.
+  Im Feld heilt nur **Lifeleech**, das es ausschließlich auf epischen und
+  legendären Waffen gibt: als Prozente deines Schadens oder als feste Zahl
+  pro Treffer.
   Erfahrung gibt es nur von Würdigen: Gegner unter deinem Niveau tragen weniger
   bei, 20 Stufen darunter gar nichts. Und mancher Boss ist eine echte **Wand**:
   Dann heißt es zurück, Asche und Beute farmen, besser schmieden — und es ihm

@@ -456,6 +456,10 @@ const DROP_CHANCES = { normal: 0.01, elite: 0.08, boss: 0.75 };
 // Tod kostet Zoll: Anteil der aktuellen Asche, den die Asche beim Fallen einbehält.
 const DEATH_ASH_PENALTY = 0.15;
 
+// Aufwachen am Schrein: Nach dem Tod startet der Held mit diesem Anteil seiner
+// Lebenskraft — angeschlagen, aber nicht im Sekundentod-Loop.
+const DEATH_REVIVE_SHARE = 0.25;
+
 // Loot à la Diablo: Seltenheit kauft Affixplätze (0/1/2/3/4) — der
 // Seltenheits-Multiplikator auf den Hauptwert bleibt der obendrauf gezahlte
 // Zins. Legendär krönt das Ganze mit der Meisterschaft (Legendary Power).
@@ -1202,7 +1206,7 @@ export {
 
   itemStats, itemScore, itemStatsText, itemIlvl, itemStatRanges, rollRangesVisible, setRollRanges, normalizeItem, sanitizeItem, asCount,
 
-  DEATH_ASH_PENALTY, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND,
+  DEATH_ASH_PENALTY, DEATH_REVIVE_SHARE, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND,
 
   AFFIX_COUNTS, AFFIX_RANGES, AFFIX_POOLS, BASE_TIERS, LIFELEECH_CHANCE_BY_RARITY, LIFELEECH_PCT_BY_RARITY, LIFELEECH_FLAT_BY_RARITY,
 

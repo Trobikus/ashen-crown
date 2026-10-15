@@ -6,6 +6,16 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Geändert
+- **Die Schrein-Regeneration zählt jetzt**: Der Abstieg nimmt die Lebenskraft
+  mit, wie sie ist — volle Kraft startet nur, wer am Schrein wartet (2 % pro
+  Sekunde). Nach dem Tod erwachst du mit einem Viertel statt mit null, damit
+  der sofortige Rückkehr-Versuch nicht im Sekundentod endet. Die Lebenskraft
+  wandert in den Spielstand (Save v8) — auch Neustarten heilt nicht mehr
+  gratis. Tür-Eintritte heilen weiterhin voll: Erfolg trägt nach vorn,
+  Fehlschläge kosten Zeit. Balance-Sim (geduldige Politik: Tod = Aufwachen
+  und auf voll warten): Kampagne 24,3 h → 25,8 h bei unveränderten 151 Toden.
+
 ### Behoben
 - **Tiefenrelikt ehrt den Beutelschein**: Der Inventar-Check beim Relikt-Fund
   nutzte die Grundgrenze (40) statt der echten Obergrenze — mit Beutelschein

@@ -4,7 +4,7 @@ import { state, settings, SAVE_KEY, SAVE_VERSION, inventoryCap, deathPenalty } f
 
 import { loadSettings, saveSettings, applySettings } from './settings.js';
 
-import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, RARITIES, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, DEATH_ASH_PENALTY, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, sanitizeItem, asCount, formatNum, ZONE_ENEMIES, ZONES, DEPTH_ENEMY_NAMES, CONTINENTS } from './data.js';
+import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, RARITIES, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, DEATH_ASH_PENALTY, DEATH_REVIVE_SHARE, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, sanitizeItem, asCount, formatNum, ZONE_ENEMIES, ZONES, DEPTH_ENEMY_NAMES, CONTINENTS } from './data.js';
 
 import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier, heroLifeleech } from './stats.js';
 
@@ -455,7 +455,9 @@ function takeDeathToll() {
 }
 
 function die() {
-  heroHp = 0;
+  // Aufwachen mit einem Viertel statt 0 — der sofortige Rückkehr-Versuch ist
+  // angeschlagen, aber nicht tot; das Warten am Schrein behält seinen Wert.
+  heroHp = Math.round(heroMaxHp() * DEATH_REVIVE_SHARE);
   paused = true;
   state.inField = false;
   setLowHp(false);
@@ -471,7 +473,7 @@ function die() {
     : '';
   showOverlay((toll > 0
     ? `Die Asche nimmt dich zurück — und ihren Zoll: ${formatNum(toll)} Asche.`
-    : 'Die Asche nimmt dich zurück.') + wallHint, true);
+    : 'Die Asche nimmt dich zurück.') + ' Am Schrein erwachst du mit einem Viertel deiner Lebenskraft.' + wallHint, true);
   render();
   save();
   sceneTimer = setTimeout(() => {
@@ -773,6 +775,7 @@ function checkAchievements() {
 function save() {
   if (saveSuppressed) return;
   state.lastSeen = Date.now();
+  state.hp = Math.max(0, Math.round(heroHp));
   rotateBackups();
   localStorage.setItem(SAVE_KEY, JSON.stringify(state));
 }
@@ -896,6 +899,7 @@ function prepareSave(data) {
   data.xp = Math.max(0, asNumber(data.xp, 0));
   data.level = Math.max(1, asNumber(data.level, 1));
   data.maxHp = Math.max(1, asNumber(data.maxHp, 30));
+  data.hp = Math.max(0, asNumber(data.hp, 0));
   data.damage = Math.max(1, asNumber(data.damage, 2));
   data.kills = Math.max(0, asNumber(data.kills, 0));
   data.zoneKills = Math.max(0, asNumber(data.zoneKills, 0));
@@ -1177,6 +1181,7 @@ function applyOfflineProgress() {
   if (result === 'died') {
     state.deaths += 1;
     const toll = takeDeathToll();
+    heroHp = Math.round(heroMaxHp() * DEATH_REVIVE_SHARE);
     summary += ` — gefallen. Die Asche nahm ${formatNum(toll)} Asche.`;
   } else if (result === 'boss') {
     summary += '. Ein Boss versperrt den Weg.';
@@ -1211,8 +1216,9 @@ function beginCombat() {
 
 function descend() {
   if (!state.inField) {
+    // Der Abstieg nimmt die Lebenskraft mit, wie der Schrein sie hinterlässt —
+    // volle Kraft nur durch Warten (hubTick) oder eine gewonnene Tür.
     state.inField = true;
-    heroHp = heroMaxHp();
     save();
   }
   showScreen(el.game);
@@ -1281,7 +1287,7 @@ function returnToHub() {
     tickTimer = null;
   }
   // Die Lebenskraft bleibt, wie das Feld sie hinterließ — der Schrein im
-  // Hub regeneriert sie stetig (hubTick). Der Abstieg heilt weiter voll.
+  // Hub regeneriert sie stetig (hubTick), und der Abstieg nimmt sie mit.
   enemy = null;
   save();
   showScreen(el.hub);
@@ -1478,7 +1484,8 @@ function ensureInit() {
   applySettings();
   hasSave = loadSave();
   if (hasSave) {
-    heroHp = heroMaxHp();
+    // Persistierte Lebenskraft übernehmen — 0 heißt voll (Alter Bestand).
+    heroHp = state.hp > 0 ? Math.min(state.hp, heroMaxHp()) : heroMaxHp();
     applyOfflineProgress();
   }
   setInterval(idleTick, STATS_SYNC_INTERVAL_MS);

@@ -423,8 +423,10 @@ function simulate(world, { depthTarget = 0 } = {}) {
         console.error(`☠ Tod ${deaths} @ Zone ${zone + 1} ${type}: heldHp=${hero.hp.toFixed(1)} maxHp=${heroMaxHp()} dmg=${heroDamage()} avgHit=${avgHit().toFixed(2)} defHp=${def.hp} defDmg=${def.damage} swings=${swings} taken=${taken} dmgTaken=${dmgTaken.toFixed(1)} healed=${healed} level=${hero.level} speed=${attackSpeed().toFixed(2)}`);
       }
       hero.ash -= Math.min(hero.ash, Math.round(hero.ash * D.DEATH_ASH_PENALTY));
+      // Politik: geduldiger Held — erwacht mit DEATH_REVIVE_SHARE am Schrein
+      // und wartet auf voll (HUB_REGEN 2 %/s), bevor der nächste Kampf beginnt.
       hero.hp = heroMaxHp();
-      return { killed: false, seconds: seconds + 2 };
+      return { killed: false, seconds: seconds + 2 + (1 - D.DEATH_REVIVE_SHARE) / D.HUB_REGEN_PER_SECOND };
     }
     hero.hp = Math.min(heroMaxHp(), hero.hp - dmgTaken + healed);
     kills += 1;
