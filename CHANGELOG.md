@@ -23,6 +23,15 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Inventar-Obergrenze und Todeszoll sind keine Konstanten mehr, sondern
   folgen den Ruhm-Käufen (`inventoryCap()` / `deathPenalty()`).
 
+### Behoben
+- **Meisterschafts-Rerolls wirken wieder sichtbar**: Neu würfeln garantiert
+  jetzt ein **anderes** Ergebnis (der Meisterschafts-Pool hat nur wenige
+  Stats — vorher traf der Wurf häufig denselben Wert und das Schmieden
+  wirkte wie ein No-op). Und wenn Asche oder Ruhm nicht reichen, sagt der
+  Knopf jetzt den Grund („Zu wenig Asche — du hast …") statt still zu
+  schweigen — bei Spätspiel-Preisen im Milliardenbereich war das die
+  Quelle der Meldung „Meisterschaft umschmieden bewirkt nichts".
+
 ## [0.13.0] — 2026-10-15
 
 ### Hinzugefügt

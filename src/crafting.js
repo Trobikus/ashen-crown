@@ -64,6 +64,17 @@ function masteryRerollCost() {
   return Math.round(30000 * (1 + 0.4 * craftIlvl()));
 }
 
+// Neu würfeln mit Wechsel-Garantie: Der Meisterschafts-Pool hat nur wenige
+// Stats — ohne Schleife trifft der Wurf häufig denselben Wert und das
+// Schmieden wirkt wie ein No-op.
+function rollChangedMastery(slotStat, current) {
+  let next = rollMastery(slotStat);
+  for (let tries = 0; tries < 25 && current && next.stat === current.stat && next.value === current.value; tries += 1) {
+    next = rollMastery(slotStat);
+  }
+  return next;
+}
+
 function craftRerollMastery(slotKey, hooks) {
   const item = state.equipment[slotKey];
   if (!item?.mastery) return;
@@ -74,7 +85,7 @@ function craftRerollMastery(slotKey, hooks) {
     return;
   }
   state.ash -= cost;
-  item.mastery = rollMastery(gearSlotOf(slotKey).stat);
+  item.mastery = rollChangedMastery(gearSlotOf(slotKey).stat, item.mastery);
   disarmMastery();
   hooks.after();
 }
@@ -90,7 +101,7 @@ function craftRerollRelicMastery(slotKey, hooks) {
     return;
   }
   state.ruhmAusgegeben += RUHM_RELIC_REROLL_COST;
-  item.mastery2 = rollMastery(gearSlotOf(slotKey).stat);
+  item.mastery2 = rollChangedMastery(gearSlotOf(slotKey).stat, item.mastery2);
   hooks.after();
 }
 
@@ -170,14 +181,14 @@ function renderCraftDetail() {
     ? `
     <div class="craft-action">
       <div class="craft-action-head">Meisterschaft neu schmieden<span>Würfelt den goldenen Bonus neu — der alte Wurf verfällt</span></div>
-      <button class="btn-small ${masteryArmed ? 'armed' : ''}" data-craft="mastery" ${state.ash < mCost ? 'disabled' : ''}>${masteryArmed ? 'Wirklich? Neu würfeln.' : `Neu schmieden · ${formatNum(mCost)} Asche`}</button>
+      <button class="btn-small ${masteryArmed ? 'armed' : ''}" data-craft="mastery" ${state.ash < mCost ? 'disabled' : ''}>${masteryArmed ? 'Wirklich? Neu würfeln.' : state.ash < mCost ? `Zu wenig Asche — du hast ${formatNum(state.ash)}` : `Neu schmieden · ${formatNum(mCost)} Asche`}</button>
     </div>`
     : '';
   const relicMasteryAction = item.mastery2
     ? `
     <div class="craft-action">
       <div class="craft-action-head">Tiefen-Meisterschaft neu schmieden<span>Würfelt die zweite Meisterschaft neu · kostet Ruhm statt Asche</span></div>
-      <button class="btn-small" data-craft="relicmastery" ${ruhmAvailable(state) < RUHM_RELIC_REROLL_COST ? 'disabled' : ''}>Neu schmieden · ${RUHM_RELIC_REROLL_COST} Ruhm</button>
+      <button class="btn-small" data-craft="relicmastery" ${ruhmAvailable(state) < RUHM_RELIC_REROLL_COST ? 'disabled' : ''}>${ruhmAvailable(state) < RUHM_RELIC_REROLL_COST ? `Zu wenig Ruhm — du hast ${ruhmAvailable(state)}` : `Neu schmieden · ${RUHM_RELIC_REROLL_COST} Ruhm`}</button>
     </div>`
     : '';
   el.craftDetail.innerHTML = `
