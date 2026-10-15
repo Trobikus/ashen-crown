@@ -4,6 +4,17 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.11.2] — 2026-10-15
+
+### Behoben
+- **Auto-Verkauf „Aus" hat heimlich alles verkauft**: Die Standardeinstellung
+  setzte die Verkaufsschwelle auf die Listengrenze statt auf null — der
+  Vergleich „Seltenheits-Index unter der Schwelle" war damit für jede Beute
+  wahr, und jeder Fund (bis hinauf zu Legendär) wurde beim Aufheben sofort
+  zu Asche. Nichts landete je im Inventar. „Aus" heißt jetzt: nichts wird
+  automatisch verkauft. Die Stufen „unter Selten" / „unter Episch"
+  verhielten sich korrekt und sind unverändert.
+
 ## [0.11.1] — 2026-10-15
 
 ### Behoben
@@ -449,6 +460,7 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Desktop-Shell via Tauri 2, Vollbild-Start.
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
+[0.11.2]: https://github.com/Trobikus/ashen-crown/compare/v0.11.1...v0.11.2
 [0.11.1]: https://github.com/Trobikus/ashen-crown/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/Trobikus/ashen-crown/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/Trobikus/ashen-crown/compare/v0.9.1...v0.10.0

@@ -3,10 +3,16 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.11.1',
+  version: '0.11.2',
   date: '15.10.2026',
   headline: 'Loot nach Diablo-Handwerk — und eine Werkstatt, die den Endgame-Ascheberg frisst',
   sections: [
+    {
+      heading: '0.11.2 — Hotfix: Der Beutel ist wieder da',
+      items: [
+        'Auto-Verkauf „Aus" verkaufte heimlich JEDE Beute beim Fund — jetzt landet Loot wieder im Inventar, wie es die Einstellung verspricht.',
+      ],
+    },
     {
       heading: '0.11.1 — Die Krone überall',
       items: [

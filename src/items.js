@@ -153,10 +153,13 @@ let lastAutoSellNotice = 0;
 
 // Auto-Verkauf: Beute unter der gewählten Seltenheit wird beim Fund sofort
 // zum Verkaufspreis in Asche umgetauscht — das Inventar bleibt für Funde.
+// Die Schwelle ist der Index, UNTER dem verkauft wird; „aus" heißt 0,
+// denn kein Seltenheits-Index liegt unter 0. (RARITIES.length wäre der
+// Inverse: jeder Index läge darunter und ALLES würde verkauft.)
 const autoSellThreshold = () => {
   if (settings.autoSell === 'unter-selten') return 2;
   if (settings.autoSell === 'unter-episch') return 3;
-  return RARITIES.length;
+  return 0;
 };
 
 function rollDrop(enemyType) {
