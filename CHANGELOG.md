@@ -4,7 +4,7 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
-## [Unreleased]
+## [0.15.1] — 2026-10-15
 
 ### Hinzugefügt
 - **Prestige — „Erneut erwachen" (Der Thron)**: Nach dem ersten Kronensieg
@@ -653,7 +653,8 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Desktop-Shell via Tauri 2, Vollbild-Start.
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
-[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.15.1...HEAD
+[0.15.1]: https://github.com/Trobikus/ashen-crown/compare/v0.15.0...v0.15.1
 [0.15.0]: https://github.com/Trobikus/ashen-crown/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/Trobikus/ashen-crown/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/Trobikus/ashen-crown/compare/v0.12.1...v0.13.0

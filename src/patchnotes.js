@@ -3,10 +3,20 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.15.0',
+  version: '0.15.1',
   date: '15.10.2026',
-  headline: 'Ruhm wird zur Wirtschaft — und der Schrein atmet jetzt wirklich',
+  headline: 'Die Krone formt dich neu — Prestige ist da',
   sections: [
+    {
+      heading: '0.15.1 — Prestige: Erneut erwachen',
+      items: [
+        'Der Thron: Nach dem ersten Kronensieg öffnet sich die neue Kachel — hebe die Krone erneut und forme dich aus Kronenasche neu.',
+        'Kronenasche: Jeder Lauf zahlt 1 plus 1 je fünf Tiefen; jede erworbene segnet alle künftigen Läufe (+2 % Asche & Erfahrung).',
+        'Das Vermächtnis: Sechs Titel mit je drei Stufen — Grundwerte, Erfahrung, Asche, Start-Statpunkte, Fundchance, Start-Asche.',
+        'Der Reset nimmt Zone, Held, Asche, Ausrüstung und Runen — Ruhm, Bestiarium, Chronik und dein Vermächtnis bleiben.',
+        'Außerdem: Der Stat-Respec-Knopf sitzt jetzt sauber unter dem letzten Stat.',
+      ],
+    },
     {
       heading: '0.15.0 — Pfad-Bindung, Schrein-Regen & die Ruhm-Wirtschaft',
       items: [
