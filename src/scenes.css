@@ -80,8 +80,14 @@
 .stats-panel {
   flex: 1 1 280px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+/* Der Stat-Respec hängt direkt unter dem letzten Stat — mit Luft dazwischen. */
+.stats-panel .skill-respec {
+  margin-top: 1.4rem;
 }
 
 .gear-panel {

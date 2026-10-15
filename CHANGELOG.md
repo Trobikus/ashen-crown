@@ -4,6 +4,13 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unreleased]
+
+### Behoben
+- **Stat-Respec sitzt unter dem letzten Stat**: Das Stats-Panel ordnete seine
+  Elemente nebeneinander statt untereinander — der Knopf schwebte neben der
+  Statliste. Er steht jetzt direkt unter „Erlegte Kreaturen", mit Abstand.
+
 ## [0.15.0] — 2026-10-15
 
 ### Hinzugefügt
