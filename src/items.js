@@ -162,8 +162,9 @@ const autoSellThreshold = () => {
   return 0;
 };
 
-function rollDrop(enemyType) {
-  if (Math.random() >= (DROP_CHANCES[enemyType] ?? 0)) return;
+// guaranteed: Safedrop (erster Elite-Kill eines Gebiets) — umgeht die Chance.
+function rollDrop(enemyType, guaranteed = false) {
+  if (Math.random() >= (guaranteed ? 1 : (DROP_CHANCES[enemyType] ?? 0))) return;
   const item = generateItem();
   state.drops[item.rarity] = (state.drops[item.rarity] ?? 0) + 1;
   const autoSold = RARITIES.findIndex((rarity) => rarity.key === item.rarity) < autoSellThreshold();

@@ -24,14 +24,14 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
   folgen den Ruhm-Käufen (`inventoryCap()` / `deathPenalty()`).
 
 ### Geändert
-- **Safedrops**: Elite und Boss droppen jetzt **garantiert** ein Stück —
+- **Safedrops**: Der **erste Elite-Kill eines Gebiets garantiert** ein
+  Stück; Wiederholungs-Eliten rollen die alte Chance (8 %), der Boss
+  kämpft nur einmal pro Gebiet und rollt erhöht (**75 %** statt 50 %),
   Normal-Gegner bleiben das seltene Ereignis (1 %). Auslöser war die
   Testermeldung „halbe Story durch, keine einzige Waffe gehabt": Bei 8 %
   Elite- und 50 % Boss-Chance war ein Waffen-Blackout über Dutzende
-  Gebiete reines Pech. Sim-Impact der gefluteten Beute: Kampagne
-  24,7 h → **14,2 h**, Tode 278 → **45**, Überfarm-Knappheit praktisch
-  weg. Falls sich das zu schnell anfühlt, ist der Stellhebel bekannt
-  (z. B. Safedrop nur beim ersten Elite-/Boss-Kill je Gebiet).
+  Gebiete reines Pech. Sim-Impact: Kampagne 24,7 h → **~15 h**, Tode
+  278 → **~50** — deutlich magerer als der Voll-Safedrop (14,2 h / 45).
 
 ### Behoben
 - **Heldenlevel hält konstant ~3 Stufen Abstand zu den Gegnern**: Bisher

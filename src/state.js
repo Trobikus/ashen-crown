@@ -57,6 +57,7 @@ const state = {
   achievements: [],
   ruhmAusgegeben: 0,
   shopPurchases: { beutelschein: 0, zollerlass: 0 },
+  safedropZones: {},
 };
 
 // Ruhm-Käufe wirken direkt auf die Systemregeln: Der Beutelschein erweitert

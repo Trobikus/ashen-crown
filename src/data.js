@@ -448,10 +448,10 @@ const RARITIES = [
   { key: 'legendär', label: 'Legendär', suffix: 'der Aschenkrone', color: '#c1663a', weight: 1, mult: 5.2 },
 ];
 
-// Beute: Elite und Boss garantieren einen Safedrop (Testermeldung — halbe
-// Story ohne eine einzige Waffe ist Pech, das nicht passieren darf); Normale
-// bleiben das seltene Ereignis, das einen Fund besonders macht.
-const DROP_CHANCES = { normal: 0.01, elite: 1, boss: 1 };
+// Beute: Der ERSTE Elite-Kill eines Gebiets garantiert einen Safedrop,
+// Wiederholungs-Kills rollen die alte Chance. Der Boss kämpft nur einmal
+// pro Gebiet und rollt erhöht (75 %). Normale bleiben das seltene Ereignis.
+const DROP_CHANCES = { normal: 0.01, elite: 0.08, boss: 0.75 };
 
 // Tod kostet Zoll: Anteil der aktuellen Asche, den die Asche beim Fallen einbehält.
 const DEATH_ASH_PENALTY = 0.15;

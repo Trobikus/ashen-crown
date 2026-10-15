@@ -317,10 +317,13 @@ function killEnemy() {
   state.zoneKills += 1;
   // Bestiarium: Jede erlegte Kreatur zählt unter ihrem Namen.
   state.bestiary[def.name] = (state.bestiary[def.name] ?? 0) + 1;
+  // Safedrop: Der erste Elite-Kill eines Gebiets garantiert ein Stück.
+  const eliteSafedrop = enemy.type === 'elite' && !state.safedropZones[state.zone];
+  if (eliteSafedrop) state.safedropZones[state.zone] = 1;
   state.ash += Math.round(def.ash * (1 + statBonus('ash') / 100));
   // Gegner unter dem Helden-Niveau tragen weniger bis keine Erfahrung bei.
   gainXp(Math.round(def.xp * enemyXpMultiplier(enemy.level, state.level)));
-  rollDrop(enemy.type);
+  rollDrop(enemy.type, eliteSafedrop);
   sfx.kill();
   if (def.boss) {
     const firstClear = state.cleared <= state.zone;
@@ -956,6 +959,14 @@ function prepareSave(data) {
   data.shopPurchases = data.shopPurchases && typeof data.shopPurchases === 'object' && !Array.isArray(data.shopPurchases) ? data.shopPurchases : {};
   data.shopPurchases.beutelschein = Math.min(3, asNumber(data.shopPurchases.beutelschein, 0));
   data.shopPurchases.zollerlass = Math.min(4, asNumber(data.shopPurchases.zollerlass, 0));
+  // Safedrop-Register: Gebiete, deren Elite-Erstkill schon gedroppt hat.
+  data.safedropZones = data.safedropZones && typeof data.safedropZones === 'object' && !Array.isArray(data.safedropZones) ? data.safedropZones : {};
+  const cleanSafedrops = {};
+  for (const zone of Object.keys(data.safedropZones)) {
+    const idx = asCount(zone);
+    if (idx >= 0 && idx <= MAX_ZONE) cleanSafedrops[idx] = 1;
+  }
+  data.safedropZones = cleanSafedrops;
   data.seenContinents = Array.isArray(data.seenContinents)
     ? data.seenContinents.filter((key) => typeof key === 'string')
     : [];

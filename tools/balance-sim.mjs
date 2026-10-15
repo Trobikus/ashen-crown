@@ -252,6 +252,7 @@ function simulate(world, { depthTarget = 0 } = {}) {
   let deaths = 0;
   let maxTracked = 0;
   let enhanceSpent = 0;
+  const safedrops = new Set();
 
   const heroDamage = () => {
     const s = gearStats();
@@ -323,9 +324,9 @@ function simulate(world, { depthTarget = 0 } = {}) {
     }
   };
 
-  const onDrop = (type, ilvl) => {
-    if (Math.random() >= (D.DROP_CHANCES[type] ?? 0)) return;
-    const slotKey = SLOT_KEYS[Math.floor(Math.random() * SLOT_KEYS.length)];
+  const onDrop = (type, ilvl, guaranteed = false) => {
+    if (rng() >= (guaranteed ? 1 : (D.DROP_CHANCES[type] ?? 0))) return;
+    const slotKey = SLOT_KEYS[Math.floor(rng() * SLOT_KEYS.length)];
     equip(makeItem(slotKey, ilvl));
   };
 
@@ -433,7 +434,10 @@ function simulate(world, { depthTarget = 0 } = {}) {
     // Stufen steigen 3 pro Gebiet: Normal 3N−2, Elite +2, Boss +4.
     const enemyLevel = zone * 3 + 1 + (type === 'boss' ? 4 : type === 'elite' ? 2 : 0);
     gainXp(def.xp * D.enemyXpMultiplier(enemyLevel, hero.level));
-    onDrop(type, world.zones[Math.min(zone, world.zones.length - 1)].ilvl);
+    // Safedrop: erster Elite-Kill eines Gebiets garantiert (spiegelt src/game.js).
+    const eliteSafedrop = type === 'elite' && !safedrops.has(zone);
+    if (eliteSafedrop) safedrops.add(zone);
+    onDrop(type, world.zones[Math.min(zone, world.zones.length - 1)].ilvl, eliteSafedrop);
     buyUpgrades();
     if (def.boss) cleared = Math.max(cleared, zone + 1);
     return { killed: true, seconds: seconds + D.ENEMY_RESPAWN_S };
