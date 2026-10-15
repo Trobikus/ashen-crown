@@ -741,6 +741,13 @@
   cursor: default;
 }
 
+/* Versiegelte Pfade (maximal zwei Farben gleichzeitig): fast erloschen. */
+.skill-node.branch-locked circle {
+  opacity: 0.25;
+  filter: saturate(0.3);
+  cursor: default;
+}
+
 @keyframes skill-pulse {
   50% {
     stroke-width: 3;

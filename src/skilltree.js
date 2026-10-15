@@ -18,7 +18,32 @@ function skillBonus(stat) {
   return total;
 }
 
+// Pfad-Bindung: Maximal zwei der vier Farben erwachen gleichzeitig — sind zwei
+// verteilt, versiegeln sich die übrigen. Start- und Brücken-Knoten zählen nicht
+// als Farbe; ein Respec unter zwei Farben öffnet alles wieder.
+const BRANCH_KEYS = [...new Set(SKILL_NODES.map((node) => node.branch))]
+  .filter((branch) => branch !== 'start' && branch !== 'bruecke');
+
+const BRANCH_LOCK_LIMIT = 2;
+
+function activeBranches() {
+  const active = new Set();
+  for (const id of state.skills) {
+    const branch = SKILL_NODES_BY_ID[id]?.branch;
+    if (BRANCH_KEYS.includes(branch)) active.add(branch);
+  }
+  return active;
+}
+
+function branchLocked(branch) {
+  if (!BRANCH_KEYS.includes(branch)) return false;
+  const active = activeBranches();
+  return active.size >= BRANCH_LOCK_LIMIT && !active.has(branch);
+}
+
 function isSkillable(id) {
+  const node = SKILL_NODES_BY_ID[id];
+  if (!node || branchLocked(node.branch)) return false;
   return SKILL_EDGES.some(
     ([a, b]) => (a === id && state.skills.includes(b)) || (b === id && state.skills.includes(a))
   );
@@ -72,6 +97,7 @@ function renderSkillTree() {
     group.classList.toggle('allocated', allocated);
     group.classList.toggle('available', canSkill && state.skillPoints > 0);
     group.classList.toggle('locked', !allocated && !canSkill);
+    group.classList.toggle('branch-locked', !allocated && branchLocked(SKILL_NODES_BY_ID[id]?.branch));
   }
   for (const line of el.skillTree.querySelectorAll('.skill-edge')) {
     line.classList.toggle('active', state.skills.includes(line.dataset.from) && state.skills.includes(line.dataset.to));
@@ -136,6 +162,7 @@ function skillTooltipHtml(node) {
     .join('');
   let status;
   if (allocated) status = 'Geskillt.';
+  else if (branchLocked(node.branch)) status = 'Versiegelt — maximal zwei Pfade erwachen gleichzeitig.';
   else if (!isSkillable(node.id)) status = 'Benötigt einen benachbarten geskillten Punkt.';
   else if (state.skillPoints > 0) status = 'Klicken zum Freischalten.';
   else status = 'Keine Skillpunkte.';

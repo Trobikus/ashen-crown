@@ -1418,7 +1418,7 @@ function bindEvents() {
   el.tileSkills.addEventListener('click', () => {
     if (state.level < SKILL_TREE_UNLOCK_LEVEL) return;
     showScreen(el.sceneSkills);
-    hintOnce('hint-skills', 'Benachbarte Runen schalten andere frei — klicke verfügbare an. „Runen neu schneiden" bricht alles zurück und erstattet die Punkte.');
+    hintOnce('hint-skills', 'Benachbarte Runen schalten andere frei — klicke verfügbare an. Maximal zwei Pfade erwachen gleichzeitig; „Runen neu schneiden" bricht alles zurück und erstattet die Punkte.');
   });
   el.tileMap.addEventListener('click', () => {
     resetZoneView();

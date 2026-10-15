@@ -6,6 +6,14 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Hinzugefügt
+- **Pfad-Bindung im Fertigkeitenbaum**: Maximal **zwei der vier Pfade** (Krieg,
+  Haut, Asche, Geist) erwachen gleichzeitig — sind zwei Farben verteilt,
+  versiegeln sich die übrigen (im Baum fast erloschen dargestellt, der Tooltip
+  erklärt es). Start- und Brücken-Knoten zählen nicht als Farbe. „Runen neu
+  schneiden" unter zwei Farben öffnet alles wieder; Bestände mit mehr als zwei
+  aktiven Pfaden bleiben bestehend und starten keine weitere Farbe mehr.
+
 ### Geändert
 - **Die Schrein-Regeneration zählt jetzt**: Der Abstieg nimmt die Lebenskraft
   mit, wie sie ist — volle Kraft startet nur, wer am Schrein wartet (2 % pro

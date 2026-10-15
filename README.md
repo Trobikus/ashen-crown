@@ -65,8 +65,10 @@ Denn die Asche erinnert sich — an jedes Reich, das vor dir versuchte, ihr zu e
 - **Fertigkeitenbaum** — **217 Knoten** im Path-of-Exile-Stil: vier Pfade
   (Krieg, Haut, Asche, Geist) mit kleinen Passives, Notables und **12 Keystones mit
   Tradeoffs**. **12 Brücken** verbinden die Pfade miteinander — für Misch-Builds,
-  die es so kein zweites Mal gibt. Der Baum **erwacht ab Stufe 20** — erst dann
-  gibt es Runenpunkte, und seine Werte sind bewusst gedämpft.
+  die es so kein zweites Mal gibt. **Maximal zwei Pfade erwachen gleichzeitig** —
+  die übrigen versiegeln sich, bis ein Respec sie wieder öffnet. Der Baum
+  **erwacht ab Stufe 20** — erst dann gibt es Runenpunkte, und seine Werte sind
+  bewusst gedämpft.
 - **Loot & Inventar** — **7 Rüstungsslots**, **5 Raritäten** (Gewöhnlich →
   Magisch → Selten → Episch → Legendär). Jedes Stück **rollt seine Werte** —
   das perfekte Exemplar ist ein Fund, kein Rechenresultat. Beute ist ein
