@@ -3,10 +3,20 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.13.0',
+  version: '0.14.0',
   date: '15.10.2026',
   headline: 'Loot nach Diablo-Handwerk — und eine Werkstatt, die den Endgame-Ascheberg frisst',
   sections: [
+    {
+      heading: '0.14.0 — Ruhm, Safedrops & das Level-System',
+      items: [
+        'Ruhm: Errungenschaften zahlen jetzt eine eigene Währung — Beutelschein (+Inventar) und Zollerlass (−Todeszoll) im Ruhm-Laden.',
+        'Tiefen-Meisterschaften von Relikten lassen sich für 2 Ruhm neu schmieden.',
+        'Safedrops: Der erste Elite-Kill jedes Gebiets garantiert Beute, Bosse rollen 75 %.',
+        'Level-System neu: Der Held hält konstant ~3 Stufen Abstand zu den Gegnern — kein Hintenherlaufen mehr.',
+        'Meisterschafts-Rerolls zeigen ihren Grund und würfeln garantiert ein anderes Ergebnis.',
+      ],
+    },
     {
       heading: '0.13.0 — Bestiarium, Ruhm & Tiefenrelikte',
       items: [

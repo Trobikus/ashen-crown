@@ -4,11 +4,11 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
-## [Unreleased]
+## [0.14.0] — 2026-10-15
 
 ### Hinzugefügt
 - **Ruhm — die Errungenschaften-Währung**: Jede Errungenschaft trägt 1–4
-  Ruhm (nach Schwierigkeit, bis zu 43 gesamt). Ruhm wird nicht separat
+  Ruhm (nach Schwierigkeit, bis zu 40 gesamt). Ruhm wird nicht separat
   gespeichert, sondern aus den errungenen IDs abgeleitet — Ausgaben zählt
   `ruhmAusgegeben`. Alte Spielstände sind damit rückwirkend versorgt.
 - **Ruhm-Laden** in der Errungenschaften-Szene: **Beutelschein** (+8
@@ -20,20 +20,14 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
   würfeln — günstig und unbegrenzt, die Endgame-Jagd der Ruhm-Währung.
 
 ### Geändert
-- Inventar-Obergrenze und Todeszoll sind keine Konstanten mehr, sondern
-  folgen den Ruhm-Käufen (`inventoryCap()` / `deathPenalty()`).
-
-### Geändert
 - **Safedrops**: Der **erste Elite-Kill eines Gebiets garantiert** ein
   Stück; Wiederholungs-Eliten rollen die alte Chance (8 %), der Boss
   kämpft nur einmal pro Gebiet und rollt erhöht (**75 %** statt 50 %),
   Normal-Gegner bleiben das seltene Ereignis (1 %). Auslöser war die
   Testermeldung „halbe Story durch, keine einzige Waffe gehabt": Bei 8 %
   Elite- und 50 % Boss-Chance war ein Waffen-Blackout über Dutzende
-  Gebiete reines Pech. Sim-Impact: Kampagne 24,7 h → **~15 h**, Tode
-  278 → **~50** — deutlich magerer als der Voll-Safedrop (14,2 h / 45).
-
-### Behoben
+  Gebiete reines Pech. Sim-Impact: Kampagne 24,7 h → **~24,3 h**, Tode
+  278 → **151** — gleiche Länge, halb so viele Tode, Loot-Fluss +40 %.
 - **Heldenlevel hält konstant ~3 Stufen Abstand zu den Gegnern**: Bisher
   wuchsen die Gegner-EP exponentiell mit der Zone, während der
   Level-Bedarf quadratisch mit der Heldenstufe wächst — diese Kurven
@@ -45,10 +39,15 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
   Gegnern. Alte Spielstände holen beim Weiterspielen selbst auf — der
   Abstand schließt sich, ohne Migration. Bestehende Saves mit
   überlevelten Helden profitieren unverändert von der EP-Dämpfung.
-  Sim gegen die neue Kurve: **24,7 h / 278 Tode** bis zur Aschenkrone
-  (bisher 56,2 h / 708) — ein Held, der mitwächst, ist stärker als einer,
-  der 15 Stufen hinten hinkt; dafür endet er bei Stufe ~155 statt ~160.
-  Der frühe EP-Boden (8/6/Kill in Zone 1) hält den ersten Boss erreichbar.
+  Sim gegen die neue Kurve (ohne Safedrops gemessen): 24,7 h / 278 Tode
+  bis zur Aschenkrone (vorher 56,2 h / 708) — ein Held, der mitwächst,
+  ist stärker als einer, der 15 Stufen hinten hinkt; dafür endet er bei
+  Stufe ~155 statt ~160. Der frühe EP-Boden (8/Kill in Zone 1) hält den
+  ersten Boss erreichbar.
+- Inventar-Obergrenze und Todeszoll sind keine Konstanten mehr, sondern
+  folgen den Ruhm-Käufen (`inventoryCap()` / `deathPenalty()`).
+
+### Behoben
 - **Meisterschafts-Rerolls wirken wieder sichtbar**: Neu würfeln garantiert
   jetzt ein **anderes** Ergebnis (der Meisterschafts-Pool hat nur wenige
   Stats — vorher traf der Wurf häufig denselben Wert und das Schmieden
@@ -574,6 +573,7 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
 [Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.13.0...HEAD
+[0.14.0]: https://github.com/Trobikus/ashen-crown/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/Trobikus/ashen-crown/compare/v0.12.1...v0.13.0
 [0.12.1]: https://github.com/Trobikus/ashen-crown/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/Trobikus/ashen-crown/compare/v0.11.2...v0.12.0
