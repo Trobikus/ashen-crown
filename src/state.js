@@ -1,4 +1,4 @@
-import { GEAR_SLOTS, INVENTORY_CAP, DEATH_ASH_PENALTY } from './data.js';
+import { GEAR_SLOTS, INVENTORY_CAP, DEATH_ASH_PENALTY, OFFLINE_CAP_MS } from './data.js';
 
 const SAVE_KEY = 'ashen-crown-save';
 
@@ -58,7 +58,7 @@ const state = {
   bestiary: {},
   achievements: [],
   ruhmAusgegeben: 0,
-  shopPurchases: { beutelschein: 0, zollerlass: 0 },
+  shopPurchases: { beutelschein: 0, zollerlass: 0, aschesegen: 0, tiefenkunde: 0, werkstatthandwerk: 0 },
   safedropZones: {},
 };
 
@@ -72,4 +72,19 @@ function deathPenalty() {
   return Math.max(0.03, DEATH_ASH_PENALTY - 0.03 * (state.shopPurchases.zollerlass ?? 0));
 }
 
-export { SAVE_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, SAVE_VERSION, settings, state, inventoryCap, deathPenalty };
+// Aschesegen: +10 % auf jeden Asche-Ertrag pro Stufe — im Feld wie offline.
+function ashGainFactor() {
+  return 1 + 0.1 * (state.shopPurchases.aschesegen ?? 0);
+}
+
+// Tiefenkunde: verlängert den Offline-Fortschritt über die 8-h-Grenze hinaus.
+function offlineCapMs() {
+  return OFFLINE_CAP_MS + 4 * 60 * 60 * 1000 * (state.shopPurchases.tiefenkunde ?? 0);
+}
+
+// Werkstatthandwerk: senkt alle Asche-Preise der Werkstatt (Boden 85 %).
+function craftCostFactor() {
+  return 1 - 0.05 * (state.shopPurchases.werkstatthandwerk ?? 0);
+}
+
+export { SAVE_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, SAVE_VERSION, settings, state, inventoryCap, deathPenalty, ashGainFactor, offlineCapMs, craftCostFactor };

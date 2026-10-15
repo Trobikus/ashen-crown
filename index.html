@@ -143,6 +143,10 @@
               <div class="tooltip">Zählt jedes erschlagene Wesen seit deiner Erweckung.</div>
             </div>
           </dl>
+          <div class="skill-respec">
+            <button class="btn-small" id="btn-stat-respec">Punkte neu verteilen · <span id="stat-respec-cost">0</span> Asche</button>
+            <span class="skill-respec-hint">Setzt Schaden, Lebenskraft, Rüstung und Kritchance zurück und erstattet alle Statpunkte.</span>
+          </div>
         </div>
         <div class="gear-panel">
           <div class="gear-slots">
@@ -232,7 +236,7 @@
         </div>
         <div class="options-page" data-page="game" hidden>
           <label class="option-row">
-            <span class="option-label">Offline-Fortschritt<span class="option-desc">Kämpft bis zu 8 Stunden im Feld weiter, während du weg bist</span></span>
+            <span class="option-label">Offline-Fortschritt<span class="option-desc">Kämpft bis zu 8 Stunden im Feld weiter (mit Tiefenkunde bis 20) — an einer Boss-Wand wird aufs beste Gebiet ausgewichen</span></span>
             <span class="toggle"><input type="checkbox" data-setting="offlineProgress" checked><span class="toggle-slider"></span></span>
           </label>
           <label class="option-row">
@@ -369,13 +373,14 @@
           <div class="hp-bar"><div class="hp-fill hero-fill" id="hero-hp"></div></div>
           <div class="hp-text" id="hero-hp-text">—</div>
         </div>
-        <div class="fighter" id="enemy-fighter">
+        <div class="fighter has-tooltip" id="enemy-fighter">
           <div class="figure" id="enemy-figure"></div>
           <div class="fighter-level" id="enemy-level">—</div>
           <div class="fighter-name" id="enemy-name">—</div>
           <div class="fighter-profile" id="enemy-profile"></div>
           <div class="hp-bar"><div class="hp-fill enemy-fill" id="enemy-hp"></div></div>
           <div class="hp-text" id="enemy-hp-text">—</div>
+          <div class="tooltip" id="enemy-tooltip"></div>
         </div>
         <div id="arena-particles"></div>
         <div id="arena-grain"></div>

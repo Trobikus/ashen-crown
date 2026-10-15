@@ -1,10 +1,10 @@
 import { el, cacheDom } from './dom.js';
 
-import { state, settings, SAVE_KEY, SAVE_VERSION, inventoryCap, deathPenalty } from './state.js';
+import { state, settings, SAVE_KEY, SAVE_VERSION, inventoryCap, deathPenalty, ashGainFactor, offlineCapMs } from './state.js';
 
 import { loadSettings, saveSettings, applySettings } from './settings.js';
 
-import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, RARITIES, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, DEATH_ASH_PENALTY, DEATH_REVIVE_SHARE, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, sanitizeItem, asCount, formatNum, ZONE_ENEMIES, ZONES, DEPTH_ENEMY_NAMES, CONTINENTS } from './data.js';
+import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_MIN_GAP_MS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, RARITIES, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, DEATH_ASH_PENALTY, DEATH_REVIVE_SHARE, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, sanitizeItem, asCount, formatNum, ZONE_ENEMIES, ZONES, DEPTH_ENEMY_NAMES, CONTINENTS } from './data.js';
 
 import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier, heroLifeleech } from './stats.js';
 
@@ -49,6 +49,8 @@ let hasSave = false;
 let visited = false;
 
 let offlineSummary = null;
+
+let offlineDiversion = null;
 
 let statSpendAmount = 1;
 
@@ -257,7 +259,7 @@ function spawnEnemy() {
     type = 'elite';
   }
   const def = scaledEnemy(type);
-  enemy = { type, name: def.name, level: def.level, hp: def.hp, maxHp: def.hp, damage: def.damage, attackIntervalMs: def.attackIntervalMs, enraged: false };
+  enemy = { type, name: def.name, level: def.level, hp: def.hp, maxHp: def.hp, damage: def.damage, attackIntervalMs: def.attackIntervalMs, enraged: false, profileLabel: def.profileLabel, hitsOnHero: 0, damageToHero: 0 };
   setEnemyFigure(state.zone, def.boss);
   el.enemyFigure.classList.remove('dying');
   pulseClass(el.enemyFigure, 'spawn', 600);
@@ -305,6 +307,60 @@ function allocateStat(stat) {
   render();
 }
 
+// Verteilte Statpunkte: Schaden und Lebenskraft (5 je Punkt) sind aus den
+// Basen rekonstruierbar, Rüstung und Kritchance liegen direkt vor.
+function allocatedStatPoints() {
+  return Math.max(0, state.damage - 2)
+    + Math.max(0, Math.round((state.maxHp - 35) / 5))
+    + state.armorBase + state.critBonus;
+}
+
+// Statpunkte neu verteilen: gleiche Kostenschule wie der Runen-Respec
+// (Ilvl bis zum Hauptspiel-Ende, Preis je verteiltem Punkt), kleinerer
+// Grundpreis — und dieselbe Doppelklick-Bestätigung.
+function statRespecCost() {
+  const ilvl = zoneDef(Math.min(state.cleared, LAST_ZONE_INDEX)).ilvl;
+  return Math.round(100 * (1 + 0.1 * ilvl) * (1 + 0.15 * allocatedStatPoints()));
+}
+
+let statRespecArmed = false;
+
+let statRespecArmTimer = null;
+
+function attemptStatRespec() {
+  const spent = allocatedStatPoints();
+  if (spent <= 0) return;
+  if (!statRespecArmed) {
+    statRespecArmed = true;
+    el.statRespecButton.classList.add('armed');
+    clearTimeout(statRespecArmTimer);
+    statRespecArmTimer = setTimeout(() => {
+      statRespecArmed = false;
+      statRespecArmTimer = null;
+      render();
+    }, 4000);
+    render();
+    return;
+  }
+  clearTimeout(statRespecArmTimer);
+  statRespecArmTimer = null;
+  statRespecArmed = false;
+  const cost = statRespecCost();
+  if (state.ash < cost) {
+    render();
+    return;
+  }
+  state.ash -= cost;
+  state.statPoints += spent;
+  state.damage = 2;
+  state.maxHp = 35;
+  state.armorBase = 0;
+  state.critBonus = 0;
+  heroHp = Math.min(heroHp, heroMaxHp());
+  save();
+  render();
+}
+
 function bindHoldToRepeat(button, action) {
   let delayTimer = null;
   let repeatTimer = null;
@@ -348,7 +404,7 @@ function killEnemy() {
   // Safedrop: Der erste Elite-Kill eines Gebiets garantiert ein Stück.
   const eliteSafedrop = enemy.type === 'elite' && !state.safedropZones[state.zone];
   if (eliteSafedrop) state.safedropZones[state.zone] = 1;
-  state.ash += Math.round(def.ash * (1 + statBonus('ash') / 100));
+  state.ash += Math.round(def.ash * (1 + statBonus('ash') / 100) * ashGainFactor());
   // Gegner unter dem Helden-Niveau tragen weniger bis keine Erfahrung bei.
   gainXp(Math.round(def.xp * enemyXpMultiplier(enemy.level, state.level)));
   rollDrop(enemy.type, eliteSafedrop);
@@ -455,6 +511,8 @@ function enemyAttack() {
   const reduction = Math.min(0.5, armor / (armor + ARMOR_RESISTANCE * enemy.damage));
   const taken = Math.max(1, Math.round(enemy.damage * (1 - reduction)));
   heroHp -= taken;
+  enemy.hitsOnHero += 1;
+  enemy.damageToHero += taken;
   flash(el.enemyFigure);
   pulseClass(el.heroFigure, 'recoil');
   spawnDamageFloat(el.heroFighter, taken);
@@ -490,9 +548,14 @@ function die() {
   const wallHint = enemy?.type === 'boss' && state.cleared <= state.zone
     ? '<br><br>Wand erreicht: In diesem Gebiet wartet jetzt nur noch der Boss. Reise über die Gebiete zurück — erneutes Betreten setzt das Zählwerk zurück und stellt sichere Gegner zum Farmen. Komm stärker zurück.'
     : '';
+  // Todesrückblick: Wer nicht versteht, warum er starb, kann nicht dazulernen —
+  // das Overlay nennt den Bezwinger und die eingesteckte Summe.
+  const recap = enemy
+    ? `<br><br>Gefallen gegen <strong>${enemy.name}</strong> (Lv ${enemy.level}): ${enemy.hitsOnHero} Treffer, ${formatNum(enemy.damageToHero)} Schaden insgesamt.`
+    : '';
   showOverlay((toll > 0
     ? `Die Asche nimmt dich zurück — und ihren Zoll: ${formatNum(toll)} Asche.`
-    : 'Die Asche nimmt dich zurück.') + ' Am Schrein erwachst du mit einem Viertel deiner Lebenskraft.' + wallHint, true);
+    : 'Die Asche nimmt dich zurück.') + ' Am Schrein erwachst du mit einem Viertel deiner Lebenskraft.' + recap + wallHint, true);
   render();
   save();
   sceneTimer = setTimeout(() => {
@@ -701,6 +764,28 @@ function renderAchievements() {
   }
 }
 
+// Gegner-Inspektor: Hover auf den Gegner zeigt Schaden, Tempo, Temperament
+// und die eigene Schadensminderung — „warum stirbe ich?" wird beantwortbar.
+function renderEnemyTooltip() {
+  if (!enemy) {
+    el.enemyTooltip.innerHTML = '';
+    return;
+  }
+  const armor = heroArmor();
+  const reduction = Math.min(0.5, armor / (armor + ARMOR_RESISTANCE * enemy.damage));
+  const speed = (1000 / enemyAttackInterval()).toFixed(1).replace('.', ',');
+  const temperament = enemy.enraged
+    ? 'Wütend — greift schneller an'
+    : enemy.type === 'boss' ? 'Standard' : (enemy.profileLabel || 'Standard');
+  el.enemyTooltip.innerHTML = `
+    <div class="tt-name">${enemy.name}</div>
+    <div class="tt-rarity">${enemy.type === 'boss' ? 'Boss' : enemy.type === 'elite' ? 'Elite' : 'Normal'} · Lv ${enemy.level}</div>
+    <div class="tt-stat">Schlag: bis zu ${formatNum(enemy.damage)} Schaden</div>
+    <div class="tt-stat">Angriffstempo: ${speed} / s</div>
+    <div class="tt-stat">Temperament: ${temperament}</div>
+    <div class="tt-stat">Deine Rüstung mindert: ${Math.round(reduction * 100)} %</div>`;
+}
+
 function render() {
   el.hubLevel.textContent = state.level;
   el.hubAsh.textContent = formatNum(state.ash);
@@ -717,6 +802,12 @@ function render() {
   for (const button of el.spendButtons) {
     button.classList.toggle('active', Number(button.dataset.amount) === statSpendAmount);
   }
+  const statCost = statRespecCost();
+  el.statRespecCost.textContent = formatNum(statCost);
+  el.statRespecButton.disabled = allocatedStatPoints() <= 0 || state.ash < statCost;
+  el.statRespecButton.textContent = statRespecArmed
+    ? 'Wirklich? Die Werte fallen.'
+    : `Punkte neu verteilen · ${formatNum(statCost)} Asche`;
   el.skillPointsHud.textContent = state.skillPoints;
   el.skillPointsHud.classList.toggle('has-points', state.skillPoints > 0);
   const skillsLocked = state.level < SKILL_TREE_UNLOCK_LEVEL;
@@ -767,10 +858,12 @@ function render() {
     el.enemyLevel.textContent = `Lv ${enemy.level} · ${enemy.type === 'boss' ? 'Boss' : enemy.type === 'elite' ? 'Elite' : 'Normal'}`;
     el.enemyHp.style.width = `${Math.max(0, enemy.hp / enemy.maxHp) * 100}%`;
     el.enemyHpText.textContent = `${formatNum(Math.max(0, enemy.hp))} / ${formatNum(enemy.maxHp)}`;
+    renderEnemyTooltip();
   } else {
     el.enemyLevel.textContent = '—';
     el.enemyHp.style.width = '0%';
     el.enemyHpText.textContent = '—';
+    el.enemyTooltip.innerHTML = '';
   }
   renderGearIfDirty();
   renderStats();
@@ -982,6 +1075,9 @@ function prepareSave(data) {
   data.shopPurchases = data.shopPurchases && typeof data.shopPurchases === 'object' && !Array.isArray(data.shopPurchases) ? data.shopPurchases : {};
   data.shopPurchases.beutelschein = Math.min(3, asNumber(data.shopPurchases.beutelschein, 0));
   data.shopPurchases.zollerlass = Math.min(4, asNumber(data.shopPurchases.zollerlass, 0));
+  data.shopPurchases.aschesegen = Math.min(3, asNumber(data.shopPurchases.aschesegen, 0));
+  data.shopPurchases.tiefenkunde = Math.min(3, asNumber(data.shopPurchases.tiefenkunde, 0));
+  data.shopPurchases.werkstatthandwerk = Math.min(3, asNumber(data.shopPurchases.werkstatthandwerk, 0));
   // Safedrop-Register: Gebiete, deren Elite-Erstkill schon gedroppt hat.
   data.safedropZones = data.safedropZones && typeof data.safedropZones === 'object' && !Array.isArray(data.safedropZones) ? data.safedropZones : {};
   const cleanSafedrops = {};
@@ -1141,7 +1237,15 @@ function simulateKills(seconds) {
   let guard = 0;
   while (remaining > 0 && guard < 200000) {
     guard += 1;
-    if (state.cleared <= state.zone && state.zoneKills >= BOSS_AFTER_KILLS) return 'boss';
+    if (state.cleared <= state.zone && state.zoneKills >= BOSS_AFTER_KILLS) {
+      // Boss-Wand offline: Bosse verlangen deine Anwesenheit — der simulierte
+      // Held weicht aufs höchste errungene Gebiet aus und farmt dort weiter.
+      // Erst ganz ohne errungenes Gebiet bleibt die Nacht ungenutzt.
+      if (state.cleared <= 0) return 'boss';
+      state.zone = state.cleared - 1;
+      state.zoneKills = 0;
+      offlineDiversion = zoneDef(state.zone).name;
+    }
     const isElite = state.zoneKills > 0 && state.zoneKills % ELITE_EVERY_KILLS === 0;
     const def = scaledEnemy(isElite ? 'elite' : 'normal');
     // Erwartete Treffer: HERO_MISS_CHANCE der eigenen Schläge geht daneben.
@@ -1165,7 +1269,7 @@ function simulateKills(seconds) {
     state.zoneKills += 1;
     // Bestiarium: Offline-Erlegtes zählt wie im Feld unter dem Kreaturnamen.
     state.bestiary[def.name] = (state.bestiary[def.name] ?? 0) + 1;
-    state.ash += Math.round(def.ash * (1 + statBonus('ash') / 100));
+    state.ash += Math.round(def.ash * (1 + statBonus('ash') / 100) * ashGainFactor());
     gainXp(Math.round(def.xp * enemyXpMultiplier(def.level, state.level)));
     rollDrop(isElite ? 'elite' : 'normal', eliteSafedrop);
   }
@@ -1175,6 +1279,7 @@ function simulateKills(seconds) {
 function applyOfflineProgress() {
   if (!state.inField) return;
   state.inField = false;
+  offlineDiversion = null;
   if (!settings.offlineProgress) {
     save();
     return;
@@ -1184,7 +1289,7 @@ function applyOfflineProgress() {
     save();
     return;
   }
-  const capped = Math.min(elapsed, OFFLINE_CAP_MS);
+  const capped = Math.min(elapsed, offlineCapMs());
   const ashBefore = state.ash;
   const levelBefore = state.level;
   const killsBefore = state.kills;
@@ -1204,6 +1309,8 @@ function applyOfflineProgress() {
     summary += ` — gefallen. Die Asche nahm ${formatNum(toll)} Asche.`;
   } else if (result === 'boss') {
     summary += '. Ein Boss versperrt den Weg.';
+  } else if (offlineDiversion) {
+    summary += `. Ein Boss versperrte den Weg — ausgewichen auf ${offlineDiversion} und weitergefarmt.`;
   } else {
     summary += '.';
   }
@@ -1475,6 +1582,7 @@ function bindEvents() {
   for (const button of el.statPlusButtons) {
     bindHoldToRepeat(button, () => allocateStat(button.dataset.stat));
   }
+  el.statRespecButton.addEventListener('click', attemptStatRespec);
   for (const button of el.spendButtons) {
     button.addEventListener('click', () => {
       statSpendAmount = Number(button.dataset.amount);

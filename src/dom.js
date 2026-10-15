@@ -24,6 +24,7 @@ function cacheDom() {
   el.enemyName = document.getElementById('enemy-name');
   el.enemyLevel = document.getElementById('enemy-level');
   el.enemyProfile = document.getElementById('enemy-profile');
+  el.enemyTooltip = document.getElementById('enemy-tooltip');
   el.enemyHp = document.getElementById('enemy-hp');
   el.heroHpText = document.getElementById('hero-hp-text');
   el.enemyHpText = document.getElementById('enemy-hp-text');
@@ -90,6 +91,8 @@ function cacheDom() {
   el.equipBestButton = document.getElementById('btn-equip-best');
   el.statPointsRow = document.getElementById('stat-points-row');
   el.statPointsValue = document.getElementById('hero-stat-points');
+  el.statRespecButton = document.getElementById('btn-stat-respec');
+  el.statRespecCost = document.getElementById('stat-respec-cost');
   el.statPlusButtons = Array.from(document.querySelectorAll('.stat-plus'));
   el.spendButtons = Array.from(document.querySelectorAll('.spend-amount button'));
   el.skillTree = document.getElementById('skill-tree');

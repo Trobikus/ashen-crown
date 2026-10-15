@@ -2,8 +2,24 @@
 // Speicherlogik, nur IDs im Spielstand (state.achievements). check entscheidet
 // den Unlock, progress liefert [aktuell, Ziel] für die Anzeige, ruhm ist die
 // Währung, die jeder Errungenschaft beim Erringen gewachsen ist.
+import { ZONE_ENEMIES } from './data.js';
+
 const dropTotal = (s) => Object.values(s.drops ?? {}).reduce((sum, n) => sum + (Number.isFinite(n) ? n : 0), 0);
 const dropOf = (s, key) => s.drops?.[key] ?? 0;
+
+// Bestiarium-Fortschritt: die 150 Kreaturen des Hauptspiels, je mindestens
+// einmal erlegt (die Tiefen-Namen rotieren endlos und zählen nicht hinein).
+const MAIN_BESTIARY_TOTAL = ZONE_ENEMIES.length * 3;
+
+const mainBestiaryKnown = (s) => {
+  let known = 0;
+  for (const zone of ZONE_ENEMIES) {
+    for (const type of ['normal', 'elite', 'boss']) {
+      if ((s.bestiary?.[zone[type].name] ?? 0) > 0) known += 1;
+    }
+  }
+  return known;
+};
 
 export const ACHIEVEMENTS = [
   { id: 'ernte-1', name: 'Erste Ernte', desc: 'Erlege deine erste Kreatur.', ruhm: 1, check: (s) => s.kills >= 1, progress: (s) => [Math.min(s.kills, 1), 1] },
@@ -28,8 +44,20 @@ export const ACHIEVEMENTS = [
   { id: 'gebiet-10', name: 'Über den Thron hinaus', desc: 'Befreie 10 Gebiete.', ruhm: 1, check: (s) => s.cleared >= 10, progress: (s) => [Math.min(s.cleared, 10), 10] },
   { id: 'gebiet-25', name: 'Der halbe Weg', desc: 'Befreie 25 Gebiete.', ruhm: 2, check: (s) => s.cleared >= 25, progress: (s) => [Math.min(s.cleared, 25), 25] },
   { id: 'kronentraeger', name: 'Kronenträger', desc: 'Hebe die Aschenkrone — alle 50 Gebiete sind frei.', ruhm: 3, check: (s) => s.cleared >= 50, progress: (s) => [Math.min(s.cleared, 50), 50] },
-  { id: 'tiefe-1', name: 'Unter dem Thron', desc: 'Erringe die erste Aschentiefe.', ruhm: 2, check: (s) => s.cleared >= 51, progress: (s) => [Math.min(s.cleared - 50, 1), 1] },
-  { id: 'tiefe-5', name: 'Tiefenwanderer', desc: 'Erringe fünf Aschentiefen.', ruhm: 4, check: (s) => s.cleared >= 55, progress: (s) => [Math.min(s.cleared - 50, 5), 5] },
+  { id: 'tiefe-1', name: 'Unter dem Thron', desc: 'Erringe die erste Aschentiefe.', ruhm: 2, check: (s) => s.cleared >= 51, progress: (s) => [Math.max(0, Math.min(s.cleared - 50, 1)), 1] },
+  { id: 'tiefe-5', name: 'Tiefenwanderer', desc: 'Erringe fünf Aschentiefen.', ruhm: 4, check: (s) => s.cleared >= 55, progress: (s) => [Math.max(0, Math.min(s.cleared - 50, 5)), 5] },
+
+  // Wiederkehrende Quellen: Die Ruhm-Wirtschaft soll mit dem Spiel wachsen,
+  // nicht nach einem Durchgang enden — Jagd, Stürze, Zeit, Beute, Tiefen.
+  { id: 'ernte-50000', name: 'Schrecken der Tiefen', desc: 'Erlege 50.000 Kreaturen.', ruhm: 4, check: (s) => s.kills >= 50000, progress: (s) => [Math.min(s.kills, 50000), 50000] },
+  { id: 'sturz-200', name: 'Vom Tode gezeichnet', desc: 'Falle 200 Male.', ruhm: 4, check: (s) => s.deaths >= 200, progress: (s) => [Math.min(s.deaths, 200), 200] },
+  { id: 'zeit-100', name: 'Ewigkeit in Grau', desc: 'Verbringe 100 Stunden im Spiel.', ruhm: 4, check: (s) => s.playtimeMs >= 360000e3, progress: (s) => [Math.min(s.playtimeMs, 360000e3), 360000e3], format: 'zeit' },
+  { id: 'beute-2000', name: 'Beutefürst', desc: 'Finde 2.000 Beutestücke.', ruhm: 4, check: (s) => dropTotal(s) >= 2000, progress: (s) => [Math.min(dropTotal(s), 2000), 2000] },
+  { id: 'legendaer-50', name: 'Kronsammler', desc: 'Finde 50 legendäre Stücke.', ruhm: 4, check: (s) => dropOf(s, 'legendär') >= 50, progress: (s) => [Math.min(dropOf(s, 'legendär'), 50), 50] },
+  { id: 'tiefe-10', name: 'Zehnfach versunken', desc: 'Erringe zehn Aschentiefen.', ruhm: 3, check: (s) => s.cleared >= 60, progress: (s) => [Math.max(0, Math.min(s.cleared - 50, 10)), 10] },
+  { id: 'tiefe-25', name: 'Dem Grund entgegen', desc: 'Erringe 25 Aschentiefen.', ruhm: 4, check: (s) => s.cleared >= 75, progress: (s) => [Math.max(0, Math.min(s.cleared - 50, 25)), 25] },
+  { id: 'tiefe-50', name: 'Unter allem Licht', desc: 'Erringe 50 Aschentiefen.', ruhm: 5, check: (s) => s.cleared >= 100, progress: (s) => [Math.max(0, Math.min(s.cleared - 50, 50)), 50] },
+  { id: 'bestiarium-haupt', name: 'Chronist der Asche', desc: 'Erlege jede der 150 Kreaturen des Hauptspiels mindestens einmal.', ruhm: 5, check: (s) => mainBestiaryKnown(s) >= MAIN_BESTIARY_TOTAL, progress: (s) => [Math.min(mainBestiaryKnown(s), MAIN_BESTIARY_TOTAL), MAIN_BESTIARY_TOTAL] },
 ];
 
 // Ruhm: Die Errungenschaften-Währung. Sie wird NICHT separat gespeichert,
@@ -43,10 +71,15 @@ export function ruhmAvailable(state) {
   return Math.max(0, ruhmEarned(state) - (state.ruhmAusgegeben ?? 0));
 }
 
-// Der Ruhm-Laden: permanente Erleichterungen, gestaffelt nach Stufen.
+// Der Ruhm-Laden: permanente Erleichterungen, gestaffelt nach Stufen. Die
+// Gesamtkosten (89) übersteigen bewusst den Gesamt-Ertrag (77) — Ruhm bleibt
+// eine Entscheidung, nicht eine Checkliste.
 export const RUHM_SHOP = {
   beutelschein: { name: 'Beutelschein', desc: '+8 Inventarplätze pro Stufe — die Asche trägt mehr.', levels: [3, 6, 9] },
   zollerlass: { name: 'Zollerlass', desc: 'Todeszoll −3 % pro Stufe (15 % → 3 %).', levels: [2, 4, 6, 8] },
+  aschesegen: { name: 'Aschesegen', desc: '+10 % Asche-Ertrag pro Stufe — im Feld wie offline.', levels: [3, 6, 9] },
+  tiefenkunde: { name: 'Tiefenkunde', desc: 'Offline-Fortschritt +4 Stunden pro Stufe (8 h → bis 20 h).', levels: [3, 5, 7] },
+  werkstatthandwerk: { name: 'Werkstatthandwerk', desc: 'Werkstatt-Kosten −5 % pro Stufe.', levels: [4, 6, 8] },
 };
 
 // Tiefen-Meisterschaft neu schmieden: unbegrenzt, bewusst günstig.

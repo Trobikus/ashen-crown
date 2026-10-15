@@ -89,7 +89,8 @@ Denn die Asche erinnert sich — an jedes Reich, das vor dir versuchte, ihr zu e
 - **Zahlen, die mitwachsen** — Spät werden Werte astronomisch; das Spiel hält sie
   lesbar: kompakte Kurzschreibweise mit deutschem Komma („12,4K", „3,2M", „1,5B").
 - **Offline-Fortschritt** — Wer im Feld aufhört, kämpft bis zu **8 Stunden** ohne dich
-  weiter (mit Todesrisiko; Bosse warten auf dich) und meldet dir bei der Rückkehr,
+  weiter (mit der Errungenschaft Tiefenkunde bis 20; an einer Boss-Wand wird aufs
+  beste Gebiet ausgewichen und weitergefarmt) und meldet dir bei der Rückkehr,
   was er erlegt, gefunden und gelernt hat.
 - **Chronik & Lore** — Die Asche erinnert sich: Intro-Erzählung beim Erwachen,
   eine Annale pro Kontinent beim ersten Betreten, ein Epitaph über jedem der
@@ -151,9 +152,7 @@ Ashen Crown befindet sich im geschlossenen Alpha-Stadium (aktuell **v0.11.0**):
 
 ## 🗺️ Auf dem Weg zu 1.0
 
-- Statistik-Seite und Bestiarium (der Chronik Schwester)
 - Prestige/Meta-Progression und Belohnungen in den Aschentiefen
-- Achievements
 
 ## 🚀 Entwicklung
 

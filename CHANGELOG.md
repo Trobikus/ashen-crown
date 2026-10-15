@@ -13,6 +13,31 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
   erklärt es). Start- und Brücken-Knoten zählen nicht als Farbe. „Runen neu
   schneiden" unter zwei Farben öffnet alles wieder; Bestände mit mehr als zwei
   aktiven Pfaden bleiben bestehend und starten keine weitere Farbe mehr.
+- **Ruhm wächst weiter — 9 neue Errungenschaften**: Jagd (50.000 Kreaturen),
+  Stürze (200), Spielzeit (100 h), Beute (2.000 Stücke, 50 legendäre), die
+  Tiefen (10/25/50) und Vollständigkeit (alle 150 Hauptspiel-Kreaturen im
+  Bestiarium) — zusammen +37 Ruhm, damit die Währung nicht nach einem
+  Durchgang endet. Die Tiefen-Fortschrittsanzeigen zählen jetzt sauber ab null.
+- **Drei neue Ruhm-Käufe**: **Aschesegen** (+10 % Asche-Ertrag pro Stufe, im
+  Feld wie offline), **Tiefenkunde** (Offline-Fortschritt +4 h pro Stufe,
+  8 h → bis 20 h) und **Werkstatthandwerk** (Werkstatt-Kosten −5 % pro Stufe).
+  Die Lade-Gesamtkosten (89 Ruhm) übersteigen bewusst den Ertrag (77) — Ruhm
+  bleibt eine Entscheidung, nicht eine Checkliste.
+- **Statpunkte neu verteilen** (Held-Szene): Schaden, Lebenskraft, Rüstung und
+  Kritchance fallen auf den Erwacht-Wurf zurück, alle Statpunkte werden
+  erstattet. Kostenschule wie beim Runen-Respec (Asche, skaliert mit Ilvl und
+  verteilter Punktezahl), Doppelklick bestätigt — rettet insbesondere
+  Kritchance-Punkte über dem 75-%-Deckel.
+- **Offline-Ausweichen an der Boss-Wand**: Steht der Held beim Abschalten vor
+  einem Boss, weicht der simulierte Held aufs höchste errungene Gebiet aus und
+  farmt die Nacht dort weiter — statt 8 Stunden an der Wand zu verpronnen. Die
+  Offline-Zusammenfassung berichtet die Ausweich-Zone; nur ganz ohne
+  errungenes Gebiet bleibt der Lauf ungenutzt.
+- **Gegner-Inspektor & Todesrückblick**: Hover auf den Gegner zeigt Level,
+  Schaden pro Schlag, Angriffstempo, Temperament (inkl. Wut) und die
+  prozentuale Schadensminderung durch die eigene Rüstung. Beim Tod nennt das
+  Overlay den Bezwinger mit Trefferzahl und Schadenssumme — die Alpha-Frage
+  „Wann stirbst du, ohne zu verstehen warum?" ist ab jetzt beantwortbar.
 
 ### Geändert
 - **Die Schrein-Regeneration zählt jetzt**: Der Abstieg nimmt die Lebenskraft

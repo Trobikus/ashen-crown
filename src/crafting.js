@@ -1,6 +1,6 @@
 import { GEAR_SLOTS, RARITIES, LAST_ZONE_INDEX, SKILL_EFFECT_LABELS, gearSlotOf, baseOf, rarityOf, zoneDef, rollItemValues, itemStatsText, itemIlvl, rollMastery, formatNum } from './data.js';
 
-import { state } from './state.js';
+import { state, craftCostFactor } from './state.js';
 
 import { ruhmAvailable, RUHM_RELIC_REROLL_COST } from './achievements.js';
 
@@ -47,21 +47,21 @@ function enhanceBonusValue(slotKey, enhanceLevel) {
 }
 
 function enhanceCost(item) {
-  return Math.round(30 * 1.6 ** (item.enhance + 1) * (1 + 0.25 * craftIlvl()));
+  return Math.round(30 * 1.6 ** (item.enhance + 1) * (1 + 0.25 * craftIlvl()) * craftCostFactor());
 }
 
 function reforgeCost(item) {
   // Pro Stufe in der Kette deutlich teurer; die Skala hängt an craftIlvl.
   const bases = [600, 3000, 12000, 50000];
   const index = RARITIES.findIndex((rarity) => rarity.key === item.rarity);
-  return Math.round(bases[Math.max(0, index)] * (1 + 0.4 * craftIlvl()));
+  return Math.round(bases[Math.max(0, index)] * (1 + 0.4 * craftIlvl()) * craftCostFactor());
 }
 
 // Die Endgame-Asche-Senke: Die goldene Meisterschaft lässt sich neu würfeln —
 // deutlich billiger als ein Legendär-Umschmieden, aber wiederholbar teuer
 // genug, dass die Jagd nach dem Perfekt-Wurf Tiefen-Asche schluckt.
 function masteryRerollCost() {
-  return Math.round(30000 * (1 + 0.4 * craftIlvl()));
+  return Math.round(30000 * (1 + 0.4 * craftIlvl()) * craftCostFactor());
 }
 
 // Neu würfeln mit Wechsel-Garantie: Der Meisterschafts-Pool hat nur wenige
