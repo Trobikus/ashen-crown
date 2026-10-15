@@ -4,7 +4,7 @@ const SAVE_KEY = 'ashen-crown-save';
 
 const SETTINGS_KEY = 'ashen-crown-settings';
 
-const SAVE_VERSION = 5;
+const SAVE_VERSION = 6;
 
 const DEFAULT_SETTINGS = {
   damageNumbers: true,
@@ -53,6 +53,8 @@ const state = {
   deaths: 0,
   playtimeMs: 0,
   drops: { gewoehnlich: 0, magisch: 0, selten: 0, episch: 0, legendär: 0 },
+  bestiary: {},
+  achievements: [],
 };
 
 export { SAVE_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, SAVE_VERSION, settings, state };

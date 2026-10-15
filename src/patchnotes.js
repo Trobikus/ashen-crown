@@ -3,10 +3,18 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.12.1',
+  version: '0.13.0',
   date: '15.10.2026',
   headline: 'Loot nach Diablo-Handwerk — und eine Werkstatt, die den Endgame-Ascheberg frisst',
   sections: [
+    {
+      heading: '0.13.0 — Bestiarium, Ruhm & Tiefenrelikte',
+      items: [
+        'Neues Bestiarium: 150 Kreaturen plus Tiefen-Namen — erlegen entschleiert, unerlegt bleibt „???"',
+        '20 Errungenschaften von der ersten Ernte bis zur Aschenkrone — mit Fortschrittsanzeige.',
+        'Tiefenrelikte: Der erste Boss jeder Aschentiefe hinterlässt ein Legendärstück mit ZWEI Meisterschaften und gesicherter Lifeleech.',
+      ],
+    },
     {
       heading: '0.12.1 — Hotfix: Werkstatt ohne Wartezeit',
       items: [

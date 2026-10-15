@@ -760,3 +760,14 @@
   text-align: left;
 }
 
+
+/* Versiegelte Einträge (Bestiarium, Errungenschaften): gedimmt, statt
+   komplett unsichtbar — der Reiz des Unbekannten bleibt sichtbar. */
+.entry-locked .chronicle-who {
+  color: #5f584e;
+}
+
+.entry-locked .chronicle-text {
+  color: #4a443b;
+  font-style: italic;
+}

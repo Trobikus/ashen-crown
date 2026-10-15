@@ -46,6 +46,14 @@ function cacheDom() {
   el.tileChronik = document.getElementById('tile-chronik');
   el.sceneStats = document.getElementById('scene-stats');
   el.tileStats = document.getElementById('tile-stats');
+  el.sceneBestiary = document.getElementById('scene-bestiary');
+  el.tileBestiary = document.getElementById('tile-bestiary');
+  el.bestiarySummary = document.getElementById('bestiary-summary');
+  el.bestiaryList = document.getElementById('bestiary-list');
+  el.sceneAchievements = document.getElementById('scene-achievements');
+  el.tileAchievements = document.getElementById('tile-achievements');
+  el.achievementsSummary = document.getElementById('achievements-summary');
+  el.achievementsList = document.getElementById('achievements-list');
   el.statsPlaytime = document.getElementById('stats-playtime');
   el.statsKills = document.getElementById('stats-kills');
   el.statsDeaths = document.getElementById('stats-deaths');

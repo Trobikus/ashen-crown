@@ -4,7 +4,7 @@ import helmIcon from './assets/icons/helm.svg';
 import hoseIcon from './assets/icons/hose.svg';
 import schuheIcon from './assets/icons/schuhe.svg';
 import handIcon from './assets/icons/hand.svg';
-import { INVENTORY_CAP, GEAR_SLOTS, RARITIES, DROP_CHANCES, zoneDef, gearSlotOf, rarityOf, rollRarity, pickBase, rollItemValues, itemStats, itemStatsText, itemStatRanges, itemIlvl, itemScore, rollMastery, rollRangesVisible, setRollRanges, SKILL_EFFECT_LABELS, formatNum } from './data.js';
+import { INVENTORY_CAP, GEAR_SLOTS, RARITIES, DROP_CHANCES, LIFELEECH_PCT_BY_RARITY, zoneDef, gearSlotOf, rarityOf, rollRarity, pickBase, rollItemValues, itemStats, itemStatsText, itemStatRanges, itemIlvl, itemScore, rollMastery, rollRangesVisible, setRollRanges, SKILL_EFFECT_LABELS, formatNum } from './data.js';
 
 import { state, settings } from './state.js';
 
@@ -294,6 +294,7 @@ function tooltipHtml(item, action, showValue = false) {
     stats.lifeleechFlat ? `<div class="tt-leech">+${formatNum(stats.lifeleechFlat)} Lifeleech pro Treffer${rangeTag('lifeleechFlat')}</div>` : null,
     item.enhance ? `<div class="tt-enhance">Verstärkt +${item.enhance}</div>` : null,
     item.mastery ? `<div class="tt-mastery">Meisterschaft: ${SKILL_EFFECT_LABELS[item.mastery.stat](item.mastery.value)}</div>` : null,
+    item.mastery2 ? `<div class="tt-mastery">Tiefen-Meisterschaft: ${SKILL_EFFECT_LABELS[item.mastery2.stat](item.mastery2.value)}</div>` : null,
   ]
     .filter(Boolean)
     .join('');
@@ -375,4 +376,37 @@ function sellSelected() {
   hooks.render();
 }
 
-export { rollDrop, equipItem, unequipItem, sortInventory, equipBest, sellSelected, toggleSellMode, exitSellMode };
+// Tiefenrelikt: Die Belohnung für den ersten Boss einer Aschentiefe — ein
+// garantiertes Legendärstück auf Tiefen-ilvl mit gesicherter Lifeleech und
+// ZWEI Meisterschaften. Das Jagdziel des Endgames.
+function buildDepthRelic(ilvl) {
+  const slot = GEAR_SLOTS[Math.floor(Math.random() * GEAR_SLOTS.length)];
+  const rarity = rarityOf('legendär');
+  const baseItem = pickBase(slot, ilvl);
+  const values = rollItemValues(slot, rarity, ilvl, baseItem);
+  if (!values.lifeleech && !values.lifeleechFlat) {
+    const [min, max] = LIFELEECH_PCT_BY_RARITY.legendär;
+    values.lifeleech = min + Math.floor(Math.random() * (max - min + 1));
+  }
+  return {
+    id: ++state.itemSeq,
+    slot: slot.key,
+    base: baseItem.name,
+    name: `Tiefenrelikt: ${baseItem.name} ${rarity.suffix}`,
+    rarity: rarity.key,
+    ilvl,
+    enhance: 0,
+    mastery: rollMastery(slot.stat),
+    mastery2: rollMastery(slot.stat),
+    ...values,
+  };
+}
+
+// Legt ein gebautes Stück direkt ins Inventar (Tiefenrelikt) und markiert
+// das Gear-Rendering dirty — der normale Drop-Pfad läuft über rollDrop.
+function grantItem(item) {
+  state.inventory.push(item);
+  gearDirty = true;
+}
+
+export { rollDrop, equipItem, unequipItem, sortInventory, equipBest, sellSelected, toggleSellMode, exitSellMode, buildDepthRelic, grantItem, itemSellValue };

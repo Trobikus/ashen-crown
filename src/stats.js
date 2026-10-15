@@ -24,6 +24,8 @@ export function masteryBonus(stat) {
   for (const slot of GEAR_SLOTS) {
     const item = state.equipment[slot.key];
     if (item?.mastery?.stat === stat) total += item.mastery.value;
+    // Zweite Meisterschaft: ausschließlich auf Tiefenrelikten (v0.13.0).
+    if (item?.mastery2?.stat === stat) total += item.mastery2.value;
   }
   return total;
 }

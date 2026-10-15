@@ -4,6 +4,27 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.13.0] — 2026-10-15
+
+### Hinzugefügt
+- **Bestiarium** (neue Hub-Kachel): Alle 150 Kreaturen der fünf Kontinente
+  plus die Namen der Tiefen, gruppiert nach Kontinent — wer sie noch nie
+  erlegt hat, bleibt als „???" versiegelt; erlegte zählen ihre Kills.
+  Das Spielstand-Feld `bestiary` (Name → Kills, Save v6) füllt sich beim
+  Erlegen, rückwirkend ist nichts nachzuholen.
+- **Errungenschaften** (neue Hub-Kachel): 20 Auszeichnungen aus den
+  Statistik-Zählern — Jagd, Stürze, Spielzeit, Beute (inkl. Legendär-Jagd)
+  und Reich-Fortschritt bis zur Aschenkrone und in die Tiefen. Gesperrte
+  zeigen ihren Fortschritt, neue Errungenschaften feiern sich mit Toast
+  und Klang; IDs liegen im Spielstand (`achievements`, Save v6).
+- **Tiefenrelikte**: Der erste Boss einer Aschentiefe hinterlässt garantiert
+  ein **Tiefenrelikt** — ein Legendärstück auf Tiefen-ilvl mit gesicherter
+  Lifeleech und **zwei Meisterschaften** (dem neuen `mastery2`-Feld, das in
+  allen Heldenwerten, Tooltips und der Werkstatt mitzählt). Das Jagdziel
+  des Endgames: jede Tiefe belohnt den ersten Durchbruch, volle Inventare
+  wandeln das Relikt in seinen Aschewert. ‼️ Werte-Balance der Relikte ist
+  bewusst großzügig — die Tiefen sollen sich lohnen.
+
 ## [0.12.1] — 2026-10-15
 
 ### Behoben
@@ -499,6 +520,7 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Desktop-Shell via Tauri 2, Vollbild-Start.
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
+[0.13.0]: https://github.com/Trobikus/ashen-crown/compare/v0.12.1...v0.13.0
 [0.12.1]: https://github.com/Trobikus/ashen-crown/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/Trobikus/ashen-crown/compare/v0.11.2...v0.12.0
 [0.11.2]: https://github.com/Trobikus/ashen-crown/compare/v0.11.1...v0.11.2

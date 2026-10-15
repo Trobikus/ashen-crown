@@ -68,6 +68,14 @@
           <span class="tile-name">Statistik</span>
           <span class="tile-sub">Die Asche zählt mit</span>
         </button>
+        <button class="tile" id="tile-bestiary">
+          <span class="tile-name">Bestiarium</span>
+          <span class="tile-sub">150 Kreaturen warten</span>
+        </button>
+        <button class="tile" id="tile-achievements">
+          <span class="tile-name">Errungenschaften</span>
+          <span class="tile-sub">Ruhm wird gezählt</span>
+        </button>
         <button class="tile" id="tile-chronik">
           <span class="tile-name">Chronik</span>
           <span class="tile-sub">Die Asche erinnert sich</span>
@@ -304,6 +312,24 @@
         </div>
       </div>
       <p class="tagline">Die Asche zählt. Sie vergisst nicht.</p>
+    </section>
+    <section class="scene" id="scene-bestiary" hidden>
+      <header class="scene-header">
+        <button class="btn-small" data-back>Zurück</button>
+      </header>
+      <h2>Bestiarium</h2>
+      <p class="skill-hud" id="bestiary-summary"></p>
+      <div id="bestiary-list"></div>
+      <p class="tagline">Wer sie kennt, fürchtet sie weniger.</p>
+    </section>
+    <section class="scene" id="scene-achievements" hidden>
+      <header class="scene-header">
+        <button class="btn-small" data-back>Zurück</button>
+      </header>
+      <h2>Errungenschaften</h2>
+      <p class="skill-hud" id="achievements-summary"></p>
+      <div id="achievements-list"></div>
+      <p class="tagline">Ruhm wird gezählt, nicht geschenkt.</p>
     </section>
     <section class="scene" id="scene-chronik" hidden>
       <header class="scene-header">

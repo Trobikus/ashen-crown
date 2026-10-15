@@ -4,7 +4,7 @@ import { state, settings, SAVE_KEY, SAVE_VERSION } from './state.js';
 
 import { loadSettings, saveSettings, applySettings } from './settings.js';
 
-import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, INVENTORY_CAP, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, RARITIES, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, DEATH_ASH_PENALTY, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, sanitizeItem, asCount, formatNum } from './data.js';
+import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, INVENTORY_CAP, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, RARITIES, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, DEATH_ASH_PENALTY, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, sanitizeItem, asCount, formatNum, ZONE_ENEMIES, ZONES, DEPTH_ENEMY_NAMES, CONTINENTS } from './data.js';
 
 import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier, heroLifeleech } from './stats.js';
 
@@ -20,7 +20,9 @@ import { buildCraftSlots, renderCrafting, bindCraftEvents } from './crafting.js'
 
 import { INTRO_PAGES, COMBAT_INTRO_PAGES, CONTINENT_LORE, epitaphOf, continentLoreKeyOf, renderChronicle } from './lore.js';
 
-import { initItems, rollDrop, equipItem, unequipItem, sortInventory, equipBest, sellSelected, toggleSellMode, exitSellMode, sellButtonAction, selectAllForSale, handleInventoryClick, renderGearIfDirty } from './items.js';
+import { initItems, rollDrop, equipItem, unequipItem, sortInventory, equipBest, sellSelected, toggleSellMode, exitSellMode, sellButtonAction, selectAllForSale, handleInventoryClick, renderGearIfDirty, buildDepthRelic, grantItem, itemSellValue } from './items.js';
+
+import { ACHIEVEMENTS, evaluateAchievements } from './achievements.js';
 
 
 
@@ -204,7 +206,7 @@ function hideOverlay() {
 
 function showScreen(target) {
   if (target !== el.sceneHero) exitSellMode();
-  for (const screen of [el.menu, el.hub, el.sceneHero, el.sceneSkills, el.sceneOptions, el.sceneMap, el.sceneCrafting, el.sceneStats, el.sceneChronik, el.sceneVictory, el.game]) {
+  for (const screen of [el.menu, el.hub, el.sceneHero, el.sceneSkills, el.sceneOptions, el.sceneMap, el.sceneCrafting, el.sceneStats, el.sceneBestiary, el.sceneAchievements, el.sceneChronik, el.sceneVictory, el.game]) {
     screen.hidden = screen !== target;
   }
 }
@@ -313,12 +315,15 @@ function killEnemy() {
   pulseClass(el.enemyFigure, 'dying', 500);
   state.kills += 1;
   state.zoneKills += 1;
+  // Bestiarium: Jede erlegte Kreatur zählt unter ihrem Namen.
+  state.bestiary[def.name] = (state.bestiary[def.name] ?? 0) + 1;
   state.ash += Math.round(def.ash * (1 + statBonus('ash') / 100));
   // Gegner unter dem Helden-Niveau tragen weniger bis keine Erfahrung bei.
   gainXp(Math.round(def.xp * enemyXpMultiplier(enemy.level, state.level)));
   rollDrop(enemy.type);
   sfx.kill();
   if (def.boss) {
+    const firstClear = state.cleared <= state.zone;
     state.cleared = Math.max(state.cleared, state.zone + 1);
     if (!state.crownWon && state.zone === LAST_ZONE_INDEX) {
       state.crownWon = true;
@@ -333,8 +338,24 @@ function killEnemy() {
       ? `Neuer Kontinent: ${next.continent}. `
       : '';
     const epitaph = epitaphOf(state.zone);
+    // Tiefenrelikt: Der erste Boss einer Aschentiefe hinterlässt garantiert
+    // ein Legendärstück mit zwei Meisterschaften und gesicherter Lifeleech.
+    let relicLine = '';
+    if (state.zone >= MAIN_ZONE_COUNT && firstClear) {
+      const relic = buildDepthRelic(zoneDef(state.zone).ilvl);
+      if (state.inventory.length < INVENTORY_CAP) {
+        grantItem(relic);
+        toast(`Tiefenrelikt erbeutet: ${relic.name}`, '#c1663a');
+        relicLine = `<br><br>Tiefenrelikt erbeutet: <strong>${relic.name}</strong> — Legendär mit zwei Meisterschaften und gesicherter Lifeleech.`;
+      } else {
+        const ash = itemSellValue(relic);
+        state.ash += ash;
+        toast(`Tiefenrelikt — Inventar voll: +${formatNum(ash)} Asche`, '#c1663a');
+        relicLine = `<br><br>Tiefenrelikt erbeutet — das Inventar war voll: +${formatNum(ash)} Asche.`;
+      }
+    }
     showDismissibleOverlay(
-      `${epitaph}<br><br>${def.name} bezwungen — ${continentGate}${next.name} ist jetzt offen.`,
+      `${epitaph}<br><br>${def.name} bezwungen — ${continentGate}${next.name} ist jetzt offen.${relicLine}`,
       5000,
       true,
     );
@@ -528,6 +549,82 @@ function renderStats() {
   }
 }
 
+// Das Bestiarium: 150 Kreaturen der fünf Kontinente plus die Namen der
+// Tiefen — erlegt zählt, unerlegt bleibt als „???" versiegelt.
+function renderBestiary() {
+  if (el.sceneBestiary.hidden) return;
+  const killsOf = (name) => state.bestiary[name] ?? 0;
+  const types = [['normal', 'Normal'], ['elite', 'Elite'], ['boss', 'Boss']];
+  let known = 0;
+  el.bestiarySummary.textContent = 'Erlege Kreaturen, um ihre Einträge zu entschleiern.';
+  el.bestiaryList.replaceChildren();
+  const entry = (name, kind, zoneName) => {
+    const kills = killsOf(name);
+    if (kills > 0) known += 1;
+    const row = document.createElement('div');
+    row.className = 'chronicle-entry' + (kills > 0 ? '' : ' entry-locked');
+    const who = document.createElement('div');
+    who.className = 'chronicle-who';
+    who.textContent = (kills > 0 ? '' : '??? ') + name + (kind === 'boss' ? ' — Boss' : kind === 'elite' ? ' — Elite' : '');
+    if (kind === 'boss') who.style.color = '#c1663a';
+    const text = document.createElement('div');
+    text.className = 'chronicle-text';
+    text.textContent = kills > 0 ? `${zoneName} · ${kills} erlegt` : `${zoneName} · Noch nie erlegt.`;
+    row.append(who, text);
+    el.bestiaryList.appendChild(row);
+  };
+  for (const [ci, continent] of CONTINENTS.entries()) {
+    const head = document.createElement('h3');
+    head.textContent = continent.name;
+    el.bestiaryList.appendChild(head);
+    for (let z = ci * 10; z < ci * 10 + 10; z += 1) {
+      for (const [kind] of types) {
+        entry(ZONE_ENEMIES[z][kind].name, kind, ZONES[z].name);
+      }
+    }
+  }
+  const head = document.createElement('h3');
+  head.textContent = 'Die Tiefen';
+  el.bestiaryList.appendChild(head);
+  for (const [kind, label] of types) {
+    const labelMap = { normal: 'Normal', elite: 'Elite', boss: 'Boss' };
+    for (const name of DEPTH_ENEMY_NAMES[kind]) {
+      entry(name, kind, `Aschentiefe · ${labelMap[kind]}`);
+    }
+  }
+  el.bestiarySummary.textContent = `${known} von ${ZONE_ENEMIES.length * 3 + DEPTH_ENEMY_NAMES.normal.length + DEPTH_ENEMY_NAMES.elite.length + DEPTH_ENEMY_NAMES.boss.length} Kreaturen erlegt.`;
+}
+
+// Errungenschaften: Gesperrte Einträge zeigen ihren Fortschritt, errungene
+// leuchten in Kronenfarbe.
+function renderAchievements() {
+  if (el.sceneAchievements.hidden) return;
+  const earned = new Set(state.achievements);
+  el.achievementsSummary.textContent = `${earned.size} von ${ACHIEVEMENTS.length} errungen.`;
+  el.achievementsList.replaceChildren();
+  for (const achievement of ACHIEVEMENTS) {
+    const done = earned.has(achievement.id);
+    const row = document.createElement('div');
+    row.className = 'chronicle-entry' + (done ? '' : ' entry-locked');
+    const who = document.createElement('div');
+    who.className = 'chronicle-who';
+    who.textContent = (done ? '◆ ' : '◇ ') + achievement.name;
+    who.style.color = done ? '#c1663a' : '';
+    const text = document.createElement('div');
+    text.className = 'chronicle-text';
+    let line = achievement.desc;
+    if (achievement.progress) {
+      const [cur, target] = achievement.progress(state);
+      line += achievement.format === 'zeit'
+        ? ` (${formatDuration(cur)} / ${formatDuration(target)})`
+        : ` (${formatNum(cur)} / ${formatNum(target)})`;
+    }
+    text.textContent = done ? line + ' — errungen.' : line;
+    row.append(who, text);
+    el.achievementsList.appendChild(row);
+  }
+}
+
 function render() {
   el.hubLevel.textContent = state.level;
   el.hubAsh.textContent = formatNum(state.ash);
@@ -601,6 +698,19 @@ function render() {
   }
   renderGearIfDirty();
   renderStats();
+}
+
+// Errungenschaften prüfen: Im 3-Sekunden-Tick reicht — neu Errungenes wird
+// mit Toast und Klang gefeiert, Offline-Errungenschaften erscheinen still.
+function checkAchievements() {
+  const fresh = evaluateAchievements(state);
+  if (!fresh.length) return;
+  for (const id of fresh) {
+    const achievement = ACHIEVEMENTS.find((a) => a.id === id);
+    toast(`Errungenschaft: ${achievement.name}`, '#c1663a');
+  }
+  sfx.unlock();
+  save();
 }
 
 function save() {
@@ -703,6 +813,8 @@ function migrateSave(data) {
   }
   // Spielstände vor 0.11.0 (v4): Keine Migration nötig — die Felder Basis,
   // Ilvl und die Statistik-Zähler härtet prepareSave für Altbestand nach.
+  // Spielstände vor 0.13.0 (v5): Bestiarium, Errungenschaften und
+  // Tiefen-Meisterschaften kommen ebenfalls über die prepareSave-Härtung.
   // Künftige Migrationen hier anhängen (if (data.saveVersion === n) …).
   data.saveVersion = SAVE_VERSION;
   return data;
@@ -773,6 +885,18 @@ function prepareSave(data) {
   data.playtimeMs = Math.max(0, asNumber(data.playtimeMs, 0));
   data.drops = data.drops && typeof data.drops === 'object' && !Array.isArray(data.drops) ? data.drops : {};
   for (const rarity of RARITIES) data.drops[rarity.key] = Math.max(0, asNumber(data.drops[rarity.key], 0));
+  // Bestiarium (Name → Kill-Zähler) und Errungenschaften (ID-Liste):
+  // Fremdes wird verworfen, Überlängen geklemmt, Nullen verworfen.
+  data.bestiary = data.bestiary && typeof data.bestiary === 'object' && !Array.isArray(data.bestiary) ? data.bestiary : {};
+  const cleanBestiary = {};
+  for (const [name, count] of Object.entries(data.bestiary)) {
+    const kills = asCount(count);
+    if (typeof name === 'string' && name && kills > 0) cleanBestiary[name.slice(0, 60)] = kills;
+  }
+  data.bestiary = cleanBestiary;
+  data.achievements = Array.isArray(data.achievements)
+    ? data.achievements.filter((id) => typeof id === 'string' && id.length <= 40)
+    : [];
   data.seenContinents = Array.isArray(data.seenContinents)
     ? data.seenContinents.filter((key) => typeof key === 'string')
     : [];
@@ -998,6 +1122,7 @@ function idleTick() {
   const now = Date.now();
   if (lastPlayTick !== null) state.playtimeMs += Math.min(60000, now - lastPlayTick);
   lastPlayTick = now;
+  checkAchievements();
   save();
   render();
 }
@@ -1209,6 +1334,14 @@ function bindEvents() {
   el.tileStats.addEventListener('click', () => {
     showScreen(el.sceneStats);
     renderStats();
+  });
+  el.tileBestiary.addEventListener('click', () => {
+    showScreen(el.sceneBestiary);
+    renderBestiary();
+  });
+  el.tileAchievements.addEventListener('click', () => {
+    showScreen(el.sceneAchievements);
+    renderAchievements();
   });
   bindCraftEvents(hooks);
   el.zoneList.addEventListener('click', (e) => {

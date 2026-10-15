@@ -992,6 +992,7 @@ function normalizeItem(item) {
   item.enhance ??= 0;
   item.enhanceBonus ??= null;
   item.mastery ??= null;
+  item.mastery2 ??= null;
   return item;
 }
 
@@ -1032,6 +1033,11 @@ function sanitizeItem(item) {
     && Object.hasOwn(SKILL_EFFECT_LABELS, item.mastery.stat) && typeof item.mastery.value === 'number'
     ? { stat: item.mastery.stat, value: asCount(item.mastery.value) }
     : null;
+  // Zweite Meisterschaft: ausschließlich Tiefenrelikte tragen sie (v0.13.0).
+  item.mastery2 = item.mastery2 && typeof item.mastery2 === 'object'
+    && Object.hasOwn(SKILL_EFFECT_LABELS, item.mastery2.stat) && typeof item.mastery2.value === 'number'
+    ? { stat: item.mastery2.stat, value: asCount(item.mastery2.value) }
+    : null;
   normalizeItem(item);
   return item;
 }
@@ -1051,7 +1057,8 @@ function itemScore(item) {
   // aktuellen Helden ab, die Faktoren bilden die Größenordnung ab.
   return s.damage * 2 + s.hp * 0.5 + s.armor + s.critChance * 3
     + s.critDmg * 1.5 + s.damagePct * 0.8 + s.hpPct * 0.4 + s.armorPct * 0.4
-    + leechBonus + (item.mastery ? item.mastery.value * 2 : 0);
+    + leechBonus + (item.mastery ? item.mastery.value * 2 : 0)
+    + (item.mastery2 ? item.mastery2.value * 2 : 0);
 }
 
 // Itemlevel: Neue Stücke speichern es; Altbestand ohne Feld bekommt eine
@@ -1156,7 +1163,7 @@ function itemStatsText(item) {
     ]
       .filter(Boolean)
       .join(' · ') || 'Keine Werte'
-  );
+  ) + (item.mastery2 ? ` · Tiefen-Meisterschaft: ${SKILL_EFFECT_LABELS[item.mastery2.stat](item.mastery2.value)}` : '');
 }
 
 export {
@@ -1183,7 +1190,7 @@ export {
 
   ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, CRIT_CHANCE_CAP, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL,
 
-  ENEMY_TYPE_LEVEL_OFFSETS, enemyLevelOf,
+  ENEMY_TYPE_LEVEL_OFFSETS, enemyLevelOf, DEPTH_ENEMY_NAMES,
 
   ENEMY_XP_CUTOFF_LEVELS, enemyXpMultiplier, SKILL_VALUE_SCALE,
 

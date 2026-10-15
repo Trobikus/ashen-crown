@@ -163,6 +163,7 @@ function renderCraftDetail() {
       <div class="tt-stat">${itemStatsText(item)}</div>
       ${item.enhanceBonus ? '<div class="tt-enhance">Verstärkt durch die Werkstatt</div>' : ''}
       ${item.mastery ? `<div class="tt-mastery">Meisterschaft: ${SKILL_EFFECT_LABELS[item.mastery.stat](item.mastery.value)}</div>` : ''}
+      ${item.mastery2 ? `<div class="tt-mastery">Tiefen-Meisterschaft: ${SKILL_EFFECT_LABELS[item.mastery2.stat](item.mastery2.value)}</div>` : ''}
     </div>
     <div class="craft-action">
       <div class="craft-action-head">Verstärken auf +${item.enhance + 1}<span>${enhancePreview}</span></div>
