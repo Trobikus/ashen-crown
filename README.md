@@ -5,11 +5,12 @@
   kämpfst dich Gebiet für Gebiet durch **fünf Kontinente** — und formst dabei einen
   Helden, der ganz nach deinem Willen geformt ist.
 
+  [![Version](https://img.shields.io/badge/Alpha-v0.15.0-C14B3A)](releases)
   [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev)
   [![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)](https://tauri.app)
   [![pnpm](https://img.shields.io/badge/pnpm-Paketmanager-F69220?logo=pnpm&logoColor=white)](https://pnpm.io)
-  [![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/de/docs/Web/JavaScript)
-  [![CI](https://github.com/Trobikus/ashen-crown/actions/workflows/ci.yml/badge.svg)](https://github.com/Trobikus/ashen-crown/actions/workflows/ci.yml)
+  [![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.de/de/docs/Web/JavaScript)
+  [![CI](https://img.shields.io/badge/CI-Balance--Sim_%2B_Build-green)](../../actions/workflows/ci.yml)
   [![Lizenz](https://img.shields.io/badge/Lizenz-propriet%C3%A4r--alle%20Rechte%20vorbehalten-C14B3A)](LICENSE)
 
   *Web & Desktop — ohne Framework, ohne Server, mit Speicherstand im Browser.*
@@ -33,79 +34,106 @@ Denn die Asche erinnert sich — an jedes Reich, das vor dir versuchte, ihr zu e
 
 ## ⚙️ Systeme, die ineinandergreifen
 
-- **Auto-Kampf & Zonen** — **5 Kontinente** mit je **10 Ebenen**, jedes Gebiet bringt
-  sein eigenes Bestiarium aus drei Kreaturen mit — **150 Gegner insgesamt**, von der
-  Ascheratte bis zur Aschenkrone.
-  Pro Ebene wartet nach 30 Siegen ein Boss; sein Fall öffnet die Tür in die Tiefe —
-  und irgendwann das Tor zum nächsten Kontinent.
+### ⚔️ Kampf & Zonen
+
+- **Auto-Kampf & Zonen** — **5 Kontinente** mit je **10 Ebenen**, dahinter die
+  endlosen **Aschentiefen**. Jedes Gebiet bringt sein eigenes Bestiarium aus drei
+  Kreaturen mit — **150 Gegner insgesamt**, von der Ascheratte bis zur Aschenkrone.
+  Pro Ebene wartet nach 30 Siegen ein Boss; sein Fall öffnet die Tür in die Tiefe.
   Jede Zone kämpft mit eigenem Temperament (*Flink* oder *Massiv*), Bosse verfallen
   unter 35 % Lebenskraft in **Wut** — und jeder Gegner trägt die Färbung seines
   Kontinents. Kämpfen ist Handwerk: **Gegner greifen gelegentlich daneben** (15 %),
   dein Held verfehlt auch (12 %), die Kritchance deckelt bei 75 %, und Rüstung
   mindert nie mehr als die Hälfte — mindestens 50 % jedes Schlags kommen durch.
-  Im Feld regeneriert dein Held nie von selbst: Kämpfe zehren — wer
-  angeschlagen aufbricht, trägt die Rest-Lebenskraft mit in den Kampf.
-  Am Schrein kehrt sie mit 2 % pro Sekunde zurück; nach dem Tod erwachst
-  du mit einem Viertel, und die Asche behält 15 % deines Vorrats als Zoll.
-  Im Feld heilt nur **Lifeleech**, das es ausschließlich auf epischen und
-  legendären Waffen gibt: als Prozente deines Schadens oder als feste Zahl
-  pro Treffer.
-  Erfahrung gibt es nur von Würdigen: Gegner unter deinem Niveau tragen weniger
+- **Der Gegner-Inspektor** — Hover auf den Gegner verrät Level, Schaden pro Schlag,
+  Angriffstempo, Temperament und die Schadensminderung, die deine Rüstung gerade
+  bewirkt. Und wenn es doch schiefgeht, nennt der **Todesrückblick** den Bezwinger
+  mit Trefferzahl und Schadenssumme: Du weißt immer, warum du gestorben bist.
+- **Der Schrein atmet — und zählt** — Im Feld regeneriert dein Held nie von selbst;
+  nur das Rasten am Schrein heilt (2 % pro Sekunde), und wer aufbricht, nimmt seine
+  Lebenskraft mit, wie sie ist. Stirbst du, erwachst du mit einem Viertel deiner
+  Lebenskraft — und die Asche behält 15 % deines Vorrats als Zoll.
+- **Erfahrung gibt es nur von Würdigen** — Gegner unter deinem Niveau tragen weniger
   bei, 20 Stufen darunter gar nichts. Und mancher Boss ist eine echte **Wand**:
   Dann heißt es zurück, Asche und Beute farmen, besser schmieden — und es ihm
-  nochmal zeigen.
-  Die Bestiarien erzählen dabei ihre Reiche: der verbrannte Hof (Grabesdiener,
-  Ascheschreiber, Leichenprediger), das geflohene Frostvolk (Frostpilger,
-  Eiskämmerin, Winterbotschafter), die ertränkten Gelehrten (Archivarsleim,
-  Reliquienschwimmer), das blutbezahlende Kriegsvolk (Lanzknecht, Doppelgelder)
-  und die Aufgestiegenen (Sternwarter, Astrolabit).
-  Die Gebiete-Karte zeigt jeden Kontinent groß im Überblick; mit den Pfeilen blätterst
-  du zwischen den Kontinenten, und für sicheres Farmen reist du in freigeschaltete
-  Ebenen zurück.
-- **Fertigkeitenbaum** — **217 Knoten** im Path-of-Exile-Stil: vier Pfade
-  (Krieg, Haut, Asche, Geist) mit kleinen Passives, Notables und **12 Keystones mit
-  Tradeoffs**. **12 Brücken** verbinden die Pfade miteinander — für Misch-Builds,
-  die es so kein zweites Mal gibt. **Maximal zwei Pfade erwachen gleichzeitig** —
-  die übrigen versiegeln sich, bis ein Respec sie wieder öffnet. Der Baum
-  **erwacht ab Stufe 20** — erst dann gibt es Runenpunkte, und seine Werte sind
-  bewusst gedämpft.
-- **Loot & Inventar** — **7 Rüstungsslots**, **5 Raritäten** (Gewöhnlich →
-  Magisch → Selten → Episch → Legendär). Jedes Stück **rollt seine Werte** —
-  das perfekte Exemplar ist ein Fund, kein Rechenresultat. Beute ist ein
-  Ereignis, kein Dauerregen: Wer tief kämpft, findet Besseres. Verkaufen,
-  Sortieren und „Bestes anlegen" inklusive.
-- **Crafting** — Die Werkstatt macht Asche zu Macht: Ausrüstungsstufen **verstärken**
-  (steile Kostenkurve pro Stufe) oder **umschmieden** (Rarity-Upgrade mit Neuwurf,
-  senkt das Ilvl nie). Legendäre Items rollen eine goldene **Meisterschaft** —
-  Prozentboni, die es sonst auf Gear nirgends gibt, und die sich gegen viel Asche
-  **neu schmieden** lassen: die Endgame-Jagd nach dem Perfekt-Wurf. Alles skaliert
-  mit der tiefsten errungenen Ebene.
-- **Komfort auf Wunsch** — **Auto-Tür** (nach dem Boss geht es von allein weiter) und
-  **Auto-Verkauf** (Beute unter einer gewählten Seltenheit wird beim Fund zu Asche)
-  unter Optionen → Spiel; volles Inventar tauscht Beute ohnehin sofort in Asche.
-- **Stufen & Asche** — Jede Stufe bringt **2 Statpunkte**; Runenpunkte kommen
-  ab Stufe 20 dazu. Asche finanziert die Werkstatt: Verstärkung und Umschmieden.
-  Beide Wege stärken denselben Helden, keinen zweiten.
-- **Zahlen, die mitwachsen** — Spät werden Werte astronomisch; das Spiel hält sie
-  lesbar: kompakte Kurzschreibweise mit deutschem Komma („12,4K", „3,2M", „1,5B").
-- **Offline-Fortschritt** — Wer im Feld aufhört, kämpft bis zu **8 Stunden** ohne dich
-  weiter (mit der Errungenschaft Tiefenkunde bis 20; an einer Boss-Wand wird aufs
-  beste Gebiet ausgewichen und weitergefarmt) und meldet dir bei der Rückkehr,
-  was er erlegt, gefunden und gelernt hat.
-- **Chronik & Lore** — Die Asche erinnert sich: Intro-Erzählung beim Erwachen,
-  eine Annale pro Kontinent beim ersten Betreten, ein Epitaph über jedem der
-  **50 bezwungenen Bosse** — alles gesammelt in der Chronik am Schrein.
+  nochmal zeigen. Der Held wächst dabei mit: Er bleibt dauerhaft nur wenige Stufen
+  unter seinen Gegnern.
+
+### 🌳 Fertigkeitenbaum
+
+**217 Knoten** im Path-of-Exile-Stil: vier Pfade (Krieg, Haut, Asche, Geist) mit
+kleinen Passives, Notables und **12 Keystones mit Tradeoffs**. **12 Brücken**
+verbinden die Pfade miteinander — für Misch-Builds, die es so kein zweites Mal gibt.
+Der Baum **erwacht ab Stufe 20** — erst dann gibt es Runenpunkte, und seine Werte
+sind bewusst gedämpft. Und er will Entscheidung: **Maximal zwei Pfade erwachen
+gleichzeitig** — die übrigen versiegeln sich, bis ein Respec sie wieder öffnet.
+
+### 🗡️ Loot & Inventar
+
+- **7 Rüstungsslots, 5 Raritäten** (Gewöhnlich → Magisch → Selten → Episch →
+  Legendär) über **35 Item-Basen** à la Diablo: Klinge bis Sense, Brustplatte bis
+  Plattenharnisch — höhere Basen schalten per Itemlevel frei und prägen den
+  Hauptwert. Jede Seltenheit kauft Affixplätze, jedes Stück **rollt seine Werte**
+  — das perfekte Exemplar ist ein Fund, kein Rechenresultat (gedrückte Alt-Taste
+  zeigt die Roll-Spannen).
+- **Beute ist ein Ereignis** — Der erste Elite-Kill eines Gebiets garantiert ein
+  Stück, der Boss kämpft mit 75 % Fundchance, normale Gegner bleiben das seltene
+  Glück. Lifeleech gibt es ausschließlich auf epischen und legendären Waffen.
+- **Komfort auf Wunsch** — **Auto-Tür** (nach dem Boss geht es von allein weiter),
+  **Auto-Verkauf** (Beute unter einer gewählten Seltenheit wird beim Fund zu Asche),
+  dazu Sortieren und „Bestes anlegen". Legendäre Stücke tragen eine goldene
+  **Meisterschaft** — Prozentboni, die es sonst auf Gear nirgends gibt.
+
+### 🏺 Die Werkstatt
+
+Die Werkstatt macht Asche zu Macht: Ausrüstungsstufen **verstärken** (steile
+Kostenkurve pro Stufe) oder **umschmieden** (Rarity-Upgrade mit Neuwurf, senkt das
+Ilvl nie). Die goldene Meisterschaft lässt sich gegen viel Asche **neu schmieden**
+— die Endgame-Jagd nach dem Perfekt-Wurf. Und im Helden-Screen können verteilte
+**Statpunkte neu verteilt** werden: Alle Punkte zurück, nichts bleibt verbaut.
+Alles skaliert mit der tiefsten errungenen Ebene.
+
+### 🏆 Ruhm, Errungenschaften & Wissen
+
+- **Errungenschaften & Ruhm** — **29 Auszeichnungen** aus Jagd, Stürzen, Spielzeit,
+  Beute und Reich-Fortschritt zahlen **Ruhm**, eine Währung, die es nur durch
+  Tun gibt. Im **Ruhm-Laden** kaufst du permanente Erleichterungen: **Beutelschein**
+  (+Inventarplätze), **Zollerlass** (−Todeszoll), **Aschesegen** (+Asche-Ertrag),
+  **Tiefenkunde** (+Offline-Fortschritt) und **Werkstatthandwerk** (−Werkstatt-
+  Kosten). Der Laden kostet insgesamt mehr, als je an Ruhm existiert — Ruhm bleibt
+  eine Entscheidung, keine Checkliste.
+- **Bestiarium & Statistik** — **163 Kreaturen** in der Chronik-Schwester: erlegt
+  entschleiert, unerlegt bleibt „???" versiegelt. Die Statistik-Seite zählt
+  Spielzeit, Tode, Beute je Seltenheit und deinen tiefsten Erfolg — die Asche
+  vergisst nicht.
+
+### 🌌 Unter dem Thron: Die Aschentiefen
+
+Hinter dem Sieg wartet das Endgame: prozedural tiefer werdende **Aschentiefen**
+mit eigener Gegnerschaft. Der erste Boss jeder Tiefe hinterlässt garantiert ein
+**Tiefenrelikt** — ein Legendärstück auf Tiefen-Itemlevel mit gesicherter Lifeleech
+und **zwei Meisterschaften**. Die zweite Meisterschaft lässt sich für **2 Ruhm**
+neu schmieden: günstig, unbegrenzt, die Jagd des Endgames.
+
+### 🌙 Chronik, Klang & Komfort
+
+- **Chronik & Lore** — Die Asche erinnert sich: Intro-Erzählung beim Erwachen, eine
+  Annale pro Kontinent beim ersten Betreten, ein Epitaph über jedem der **50
+  bezwungenen Bosse** und Flüstertöne aus den Tiefen — alles gesammelt am Schrein.
 - **Klang & Feedback** — Prozeduraler Sound aus der Web Audio API (keine Assets):
-  Treffer, Krits, Bosse, Beute, Aufstiege, Enrage, dazu ein dunkler Ambient-Drone
-  — mit Reglern für Gesamt, Effekte und Musik. Schadenszahlen (jetzt auch
-  Lebenspunktzahlen in der Arena), Aufblitzen und Toasts lassen sich trennen.
-- **Spielstand mit Sicherheitsnetz** — Versioniert (aktuell v4), drei rotierende
+  Treffer, Krits, Bosse, Beute, Aufstiege, Enrage, dazu ein dunkler Ambient-Drone —
+  mit Reglern für Gesamt, Effekte und Musik. Schadenszahlen, Aufblitzen und Toasts
+  lassen sich trennen.
+- **Offline-Fortschritt** — Wer im Feld aufhört, kämpft bis zu **8 Stunden** ohne
+  dich weiter (mit Tiefenkunde bis 20). An einer Boss-Wand weicht der simulierte
+  Held aufs beste errungene Gebiet aus und farmt weiter — und meldet dir bei der
+  Rückkehr, was er erlegt, gefunden und gelernt hat.
+- **Spielstand mit Sicherheitsnetz** — Versioniert (aktuell v8), drei rotierende
   Backups, Export/Import als JSON, Migrationen für alte Helden. Korrupte Items
   repariert das Spiel beim Laden — oder es greift zum Backup.
-- **Onboarding ohne Tutorial-Zwang** — Einmal-Hinweise im richtigen Moment:
-  Feld & Schrein beim ersten Abstieg, der Rast-Tipp beim ersten Boss, Punkte-,
-  Beute- und Meisterschafts-Hinweise, Einsteige in Fertigkeiten, Gebiete und
-  Werkstatt. Bestehende Helden bekommen nur, was sie verpasst haben.
+- **Onboarding ohne Tutorial-Zwang** — Einmal-Hinweise im richtigen Moment, und ein
+  Patchnote-Fenster zeigt beim Start, was neu ist. Bestehende Helden bekommen nur,
+  was sie verpasst haben.
 
 ## 🌍 Die fünf Kontinente
 
@@ -120,7 +148,7 @@ Denn die Asche erinnert sich — an jedes Reich, das vor dir versuchte, ihr zu e
 Die Zahlen hinter jedem Kontinent sind die Gegenstandsstufen (ilvl) seiner zehn
 Gebiete — je tiefer die Ebene, desto besser Beute und Werkstatt.
 
-## 🌳 Die vier Pfade
+## 🧭 Die vier Pfade
 
 | Pfad | Fokus | Extrem |
 | --- | --- | --- |
@@ -128,6 +156,24 @@ Gebiete — je tiefer die Ebene, desto besser Beute und Werkstatt.
 | 🛡️ **Haut** | Lebenskraft, Rüstung | *Blutzoll* — +150 Lebenskraft, −8 % Tempo |
 | 🏺 **Asche** | Beute & Erfahrung | *Midashand* — +45 % Asche, −10 % Schaden |
 | 👁️ **Geist** | Krit, Kritschaden, Tempo | *Zeitraffung* — +35 % Angriffstempo, −8 Rüstung |
+
+## 🔭 Ausblick — unverbindlich
+
+> Alles Folgende ist **Idee, kein Versprechen**: Umfang, Reihenfolge und ob überhaupt
+> ändern sich mit dem Feedback der Alpha. Nichts hier ist gebunden.
+
+- **Prestige / Meta-Progression** — der letzte große Block Richtung 1.0: freiwilliger
+  Neuanfang mit permanenten Boni und Belohnungen in den Aschentiefen. Als nächstes
+  auf dem Tisch — die Design-Runde läuft.
+- **Boss-Signaturen** — namensgebende Uniques der zehn Kontinent-Bosse („Herz der
+  Asche") als Jagdziele mit eigener Prägung.
+- **Tiefen- & Elite-Modifier** — rotierende Bestimmungen (z. B. „Gestählt: +40 %
+  Leben, +80 % Asche"), damit die Endlos-Wand und die Kampagne Abwechslung bekommen.
+- **Versunkene Kontinente** — Story-Kapitel in den Tiefen: eine Annale, Gegner und
+  Epitaphe pro Kapitel, auf der bestehenden Tiefen-Kurve.
+- **QoL & Härtung** — Werkstatt-Schmieden per Halten wiederholen, Tastatur-Shortcuts,
+  tastatur-navigierbare Tooltips und weitere automatische Tests für Speicherstand
+  und Formeln.
 
 ## 🧪 Closed Alpha
 
@@ -150,10 +196,6 @@ Ashen Crown befindet sich im geschlossenen Alpha-Stadium (aktuell **v0.15.0**):
 - **Empfehlung:** Desktop-Build spielen; der Web-Build (GitHub Pages bzw.
   `pnpm dev`) ist Dev-Vorschau ohne Touch-Feinschliff.
 
-## 🗺️ Auf dem Weg zu 1.0
-
-- Prestige/Meta-Progression und Belohnungen in den Aschentiefen
-
 ## 🚀 Entwicklung
 
 ```bash
@@ -161,31 +203,39 @@ pnpm install        # Abhängigkeiten installieren
 pnpm dev            # Web-Dev-Server (Vite, HMR)
 pnpm tauri dev      # Desktop-Fenster mit Hot Reload (Rust-Toolchain nötig)
 pnpm build          # Produktions-Build nach dist/
+
+node tools/balance-sim.mjs --verify   # Balance gegen die echte data.js prüfen
+node tools/smoke.mjs                  # Smoke-Checks für Kern-Module
 ```
 
 ### Projektstruktur
 
 ```
-├── index.html            # UI-Grundgerüst (Menü, Schrein, Szenen)
+├── index.html            # UI-Grundgerüst (Menü, Schrein, Szenen, Patchnotes)
 ├── src/
 │   ├── main.js           # Einstieg: Menü und Spielstart
 │   ├── data.js           # Spieldaten: Kontinente, Gegner, Loot, Skilltree
 │   ├── game.js           # Spielloop: Kampf, Fortschritt, Speicherung
 │   ├── zones.js          # Gebiete-Karte: Kontinente & Durchschalten
-│   ├── items.js          # Loot, Inventar, Vergleiche, Verkauf
-│   ├── crafting.js       # Werkstatt: Verstärken & Umschmieden
-│   ├── skilltree.js      # Fertigkeitenbaum: Graph & Punktevergabe
+│   ├── items.js          # Loot, Inventar, Vergleiche, Verkauf, Tiefenrelikte
+│   ├── crafting.js       # Werkstatt: Verstärken, Umschmieden, Meisterschafts-Reroll
+│   ├── skilltree.js      # Fertigkeitenbaum: Graph, Pfad-Bindung & Punktevergabe
 │   ├── stats.js          # Heldenwerte aus Basis, Gear, Skills & Meisterschaft
-│   ├── lore.js           # Chronik: Intro, Kontinent-Annalen, Boss-Epitaphe
+│   ├── achievements.js   # Errungenschaften, Ruhm-Währung & Ruhm-Laden
+│   ├── lore.js           # Chronik: Intro, Annalen, Epitaphe, Tiefen-Flüstertöne
 │   ├── state.js          # Spielstand & Einstellungen (localStorage)
 │   ├── dom.js            # DOM-Cache
 │   ├── settings.js       # Optionen laden/speichern/anwenden
 │   ├── audio.js          # Prozeduraler Sound (Web Audio API)
 │   ├── feedback.js       # Toasts & Levelup-Einblendungen
 │   ├── display.js        # Vollbild-Steuerung (Desktop & Web)
+│   ├── patchnotes.js     # Patchnote-Fenster beim Spielstart
 │   ├── updater.js        # Auto-Update über GitHub Releases
 │   ├── style.css         # Basis-Styling
 │   └── scenes.css        # Szenen: Inventar, Karte, Werkstatt, Chronik, Optionen
+├── tools/
+│   ├── balance-sim.mjs   # Balance-Simulator: spielt die echte data.js durch
+│   └── smoke.mjs         # Node-Smoke-Checks für Kern-Module
 ├── docs/                 # Banner & Screenshots für dieses README
 └── src-tauri/            # Tauri-2-Desktop-Shell (Rust)
 ```
