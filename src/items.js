@@ -8,6 +8,8 @@ import { GEAR_SLOTS, RARITIES, DROP_CHANCES, LIFELEECH_PCT_BY_RARITY, zoneDef, g
 
 import { state, settings, inventoryCap } from './state.js';
 
+import { legacyLevel } from './prestige.js';
+
 import { el } from './dom.js';
 
 import { sfx } from './audio.js';
@@ -163,8 +165,11 @@ const autoSellThreshold = () => {
 };
 
 // guaranteed: Safedrop (erster Elite-Kill eines Gebiets) — umgeht die Chance.
+// „Tiefenwissen" (Vermächtnis) erhöht Elite-/Boss-Chancen um absolute Punkte.
 function rollDrop(enemyType, guaranteed = false) {
-  if (Math.random() >= (guaranteed ? 1 : (DROP_CHANCES[enemyType] ?? 0))) return;
+  const base = DROP_CHANCES[enemyType] ?? 0;
+  const bonus = enemyType === 'normal' ? 0 : 0.03 * legacyLevel(state, 'tiefenwissen');
+  if (Math.random() >= (guaranteed ? 1 : Math.min(1, base + bonus))) return;
   const item = generateItem();
   state.drops[item.rarity] = (state.drops[item.rarity] ?? 0) + 1;
   const autoSold = RARITIES.findIndex((rarity) => rarity.key === item.rarity) < autoSellThreshold();

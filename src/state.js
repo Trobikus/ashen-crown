@@ -1,10 +1,12 @@
 import { GEAR_SLOTS, INVENTORY_CAP, DEATH_ASH_PENALTY, OFFLINE_CAP_MS } from './data.js';
 
+import { ashLegacyFactor, xpLegacyFactor } from './prestige.js';
+
 const SAVE_KEY = 'ashen-crown-save';
 
 const SETTINGS_KEY = 'ashen-crown-settings';
 
-const SAVE_VERSION = 8;
+const SAVE_VERSION = 9;
 
 const DEFAULT_SETTINGS = {
   damageNumbers: true,
@@ -60,6 +62,12 @@ const state = {
   ruhmAusgegeben: 0,
   shopPurchases: { beutelschein: 0, zollerlass: 0, aschesegen: 0, tiefenkunde: 0, werkstatthandwerk: 0 },
   safedropZones: {},
+  // Prestige: Kronenasche (Erwerbs-/Ausgabe-Buch) und das Vermächtnis (Titel-
+  // Stufen) — die Meta-Ebene über den Läufen, siehe src/prestige.js.
+  kronenascheEarned: 0,
+  kronenascheAusgegeben: 0,
+  prestigeRuns: 0,
+  legacy: {},
 };
 
 // Ruhm-Käufe wirken direkt auf die Systemregeln: Der Beutelschein erweitert
@@ -72,9 +80,15 @@ function deathPenalty() {
   return Math.max(0.03, DEATH_ASH_PENALTY - 0.03 * (state.shopPurchases.zollerlass ?? 0));
 }
 
-// Aschesegen: +10 % auf jeden Asche-Ertrag pro Stufe — im Feld wie offline.
+// Aschesegen (Ruhm-Laden) und das Kronenasche-Fundament (Prestige) multipli-
+// zieren zusammen auf jeden Asche-Ertrag — im Feld wie offline.
 function ashGainFactor() {
-  return 1 + 0.1 * (state.shopPurchases.aschesegen ?? 0);
+  return (1 + 0.1 * (state.shopPurchases.aschesegen ?? 0)) * ashLegacyFactor(state);
+}
+
+// Erfahrung: Kronenasche-Fundament + Aschengeist (Vermächtnis).
+function xpGainFactor() {
+  return xpLegacyFactor(state);
 }
 
 // Tiefenkunde: verlängert den Offline-Fortschritt über die 8-h-Grenze hinaus.
@@ -87,4 +101,4 @@ function craftCostFactor() {
   return 1 - 0.05 * (state.shopPurchases.werkstatthandwerk ?? 0);
 }
 
-export { SAVE_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, SAVE_VERSION, settings, state, inventoryCap, deathPenalty, ashGainFactor, offlineCapMs, craftCostFactor };
+export { SAVE_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, SAVE_VERSION, settings, state, inventoryCap, deathPenalty, ashGainFactor, xpGainFactor, offlineCapMs, craftCostFactor };

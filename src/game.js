@@ -1,6 +1,6 @@
 import { el, cacheDom } from './dom.js';
 
-import { state, settings, SAVE_KEY, SAVE_VERSION, inventoryCap, deathPenalty, ashGainFactor, offlineCapMs } from './state.js';
+import { state, settings, SAVE_KEY, SAVE_VERSION, inventoryCap, deathPenalty, ashGainFactor, xpGainFactor, offlineCapMs } from './state.js';
 
 import { loadSettings, saveSettings, applySettings } from './settings.js';
 
@@ -23,6 +23,8 @@ import { INTRO_PAGES, COMBAT_INTRO_PAGES, CONTINENT_LORE, epitaphOf, continentLo
 import { initItems, rollDrop, equipItem, unequipItem, sortInventory, equipBest, sellSelected, toggleSellMode, exitSellMode, sellButtonAction, selectAllForSale, handleInventoryClick, renderGearIfDirty, buildDepthRelic, grantItem, itemSellValue } from './items.js';
 
 import { ACHIEVEMENTS, evaluateAchievements, ruhmAvailable, ruhmEarned, RUHM_SHOP, RUHM_RELIC_REROLL_COST } from './achievements.js';
+
+import { LEGACY_TITLES, kronenascheAvailable, kronenascheEarnedOf, kronenascheReward, legacyLevel } from './prestige.js';
 
 
 
@@ -236,7 +238,7 @@ function autoDoorAdvance() {
 
 function showScreen(target) {
   if (target !== el.sceneHero) exitSellMode();
-  for (const screen of [el.menu, el.hub, el.sceneHero, el.sceneSkills, el.sceneOptions, el.sceneMap, el.sceneCrafting, el.sceneStats, el.sceneBestiary, el.sceneAchievements, el.sceneChronik, el.sceneVictory, el.game]) {
+  for (const screen of [el.menu, el.hub, el.sceneHero, el.sceneSkills, el.sceneOptions, el.sceneMap, el.sceneCrafting, el.sceneStats, el.sceneBestiary, el.sceneAchievements, el.sceneThrone, el.sceneChronik, el.sceneVictory, el.game]) {
     screen.hidden = screen !== target;
   }
 }
@@ -280,7 +282,7 @@ function spawnEnemy() {
 }
 
 function gainXp(amount) {
-  state.xp += Math.round(amount * (1 + statBonus('xp') / 100));
+  state.xp += Math.round(amount * (1 + statBonus('xp') / 100) * xpGainFactor());
   while (state.xp >= xpNeeded(state.level)) {
     state.xp -= xpNeeded(state.level);
     state.level += 1;
@@ -686,6 +688,120 @@ function buyRuhmUpgrade(kind) {
   render();
 }
 
+// Der Thron: Kronenasche, das Vermächtnis und „Erneut erwachen". Die Prestige-
+// Szene — erst nach dem ersten Kronensieg über die Hub-Kachel erreichbar.
+function renderThrone() {
+  if (el.sceneThrone.hidden) return;
+  el.throneSummary.textContent = `${formatNum(kronenascheAvailable(state))} Kronenasche verfügbar · ${formatNum(kronenascheEarnedOf(state))} erworben · ${formatNum(state.prestigeRuns)} ${state.prestigeRuns === 1 ? 'Lauf' : 'Läufe'} hinter dir`;
+  el.legacyShop.replaceChildren();
+  const head = document.createElement('h3');
+  head.textContent = 'Das Vermächtnis';
+  el.legacyShop.appendChild(head);
+  const available = kronenascheAvailable(state);
+  for (const [title, def] of Object.entries(LEGACY_TITLES)) {
+    const level = legacyLevel(state, title);
+    const maxed = level >= def.levels.length;
+    const cost = maxed ? 0 : def.levels[level];
+    const row = document.createElement('div');
+    row.className = 'chronicle-entry';
+    const who = document.createElement('div');
+    who.className = 'chronicle-who';
+    who.textContent = `${def.name}${maxed ? ' — vollständig' : ` · Stufe ${level + 1}/${def.levels.length}`}`;
+    const text = document.createElement('div');
+    text.className = 'chronicle-text';
+    text.textContent = def.desc + (level > 0 ? ` (Aktuell: Stufe ${level})` : '');
+    const buy = document.createElement('button');
+    buy.className = 'btn-small';
+    buy.dataset.legacy = title;
+    if (maxed) {
+      buy.textContent = 'Ausgeschöpft';
+      buy.disabled = true;
+    } else {
+      buy.textContent = `Kaufen · ${cost} Kronenasche`;
+      buy.disabled = available < cost;
+    }
+    row.append(who, text, buy);
+    el.legacyShop.appendChild(row);
+  }
+  const ready = state.cleared >= MAIN_ZONE_COUNT;
+  const reward = kronenascheReward(state.cleared);
+  el.prestigePreview.innerHTML = ready
+    ? `Der Lauf zahlt <strong>${reward} Kronenasche</strong>. Verfällt: Zone, Held, Asche, Ausrüstung, Runen. Bleibt: Ruhm, Bestiarium, Chronik, Vermächtnis.`
+    : 'Der Thron verlangt die Krone dieses Laufs — hebe sie zuerst erneut.';
+  el.prestigeButton.disabled = !ready;
+  el.prestigeButton.classList.toggle('armed', prestigeArmed);
+  el.prestigeButton.textContent = prestigeArmed
+    ? 'Wirklich? Erwache erneut.'
+    : ready ? `Erneut erwachen · ${reward} Kronenasche` : 'Die Krone dieses Laufs fehlt';
+}
+
+function buyLegacy(title) {
+  const def = LEGACY_TITLES[title];
+  const level = legacyLevel(state, title);
+  if (!def || level >= def.levels.length) return;
+  const cost = def.levels[level];
+  if (kronenascheAvailable(state) < cost) return;
+  state.kronenascheAusgegeben += cost;
+  state.legacy[title] = level + 1;
+  toast(`${def.name} — Stufe ${level + 1}.`, '#c1663a');
+  sfx.unlock();
+  save();
+  renderThrone();
+  render();
+}
+
+let prestigeArmed = false;
+
+let prestigeArmTimer = null;
+
+function attemptPrestige() {
+  if (state.cleared < MAIN_ZONE_COUNT) return;
+  if (!prestigeArmed) {
+    prestigeArmed = true;
+    el.prestigeButton.classList.add('armed');
+    clearTimeout(prestigeArmTimer);
+    prestigeArmTimer = setTimeout(() => {
+      prestigeArmed = false;
+      prestigeArmTimer = null;
+      renderThrone();
+    }, 4000);
+    renderThrone();
+    return;
+  }
+  clearTimeout(prestigeArmTimer);
+  prestigeArmTimer = null;
+  prestigeArmed = false;
+  const reward = kronenascheReward(state.cleared);
+  state.kronenascheEarned += reward;
+  state.prestigeRuns += 1;
+  // Der Lauf verfällt — alles Run-Bezogene kehrt zum Erwachen zurück.
+  state.ash = 25 * legacyLevel(state, 'der-vorbereitete');
+  state.xp = 0;
+  state.level = 1;
+  state.maxHp = 35;
+  state.damage = 2;
+  state.armorBase = 0;
+  state.critBonus = 0;
+  state.statPoints = 2 * legacyLevel(state, 'alter-pfad');
+  state.skillPoints = 0;
+  state.skills = ['start'];
+  state.inventory = [];
+  for (const slot of GEAR_SLOTS) state.equipment[slot.key] = null;
+  state.zone = 0;
+  state.cleared = 0;
+  state.zoneKills = 0;
+  state.safedropZones = {};
+  // Die Annalen erneut: Der zweite Lauf liest dieselbe Geschichte neu.
+  state.seenContinents = [];
+  state.inField = false;
+  heroHp = heroMaxHp();
+  sfx.victory();
+  save();
+  showScreen(el.hub);
+  render();
+  showDismissibleOverlay(`Du erwachst erneut — der Lauf zahlt <strong>${reward} Kronenasche</strong>. Die Asche erinnert sich an alles andere.`, 5500, true);
+}
+
 // Das Bestiarium: 150 Kreaturen der fünf Kontinente plus die Namen der
 // Tiefen — erlegt zählt, unerlegt bleibt als „???" versiegelt.
 function renderBestiary() {
@@ -815,6 +931,10 @@ function render() {
   el.tileSkillsSub.textContent = skillsLocked
     ? `Erwacht ab Stufe ${SKILL_TREE_UNLOCK_LEVEL}`
     : state.skillPoints > 0 ? `${state.skillPoints} Punkte frei` : 'Wähle weise';
+  el.tileThrone.hidden = !state.crownWon;
+  el.tileThroneSub.textContent = state.crownWon && state.cleared >= MAIN_ZONE_COUNT
+    ? `Erneut erwachen · ${formatNum(kronenascheReward(state.cleared))} Kronenasche`
+    : state.crownWon ? 'Die Krone dieses Laufs fehlt' : 'Nach der Krone';
   const zone = zoneDef(state.zone);
   el.hudZone.textContent = `${zone.continent} · ${zone.name}`;
   const showProgress = state.cleared <= state.zone;
@@ -1078,6 +1198,17 @@ function prepareSave(data) {
   data.shopPurchases.aschesegen = Math.min(3, asNumber(data.shopPurchases.aschesegen, 0));
   data.shopPurchases.tiefenkunde = Math.min(3, asNumber(data.shopPurchases.tiefenkunde, 0));
   data.shopPurchases.werkstatthandwerk = Math.min(3, asNumber(data.shopPurchases.werkstatthandwerk, 0));
+  // Prestige: Kronenasche-Buch und Vermächtnis-Stufen (nur bekannte Titel, 0–3).
+  data.kronenascheEarned = Math.max(0, asNumber(data.kronenascheEarned, 0));
+  data.kronenascheAusgegeben = Math.min(data.kronenascheEarned, Math.max(0, asNumber(data.kronenascheAusgegeben, 0)));
+  data.prestigeRuns = Math.max(0, Math.min(99999, Math.trunc(asNumber(data.prestigeRuns, 0))));
+  data.legacy = data.legacy && typeof data.legacy === 'object' && !Array.isArray(data.legacy) ? data.legacy : {};
+  const cleanLegacy = {};
+  for (const title of Object.keys(LEGACY_TITLES)) {
+    const level = asNumber(data.legacy[title], 0);
+    if (level > 0) cleanLegacy[title] = Math.min(3, Math.trunc(level));
+  }
+  data.legacy = cleanLegacy;
   // Safedrop-Register: Gebiete, deren Elite-Erstkill schon gedroppt hat.
   data.safedropZones = data.safedropZones && typeof data.safedropZones === 'object' && !Array.isArray(data.safedropZones) ? data.safedropZones : {};
   const cleanSafedrops = {};
@@ -1560,6 +1691,20 @@ function bindEvents() {
     const buy = e.target.closest('[data-buy]');
     if (!buy || buy.disabled) return;
     buyRuhmUpgrade(buy.dataset.buy);
+  });
+  el.tileThrone.addEventListener('click', () => {
+    showScreen(el.sceneThrone);
+    renderThrone();
+  });
+  el.legacyShop.addEventListener('click', (e) => {
+    const buy = e.target.closest('[data-legacy]');
+    if (!buy || buy.disabled) return;
+    buyLegacy(buy.dataset.legacy);
+  });
+  el.prestigeButton.addEventListener('click', attemptPrestige);
+  el.victoryThrone.addEventListener('click', () => {
+    showScreen(el.sceneThrone);
+    renderThrone();
   });
   bindCraftEvents(hooks);
   el.zoneList.addEventListener('click', (e) => {

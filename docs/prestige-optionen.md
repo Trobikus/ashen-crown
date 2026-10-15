@@ -1,8 +1,9 @@
 # Prestige-Optionen-Papier — „Erneut erwachen"
 
-> Design-Entwurf, Stand v0.15.0 (2026-10-15). Nicht implementiert — Grundlage
-> für die Design-Entscheidung. Alle Prozentwerte sind Sim-Kandidaten, keine
-> Zusagen; jeder Modell-Bau beginnt mit einem `balance-sim`-Lauf.
+> Design-Entwurf, Stand v0.15.0 (2026-10-15). **Entschieden (2026-10-15):
+> Modell B mit A-Fundament, Währung „Kronenasche", Run-2-Ziel ~60–75 %,
+> Annalen erneut zeigen.** Alle Prozentwerte sind Sim-Kandidaten, keine
+> Zusagen; das Tuning beginnt mit einem `balance-sim`-Lauf.
 
 ## 1. Was Prestige hier leisten soll
 

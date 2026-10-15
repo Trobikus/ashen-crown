@@ -76,6 +76,10 @@
           <span class="tile-name">Errungenschaften</span>
           <span class="tile-sub">Ruhm wird gezählt</span>
         </button>
+        <button class="tile" id="tile-throne" hidden>
+          <span class="tile-name">Der Thron</span>
+          <span class="tile-sub" id="tile-throne-sub">Nach der Krone</span>
+        </button>
         <button class="tile" id="tile-chronik">
           <span class="tile-name">Chronik</span>
           <span class="tile-sub">Die Asche erinnert sich</span>
@@ -336,6 +340,19 @@
       <div id="achievements-list"></div>
       <p class="tagline">Ruhm wird gezählt, nicht geschenkt.</p>
     </section>
+    <section class="scene" id="scene-throne" hidden>
+      <header class="scene-header">
+        <button class="btn-small" data-back>Zurück</button>
+      </header>
+      <h2>Der Thron</h2>
+      <p class="skill-hud" id="throne-summary"></p>
+      <div id="legacy-shop"></div>
+      <div class="prestige-action">
+        <div id="prestige-preview"></div>
+        <button class="btn-small btn-danger" id="btn-prestige">Erneut erwachen</button>
+      </div>
+      <p class="tagline">Die Krone ist leicht. Sie ist kalt. Sie ist dein.</p>
+    </section>
     <section class="scene" id="scene-chronik" hidden>
       <header class="scene-header">
         <button class="btn-small" data-back>Zurück</button>
@@ -355,7 +372,10 @@
         <div><dt>Asche</dt><dd id="victory-ash">0</dd></div>
       </dl>
       <p class="tagline">Unter dir warten die Tiefen. Die Asche erinnert sich an jeden, der kam.</p>
-      <button id="btn-victory-continue">Weiterspielen</button>
+      <div class="victory-actions">
+        <button id="btn-victory-continue">Weiterspielen</button>
+        <button id="btn-victory-throne">Auf den Thron</button>
+      </div>
     </section>
     <div id="game" hidden>
       <header id="hud">

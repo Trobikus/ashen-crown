@@ -79,5 +79,27 @@ st.skillPoints = 0;
 const C = await import('../src/crafting.js');
 assert(typeof C.renderCrafting === 'function', 'crafting.js lädt isoliert in Node');
 
+// ——— Prestige: Kronenasche & Vermächtnis (prestige.js) ———
+const P = await import('../src/prestige.js');
+assert(P.kronenascheReward(50) === 1 && P.kronenascheReward(54) === 1, `Krone zahlt 1 (50/54: ${P.kronenascheReward(50)}/${P.kronenascheReward(54)})`);
+assert(P.kronenascheReward(55) === 2 && P.kronenascheReward(70) === 5, `Tiefen-Bonus: 55→2, 70→5 (${P.kronenascheReward(55)}/${P.kronenascheReward(70)})`);
+const titleCosts = Object.values(P.LEGACY_TITLES).reduce((sum, def) => sum + def.levels.reduce((s, l) => s + l, 0), 0);
+assert(Object.keys(P.LEGACY_TITLES).length === 6 && titleCosts === 36, `6 Titel, 36 Kronenasche Gesamtkosten (${Object.keys(P.LEGACY_TITLES).length}/${titleCosts})`);
+const ps = { kronenascheEarned: 3, kronenascheAusgegeben: 1, legacy: { beutelspaehler: 2, 'zweiter-atem': 3, unbekannt: 9 } };
+assert(P.kronenascheAvailable(ps) === 2, `verfügbare Kronenasche 3−1=2 (${P.kronenascheAvailable(ps)})`);
+assert(P.legacyLevel(ps, 'beutelspaehler') === 2 && P.legacyLevel(ps, 'unbekannt') === 0, `legacyLevel liest bekannte Titel, unbekannte = 0`);
+assert(P.legacyLevel(ps, 'zweiter-atem') === 3, `Zweiter Atem liest Stufe 3`);
+assert(Math.abs(P.ashLegacyFactor(ps) - 1.16) < 1e-9, `Asche-Faktor: 1 + 0,02×3 + 0,05×2 = 1,16 (${P.ashLegacyFactor(ps)})`);
+assert(Math.abs(P.xpLegacyFactor(ps) - 1.06) < 1e-9, `XP-Faktor ohne Aschengeist = 1,06 (${P.xpLegacyFactor(ps)})`);
+const pfresh = {};
+assert(P.legacyLevel(pfresh, 'aschengeist') === 0 && P.kronenascheAvailable(pfresh) === 0, 'frischer Spielstand: alles bei null');
+
+// ——— state.js: XP-Faktor folgt dem Vermächtnis ———
+S.state.kronenascheEarned = 5;
+S.state.legacy = { aschengeist: 2 };
+assert(Math.abs(S.xpGainFactor() - 1.2) < 1e-9, `xpGainFactor: 1 + 0,02×5 + 0,05×2 = 1,2 (${S.xpGainFactor()})`);
+S.state.kronenascheEarned = 0;
+S.state.legacy = {};
+
 console.log(failed ? `\n${failed} Check(s) fehlgeschlagen.` : '\nAlle Smoke-Checks bestanden.');
 process.exit(failed ? 1 : 0);

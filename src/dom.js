@@ -56,6 +56,14 @@ function cacheDom() {
   el.achievementsSummary = document.getElementById('achievements-summary');
   el.achievementsList = document.getElementById('achievements-list');
   el.ruhmShop = document.getElementById('ruhm-shop');
+  el.sceneThrone = document.getElementById('scene-throne');
+  el.throneSummary = document.getElementById('throne-summary');
+  el.legacyShop = document.getElementById('legacy-shop');
+  el.prestigePreview = document.getElementById('prestige-preview');
+  el.prestigeButton = document.getElementById('btn-prestige');
+  el.tileThrone = document.getElementById('tile-throne');
+  el.tileThroneSub = document.getElementById('tile-throne-sub');
+  el.victoryThrone = document.getElementById('btn-victory-throne');
   el.statsPlaytime = document.getElementById('stats-playtime');
   el.statsKills = document.getElementById('stats-kills');
   el.statsDeaths = document.getElementById('stats-deaths');

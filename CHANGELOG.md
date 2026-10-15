@@ -6,6 +6,19 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Hinzugefügt
+- **Prestige — „Erneut erwachen" (Der Thron)**: Nach dem ersten Kronensieg
+  erscheint die Thron-Kachel. Jeder abgeschlossene Lauf zahlt **Kronenasche**
+  (1 für die Krone, +1 je 5 errungene Tiefen) — eine zweite, wiederkehrende
+  Meta-Währung neben Ruhm. Jede erworbene Kronenasche segnet alle künftigen
+  Läufe (+2 % Asche & Erfahrung, lebenslang); ausgegeben wird sie im
+  **Vermächtnis** auf 6 gestufte Titel — Zweiter Atem (+Grundwerte),
+  Aschengeist (+EP), Beutelspähler (+Asche), Alter Pfad (+Start-Statpunkte),
+  Tiefenwissen (+Elite-/Boss-Fundchance), Der Vorbereitete (+Start-Asche),
+  je 3 Stufen und zusammen 36 Kronenasche. Das „Erneut erwachen" setzt den
+  Lauf zurück (Zone, Held, Asche, Ausrüstung, Runen), zeigt die Annalen erneut
+  und lässt Ruhm, Bestiarium, Chronik und das Vermächtnis unberührt. Save v9.
+
 ### Behoben
 - **Stat-Respec sitzt unter dem letzten Stat**: Das Stats-Panel ordnete seine
   Elemente nebeneinander statt untereinander — der Knopf schwebte neben der

@@ -1,6 +1,11 @@
 import { GEAR_SLOTS, enemyDef, BASE_CRIT_CHANCE, CRIT_MULTIPLIER, BASE_ATTACK_SPEED, ARMOR_RESISTANCE, ATTACK_INTERVAL_MS, CRIT_CHANCE_CAP, itemStats, profileOf, enemyLevelOf } from './data.js';
 import { state } from './state.js';
 import { skillBonus } from './skilltree.js';
+import { legacyFactor } from './prestige.js';
+
+// „Zweiter Atem" (Vermächtnis) stärkt den Helden-Grundwert — vor Gear und
+// Prozent-Boni, genau die Basis, die jeder Lauf neu formt.
+const legacyBaseMult = (stat) => (stat === 'damage' || stat === 'hp' ? 1 + legacyFactor(state, 'zweiter-atem') : 1);
 
 export function scaledEnemy(type) {
   const base = enemyDef(state.zone)[type];
@@ -35,7 +40,7 @@ export function statBonus(stat) {
 }
 
 export function heroDamage() {
-  let damage = state.damage;
+  let damage = state.damage * legacyBaseMult('damage');
   let pct = 0;
   for (const slot of GEAR_SLOTS) {
     const item = state.equipment[slot.key];
@@ -49,7 +54,7 @@ export function heroDamage() {
 }
 
 export function heroMaxHp() {
-  let maxHp = state.maxHp;
+  let maxHp = state.maxHp * legacyBaseMult('hp');
   let pct = 0;
   for (const slot of GEAR_SLOTS) {
     const item = state.equipment[slot.key];

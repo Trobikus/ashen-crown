@@ -784,3 +784,36 @@
   color: #4a443b;
   font-style: italic;
 }
+
+/* ——— Der Thron: Prestige-Szene ——— */
+
+#scene-throne #legacy-shop,
+#scene-throne .prestige-action {
+  width: min(560px, 92%);
+  margin: 0 auto;
+}
+
+#legacy-shop {
+  text-align: left;
+}
+
+.prestige-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1.6rem;
+  text-align: center;
+}
+
+#prestige-preview {
+  color: #9a9184;
+  font-size: 0.85rem;
+}
+
+.victory-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
