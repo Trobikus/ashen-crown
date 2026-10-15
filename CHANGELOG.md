@@ -20,6 +20,11 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
   und lässt Ruhm, Bestiarium, Chronik und das Vermächtnis unberührt. Save v9.
 
 ### Behoben
+- **„Alles auswählen" greift sofort**: Die Verkaufs-Auswahl im Inventar
+  renderte erst mit dem nächsten 3-Sekunden-Tick — der Knopf wirkte bis zu
+  drei Sekunden tot, bevor Markierungen und Verkaufssumme erschienen.
+  Alles-Markieren und Einzel-Auswahl aktualisieren jetzt sofort
+  (gemessen: ~3 ms statt bis zu 3.000 ms).
 - **Stat-Respec sitzt unter dem letzten Stat**: Das Stats-Panel ordnete seine
   Elemente nebeneinander statt untereinander — der Knopf schwebte neben der
   Statliste. Er steht jetzt direkt unter „Erlegte Kreaturen", mit Abstand.

@@ -64,6 +64,10 @@ export function selectAllForSale() {
 
   gearDirty = true;
 
+  // Sofort rendern — sonst warten Markierungen und Button-Label auf den
+  // nächsten 3-Sekunden-Tick und der Knopf wirkt tot.
+  hooks.render();
+
 }
 
 export function handleInventoryClick(e) {
@@ -81,6 +85,8 @@ export function handleInventoryClick(e) {
     else selectedForSale.add(id);
 
     gearDirty = true;
+
+    hooks.render();
 
   } else {
 
