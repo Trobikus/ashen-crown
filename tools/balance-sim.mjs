@@ -418,6 +418,9 @@ function simulate(world, { depthTarget = 0 } = {}) {
     maxTracked = Math.max(maxTracked, hero.ash + def.ash, hero.xp + def.xp);
     if (dmgTaken - healed >= hero.hp) {
       deaths += 1;
+      if (process.env.SIM_DEBUG && deaths <= 3) {
+        console.error(`☠ Tod ${deaths} @ Zone ${zone + 1} ${type}: heldHp=${hero.hp.toFixed(1)} maxHp=${heroMaxHp()} dmg=${heroDamage()} avgHit=${avgHit().toFixed(2)} defHp=${def.hp} defDmg=${def.damage} swings=${swings} taken=${taken} dmgTaken=${dmgTaken.toFixed(1)} healed=${healed} level=${hero.level} speed=${attackSpeed().toFixed(2)}`);
+      }
       hero.ash -= Math.min(hero.ash, Math.round(hero.ash * D.DEATH_ASH_PENALTY));
       hero.hp = heroMaxHp();
       return { killed: false, seconds: seconds + 2 };

@@ -259,6 +259,29 @@ const CONTINENT_KEYS = CONTINENTS.slice(1).map((continent) => continent.key);
 
 const enemyNamesOf = (n) => (n < 10 ? ASCHENLANDE_ENEMIES[n] : CONTINENT_ENEMIES[CONTINENT_KEYS[Math.floor(n / 10) - 1]][n % 10]);
 
+// Gegnerstufen steigen 3 pro Gebiet (Normal 3N−2, Elite +2, Boss +4) — eine
+// lückenlose Leiter. Muss ÜBER dem ZONE_ENEMIES-Aufbau stehen: Der ruft
+// enemyLevelOf zur Modul-Laufzeit.
+const ENEMY_TYPE_LEVEL_OFFSETS = { normal: 0, elite: 2, boss: 4 };
+
+function enemyLevelOf(zoneIndex, type) {
+  const base = Math.max(1, zoneIndex * 3 + 1);
+  return base + (ENEMY_TYPE_LEVEL_OFFSETS[type] ?? 0);
+}
+
+// Gegner-Erfahrung folgt der GEGNERSTUFE (quadratisch), nicht der Zonen-
+// Exponentialkurve: Sonst kann der Heldendeckel (9L²+13L pro Stufe) keinen
+// festen Abstand halten — der Held lief früh 15+ Stufen hinten. Mit
+// ~11 Kills pro Level hält der Held sich konstant ~3 Stufen unter den
+// Gegnern, egal wie tief er ist.
+function enemyXpOf(level) {
+  // Boden 8: Ein frischer Held (reine Basewerte) muss die ersten Bosse
+  // (4,2× Leben) als Level 4 mit 75 HP erreichen können — mit Boden 6 stand
+  // er als Level 3 (45 HP) vor 49 Schadenspunkten und starb im Kreis.
+  // Ab Stufe ~10 greift die exakte Quadratkurve (11 Kills pro Level).
+  return Math.max(8, Math.round(0.82 * level * level - 3.7 * level + 5));
+}
+
 const ZONE_ENEMIES = [];
 {
   let stats = { ...BASE_NORMAL };
@@ -278,9 +301,10 @@ const ZONE_ENEMIES = [];
     // das relative Extra schwindet bis Zone 10 — Damage-All-in soll nicht
     // durch die ersten Gebiete oneshotten. Der Bonus wird nicht zurück in
     // die Wachstumsrechnung gespeist.
-    const zoneStats = n < EARLY_HP_BONUS_ZONES
-      ? { ...stats, hp: sig3(stats.hp + EARLY_HP_BONUS * (1 - n / EARLY_HP_BONUS_ZONES)) }
-      : stats;
+    const zoneStats = { ...stats };
+    if (n < EARLY_HP_BONUS_ZONES) zoneStats.hp = sig3(stats.hp + EARLY_HP_BONUS * (1 - n / EARLY_HP_BONUS_ZONES));
+    // Erfahrung aus der Gegnerstufe statt der Wachstumskette (siehe enemyXpOf).
+    zoneStats.xp = enemyXpOf(enemyLevelOf(n, 'normal'));
     const [normalName, eliteName, bossName] = enemyNamesOf(n);
     ZONE_ENEMIES.push(enemiesOf(normalName, eliteName, bossName, zoneStats));
   }
@@ -301,6 +325,8 @@ function ensureDepthRows(index) {
   while (depthRows.length <= index - MAIN_ZONE_COUNT) {
     depthStats = growNormal(depthStats, DEPTH_GROWTH);
     const depth = depthRows.length + 1;
+    // Erfahrung auch in den Tiefen aus der Gegnerstufe (siehe enemyXpOf).
+    depthStats.xp = enemyXpOf(enemyLevelOf(MAIN_ZONE_COUNT + depth - 1, 'normal'));
     depthRows.push(enemiesOf(
       DEPTH_ENEMY_NAMES.normal[(depth - 1) % DEPTH_ENEMY_NAMES.normal.length],
       DEPTH_ENEMY_NAMES.elite[(depth - 1) % DEPTH_ENEMY_NAMES.elite.length],
@@ -542,16 +568,6 @@ function profileOf(zoneIndex, type) {
   const index = ((Math.trunc(zoneIndex) % PROFILE_CYCLE.length) + PROFILE_CYCLE.length) % PROFILE_CYCLE.length;
   const key = PROFILE_CYCLE[index];
   return { key, ...ENEMY_PROFILES[key] };
-}
-
-// Gegnerstufen steigen 3 pro Gebiet (Normal 3N−2, Elite +2, Boss +4) — jede
-// Range spannt 5 Stufen und beginnt damit nie mehr als 1 unter der Höchst-
-// stufe des Vorgehenden: eine lückenlose Leiter (Anzeige & XP-Abmagerung).
-const ENEMY_TYPE_LEVEL_OFFSETS = { normal: 0, elite: 2, boss: 4 };
-
-function enemyLevelOf(zoneIndex, type) {
-  const base = Math.max(1, zoneIndex * 3 + 1);
-  return base + (ENEMY_TYPE_LEVEL_OFFSETS[type] ?? 0);
 }
 
 function continentKeyOf(zoneIndex) {
@@ -1190,7 +1206,7 @@ export {
 
   ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, CRIT_CHANCE_CAP, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL,
 
-  ENEMY_TYPE_LEVEL_OFFSETS, enemyLevelOf, DEPTH_ENEMY_NAMES,
+  ENEMY_TYPE_LEVEL_OFFSETS, enemyLevelOf, enemyXpOf, DEPTH_ENEMY_NAMES,
 
   ENEMY_XP_CUTOFF_LEVELS, enemyXpMultiplier, SKILL_VALUE_SCALE,
 

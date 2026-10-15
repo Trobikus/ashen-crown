@@ -24,6 +24,21 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
   folgen den Ruhm-Käufen (`inventoryCap()` / `deathPenalty()`).
 
 ### Behoben
+- **Heldenlevel hält konstant ~3 Stufen Abstand zu den Gegnern**: Bisher
+  wuchsen die Gegner-EP exponentiell mit der Zone, während der
+  Level-Bedarf quadratisch mit der Heldenstufe wächst — diese Kurven
+  konnten keinen festen Abstand halten, und der Held lief Mitte Frostreich
+  mit Stufe 16 gegen Gegner der Stufe 35 (Testermeldung). Die Gegner-EP
+  werden jetzt direkt aus der Gegnerstufe abgeleitet (~11 Kills pro
+  Level, quadratisch in der Gegnerstufe): Der Held holt innerhalb von
+  ein bis zwei Gebieten auf und bleibt dann dauerhaft knapp unter den
+  Gegnern. Alte Spielstände holen beim Weiterspielen selbst auf — der
+  Abstand schließt sich, ohne Migration. Bestehende Saves mit
+  überlevelten Helden profitieren unverändert von der EP-Dämpfung.
+  Sim gegen die neue Kurve: **24,7 h / 278 Tode** bis zur Aschenkrone
+  (bisher 56,2 h / 708) — ein Held, der mitwächst, ist stärker als einer,
+  der 15 Stufen hinten hinkt; dafür endet er bei Stufe ~155 statt ~160.
+  Der frühe EP-Boden (8/6/Kill in Zone 1) hält den ersten Boss erreichbar.
 - **Meisterschafts-Rerolls wirken wieder sichtbar**: Neu würfeln garantiert
   jetzt ein **anderes** Ergebnis (der Meisterschafts-Pool hat nur wenige
   Stats — vorher traf der Wurf häufig denselben Wert und das Schmieden
