@@ -306,6 +306,12 @@ input[type='range'] {
   letter-spacing: 0.2em;
 }
 
+.tile:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  filter: grayscale(0.7);
+}
+
 .tile-sub {
   font-size: 0.72rem;
   font-style: italic;
@@ -425,14 +431,20 @@ input[type='range'] {
 
 #arena {
   flex: 1;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 1rem 0;
+  min-height: clamp(330px, 54vh, 620px);
+  padding: clamp(2.5rem, 7vh, 5rem) clamp(1rem, 5vw, 6rem);
+  background: #0d0b0a;
 }
 
 .fighter {
   position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -444,6 +456,175 @@ input[type='range'] {
   background: #1b1714;
   border: 1px solid #3a352e;
   transition: filter 0.1s;
+  animation: breathe 3.4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(0.99, 1.02); }
+}
+
+/* Angriffe: Der Angreifer stößt vor, der Getroffene weicht zurück. Die
+   Klassen ersetzen das Atmen für den Moment und geben es danach frei. */
+#hero-fighter .figure.lunge {
+  animation: lunge-right 0.22s ease-out;
+}
+
+#enemy-fighter .figure.lunge {
+  animation: lunge-left 0.22s ease-out;
+}
+
+#hero-fighter .figure.recoil {
+  animation: recoil-left 0.2s ease-out;
+}
+
+#enemy-fighter .figure.recoil {
+  animation: recoil-right 0.2s ease-out;
+}
+
+@keyframes lunge-right {
+  0% { transform: translateX(0); }
+  45% { transform: translateX(clamp(18px, 3vw, 44px)) rotate(4deg); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes lunge-left {
+  0% { transform: translateX(0); }
+  45% { transform: translateX(calc(-1 * clamp(18px, 3vw, 44px))) rotate(-4deg); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes recoil-left {
+  0% { transform: translateX(0); }
+  40% { transform: translateX(-10px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes recoil-right {
+  0% { transform: translateX(0); }
+  40% { transform: translateX(10px); }
+  100% { transform: translateX(0); }
+}
+
+/* Spawn aus der Asche / Zerfallen beim Tod. */
+#enemy-fighter .figure.spawn {
+  animation: rise-from-ash 0.55s ease-out;
+}
+
+@keyframes rise-from-ash {
+  0% { opacity: 0; transform: translateY(26px); filter: blur(2px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+#enemy-fighter .figure.dying {
+  animation: ash-collapse 0.45s ease-in forwards;
+}
+
+@keyframes ash-collapse {
+  0% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(14px) scaleY(0.06); filter: blur(3px); }
+}
+
+/* Screenshake der Arena: leicht bei Krits, hart bei Boss-Schlägen. */
+#arena.shake {
+  animation: arena-shake 0.22s linear;
+}
+
+#arena.shake-strong {
+  animation: arena-shake-strong 0.34s linear;
+}
+
+@keyframes arena-shake {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(3px, -2px); }
+  50% { transform: translate(-3px, 2px); }
+  75% { transform: translate(2px, 1px); }
+}
+
+@keyframes arena-shake-strong {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-7px, 4px); }
+  40% { transform: translate(6px, -5px); }
+  60% { transform: translate(-4px, 3px); }
+  80% { transform: translate(3px, -2px); }
+}
+
+/* Treibende Partikel — Farbe, Richtung und Dichte kommen pro Kontinent
+   aus game.js als CSS-Variablen. */
+#arena-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.fighter {
+  position: relative;
+  z-index: 1;
+}
+
+.arena-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--p-color, #8a7f6d);
+  opacity: 0;
+  animation: var(--p-anim, particle-rise) var(--p-dur, 9s) linear var(--p-delay, 0s) infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes particle-rise {
+  0% { transform: translate3d(0, 12vh, 0) scale(0.6); opacity: 0; }
+  15% { opacity: var(--p-alpha, 0.7); }
+  85% { opacity: var(--p-alpha, 0.7); }
+  100% { transform: translate3d(var(--p-drift, 4vw), -18vh, 0) scale(1); opacity: 0; }
+}
+
+@keyframes particle-fall {
+  0% { transform: translate3d(0, -10vh, 0) scale(1); opacity: 0; }
+  15% { opacity: var(--p-alpha, 0.7); }
+  85% { opacity: var(--p-alpha, 0.7); }
+  100% { transform: translate3d(var(--p-drift, -4vw), 22vh, 0) scale(0.7); opacity: 0; }
+}
+
+@keyframes particle-drift {
+  0% { transform: translate3d(-2vw, 4vh, 0); opacity: 0; }
+  20% { opacity: var(--p-alpha, 0.5); }
+  50% { transform: translate3d(2vw, -3vh, 0); }
+  80% { opacity: var(--p-alpha, 0.5); }
+  100% { transform: translate3d(-2vw, 6vh, 0); opacity: 0; }
+}
+
+/* Filmkorn (SVG-Noise, zur Laufzeit generiert) über der Arena. */
+#arena-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain 0.6s steps(4) infinite;
+}
+
+@keyframes grain {
+  0% { background-position: 0 0; }
+  25% { background-position: -30px 20px; }
+  50% { background-position: 40px -25px; }
+  75% { background-position: -20px -30px; }
+  100% { background-position: 25px 35px; }
+}
+
+/* Vignette + roter Puls bei niedriger Lebenskraft. */
+#arena {
+  box-shadow: inset 0 0 clamp(60px, 8vw, 140px) rgba(0, 0, 0, 0.6);
+}
+
+#game.low-hp #arena {
+  animation: low-hp-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes low-hp-pulse {
+  0%, 100% { box-shadow: inset 0 0 clamp(60px, 8vw, 140px) rgba(0, 0, 0, 0.6); }
+  50% { box-shadow: inset 0 0 clamp(90px, 11vw, 170px) rgba(120, 20, 20, 0.55); }
 }
 
 .figure.hit {
@@ -493,6 +674,14 @@ input[type='range'] {
 #enemy-figure.enraged {
   border-color: #a04b3a;
   box-shadow: 0 0 16px rgba(160, 75, 58, 0.5);
+}
+
+.fighter-level {
+  margin: 0.6rem 0 -0.35rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #d9a03f;
 }
 
 .fighter-name {
@@ -556,6 +745,13 @@ input[type='range'] {
   color: #7fae7a;
 }
 
+.dmg-float.miss {
+  color: #8b8378;
+  font-size: 0.95rem;
+  font-weight: normal;
+  font-style: italic;
+}
+
 @keyframes dmg-float {
   from {
     transform: translateY(0);
@@ -573,15 +769,6 @@ input[type='range'] {
   align-items: center;
   gap: 0.6rem;
   padding-bottom: 0.5rem;
-}
-
-#upgrade-row {
-  display: flex;
-  gap: 0.6rem;
-}
-
-#upgrade-row button {
-  width: clamp(170px, 16vw, 240px);
 }
 
 .tile-descend {
@@ -613,6 +800,126 @@ input[type='range'] {
   cursor: pointer;
 }
 
+/* Patchnote-Fenster beim Spielstart. */
+#patchnotes {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 4, 5, 0.78);
+}
+
+.patch-window {
+  width: min(560px, 90vw);
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  background: #12100e;
+  border: 1px solid #d9a03f;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), inset 0 0 60px rgba(0, 0, 0, 0.5);
+  padding: 1.1rem 1.3rem;
+}
+
+.patch-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  border-bottom: 1px solid #3a352e;
+  padding-bottom: 0.5rem;
+}
+
+.patch-title {
+  font-size: 1rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #d9a03f;
+}
+
+.patch-date {
+  font-size: 0.72rem;
+  color: #5f584e;
+  letter-spacing: 0.14em;
+}
+
+.patch-body {
+  overflow-y: auto;
+  padding: 0.7rem 0.2rem 0.4rem;
+  scrollbar-width: thin;
+  scrollbar-color: #3a352e transparent;
+}
+
+.patch-headline {
+  margin: 0 0 0.8rem;
+  font-style: italic;
+  color: #c9c2b8;
+}
+
+.patch-heading {
+  margin: 0.8rem 0 0.3rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #8a7f6d;
+}
+
+.patch-body ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.patch-body li {
+  margin: 0.28rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #b3aa9d;
+}
+
+.patch-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  border-top: 1px solid #3a352e;
+  padding-top: 0.7rem;
+  margin-top: 0.4rem;
+}
+
+.patch-skip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  color: #8a7f6d;
+  cursor: pointer;
+  user-select: none;
+}
+
+.patch-skip input {
+  accent-color: #d9a03f;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+#patch-close {
+  padding: 0.35rem 1.2rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: #1b1714;
+  border: 1px solid #d9a03f;
+  color: #d9a03f;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+#patch-close:hover {
+  background: #d9a03f;
+  color: #12100e;
+}
+
 .btn-small {
   width: auto;
   padding: 0.15rem 0.8rem;
@@ -625,6 +932,12 @@ input[type='range'] {
   font-style: italic;
   letter-spacing: 0.1em;
   color: #8a7f6d;
+  text-align: center;
+  max-width: min(640px, 82vw);
+  line-height: 1.75;
+  padding: 0 1.25rem;
+  margin: 0;
+  text-wrap: balance;
 }
 
 .has-tooltip {
@@ -715,6 +1028,12 @@ input[type='range'] {
   color: #c9c2b8;
   font-size: 0.8rem;
   margin-top: 0.3rem;
+}
+
+.tt-leech {
+  color: #7fae7a;
+  font-size: 0.78rem;
+  margin-top: 0.2rem;
 }
 
 .tt-hint {

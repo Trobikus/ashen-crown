@@ -32,8 +32,10 @@ function enhanceCost(item) {
 }
 
 function reforgeCost(item) {
-  const base = item.rarity === 'gewoehnlich' ? 600 : 3000;
-  return Math.round(base * (1 + 0.4 * craftIlvl()));
+  // Pro Stufe in der Kette deutlich teurer; die Skala hängt an craftIlvl.
+  const bases = [600, 3000, 12000, 50000];
+  const index = RARITIES.findIndex((rarity) => rarity.key === item.rarity);
+  return Math.round(bases[Math.max(0, index)] * (1 + 0.4 * craftIlvl()));
 }
 
 function craftEnhance(slotKey, hooks) {
@@ -54,16 +56,18 @@ function craftEnhance(slotKey, hooks) {
 
 function craftReforge(slotKey, hooks) {
   const item = state.equipment[slotKey];
-  if (!item || item.rarity === 'episch') return;
+  if (!item) return;
+  const currentIndex = RARITIES.findIndex((rarity) => rarity.key === item.rarity);
+  const next = RARITIES[currentIndex + 1];
+  if (!next) return;
   const cost = reforgeCost(item);
   if (state.ash < cost) return;
   state.ash -= cost;
-  const next = item.rarity === 'gewoehnlich' ? RARITIES[1] : RARITIES[2];
   const slot = gearSlotOf(slotKey);
   item.rarity = next.key;
   item.name = `${slot.base} ${next.suffix}`;
   Object.assign(item, rollItemValues(slot, next, craftIlvl()));
-  if (next.key === 'episch') item.mastery = rollMastery(slot.stat);
+  if (next.key === 'legendär') item.mastery = rollMastery(slot.stat);
   hooks.after();
 }
 
@@ -96,9 +100,9 @@ function renderCraftDetail() {
   const enhancePreview = slot.stat === 'damage'
     ? `+${formatNum(nextBonus - curBonus)} Schaden`
     : `+${formatNum(nextBonus - curBonus)} Lebenskraft · +${formatNum(Math.max(1, Math.round((nextBonus - curBonus) * 0.4)))} Rüstung`;
-  const nextRarity = item.rarity === 'gewoehnlich' ? RARITIES[1] : item.rarity === 'selten' ? RARITIES[2] : null;
+  const nextRarity = RARITIES[RARITIES.findIndex((rarity) => rarity.key === item.rarity) + 1] ?? null;
   const rCost = nextRarity ? reforgeCost(item) : 0;
-  const masteryHint = nextRarity?.key === 'episch' ? 'Rollt eine Meisterschaft' : 'Werte werden neu gewürfelt';
+  const masteryHint = nextRarity?.key === 'legendär' ? 'Rollt eine Meisterschaft' : nextRarity ? 'Werte werden neu gewürfelt' : '';
   el.craftDetail.innerHTML = `
     <div class="craft-item">
       <div class="tt-name" style="color:${rarity.color}">${item.name}${item.enhance ? ` +${item.enhance}` : ''}</div>

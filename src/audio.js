@@ -156,3 +156,39 @@ export const sfx = {
     [523, 659, 784, 1046].forEach((freq, i) => tone({ type: 'sine', from: freq, to: freq, dur: 0.3, gain: 0.13, delay: i * 0.16 }));
   },
 };
+
+// Herzschlag bei niedriger Lebenskraft: dumpfer Doppelschlag, ~1,1 s Takt.
+let heartbeatTimer = null;
+
+export function setLowHp(on) {
+  if (!ctx) return;
+  if (on && !heartbeatTimer) {
+    const beat = () => {
+      tone({ type: 'sine', from: 58, to: 40, dur: 0.12, gain: 0.2 });
+      setTimeout(() => tone({ type: 'sine', from: 50, to: 36, dur: 0.1, gain: 0.13 }), 190);
+    };
+    beat();
+    heartbeatTimer = setInterval(beat, 1100);
+  } else if (!on && heartbeatTimer) {
+    clearInterval(heartbeatTimer);
+    heartbeatTimer = null;
+  }
+}
+
+// Boss-Trommeln: dumpfer Kriegspuls, solange ein Boss auf dem Feld steht.
+let drumsTimer = null;
+
+export function setBossFight(on) {
+  if (!ctx) return;
+  if (on && !drumsTimer) {
+    const drum = () => noiseBurst({ dur: 0.14, gain: 0.16, cutoff: 170 });
+    drum();
+    drumsTimer = setInterval(() => {
+      drum();
+      setTimeout(drum, 320);
+    }, 640);
+  } else if (!on && drumsTimer) {
+    clearInterval(drumsTimer);
+    drumsTimer = null;
+  }
+}

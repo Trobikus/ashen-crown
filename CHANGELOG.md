@@ -6,6 +6,113 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [0.10.0] — 2026-10-15
+
+### Hinzugefügt
+- **Fünf Raritäten** (Anlehnung an Diablo 4): Gewöhnlich (weiß) → **Magisch
+  (blau, neu)** → Selten (jetzt gelb) → Episch (lila) → **Legendär (orange,
+  neu)**. Höhere Stufen tragen stärkere Werte, mehr Kritchance und seltener
+  werdende Drop-Gewichte (54/26/14/5/1). Die goldene **Meisterschaft wandert
+  von Episch zu Legendär**.
+- **Zufällige Affixe**: Jedes Stück rollt seine Werte (Basiswerte 85–115 %,
+  Kritchance und Lifeleech als Bereich je Seltenheit) — das „perfekte" Item
+  ist ein Fund, kein Rechenresultat, und lohnt das Farmen.
+- **Lifeleech** als Waffen-Affix: sitzt **ausschließlich auf Waffen** und erst
+  ab **Episch** — und selbst dort nur gerollt (Episch 40 % … Legendär 65 %
+  Chance, nie garantiert). Zwei Varianten: **Prozent** (10–20 % des
+  ausgeteilten Schadens je nach Stufe/Rolle) oder **Flat** (feste Lebenskraft
+  pro Treffer, skaliert mit der Gegenstandsstufe). Lifeleech ist ein
+  Survivability-Bonus zum Durchhalten des Farmens — keine Pflicht, keine
+  Königsdisziplin. Einmal-Hinweis beim ersten Fund.
+- **Der Held verfehlt auch**: 12 % seiner Schläge gehen daneben („Verfehlt"
+  über dem Gegner) — kein Schlag sitzt garantiert.
+- **Schadensspanne**: Jeder Helden-Schlag rollt ±15 % um seinen Wert — die
+  Schadenszahlen tanzen statt zu frieren (Erwartungswert unverändert, die
+  Simulationen bleiben exakt). Der Helden-Screen zeigt den Schaden als
+  Spanne („85 – 115") statt als Fixwert.
+- **Gegner-Level & -Typ sichtbar**: Über dem Gegner steht jetzt „Lv 12 · Elite"
+  — Normal trägt die Gebietsnummer, Elite +2, Boss +3. Die Gebiete-Übersicht
+  zeigt je Zeile die Levelrange des Gebiets (z. B. „Lv 12–15"); die Stufen
+  fließen auch in die XP-Abmagerung ein.
+- **Atmosphäre in der Arena** (alles Code, keine Assets):
+  - **Treibende Partikel** je Kontinent — Glutfunken in den Aschenlanden,
+    Schneefall im Frostreich, Sporen-Drift im Faulmoor, Blutstaub im
+    Blutmark, Sternenstaub in der Sternenleere, Aschenregen in den Tiefen.
+  - **Vignette + feines Filmkorn** über der Arena (SVG-Noise, zur Laufzeit
+    generiert).
+  - **Angriffs-Bewegung**: Der Angreifer stößt vor, der Getroffene weicht
+    zurück; beide Figuren atmen im Idle. Gegner steigen beim Spawn aus der
+    Asche auf und zerfallen beim Tod.
+  - **Screenshake**: leicht bei kritischen Treffern, hart bei Boss-Schlägen.
+  - **Niedrige Lebenskraft**: roter Pulssaum um die Arena plus
+    Herzschlag-Sound (wie immer prozedural). Bosse bekommen einen dumpfen
+    Trommelpuls, solange sie auf dem Feld stehen.
+- **Boss-Warnung beim Rasten**: Verlässt man einen laufenden Bosskampf zum
+  Schrein, weist ein Toast darauf hin, dass sich der Boss vollständig heilt
+  (das Zurücksetzen an sich galt schon immer).
+- **Schrein-Reset-Warnung** (siehe unten) und Balance-Simulator mit
+  **deterministischem Seed** (`--seed`) sowie modellierten Schrein-Runden —
+  Runs sind jetzt vergleichbar.
+
+### Geändert
+- **Balance-Überholung gegen das Godlike-Problem** — der Held ließ sich zu
+  leicht über die Kurve treiben:
+  - **Erfahrung neu gebaut**: Basis-XP 10 statt 30, XP-Wachstum 1,15 statt
+    1,38 pro Ebene, und der Levelbedarf steil angezogen (9L²+13L statt
+    4L²+6L). Gegner unter dem eigenen Niveau magern ab — pro Level Differenz
+    ein Zwanzigstel, ab **20 Stufen Unterschied nichts mehr**. Gegnerstufen
+    steigen 3 pro Gebiet (Range: Normal 3N−2, Elite +2, Boss +4 — beginnt
+    nie mehr als 1 unter der Höchststufe des Vorgehenden); der Held endet
+    im Hauptspiel bei Stufe ~160 statt ~3.000.
+  - **Statpunkte**: 2 pro Stufe statt 3.
+  - **Fertigkeitenbaum erwacht ab Stufe 20**: Kachel vorher versiegelt,
+    Runenpunkte erst ab da. Alle Runenwerte auf die Hälfte gedämpft.
+  - **Kritchance deckelt bei 75 %**; **Gegner greifen zu 15 % daneben**.
+  - **Gegnerschaden wächst jetzt wirklich** (1,24 pro Ebene, siehe „Behoben")
+    und Bosse sind spürbar härter (4,2× Leben, 1,55× Schaden): Ab Zone ~16
+    entstehen echte **Wände** — der Held stirbt am Boss, kehrt zurück, farmt
+    Asche und Beute, schmiedet in der Werkstatt und bricht die Wand.
+  - **Beute ist ein Ereignis**: Drop-Chancen gesenkt (Normal 1 %, Elite 8 %,
+    Boss 50 % statt 2/15/100 %).
+  - **Startzonen-Fundament**: Normale Gegner starten mit +12 Lebenskraft, das
+    linear bis Zone 10 schwindet — ein Damage-All-in oneshottet die ersten
+    Gebiete nicht mehr, ohne den weiteren Kurvenverlauf zu verbiegen.
+  - **Item-Wachstum angeglichen** (ilvl 1,29 statt 1,28) — zusammen mit der
+    gedämpften XP-Kurve das Zeitziel: laut `tools/balance-sim.mjs` (echte
+    data.js, deterministischer Seed) dauert das Hauptspiel jetzt
+    **~48,7 h mit 618 Toden** (zuvor 6,7 h, 0 Tode): sichere Zonen 1–8,
+    Wand-Zonen mit Farm-Zwang ab 9 und im Endgame 39–50, langsamste
+    Killzeit ~40 s.
+- **Werkstatt-Umschmieden**: Kette auf vier Stufen verlängert (… → Episch →
+  Legendär) mit eskalierenden Kosten; Legendär rollt die Meisterschaft.
+
+### Entfernt
+- **Klinge schärfen / Haut härten**: Die Asche-Upgrades im Kampfbildschirm sind
+  hinfällig — Werte wachsen jetzt über Statpunkte, Gear und Werkstatt. Asche
+  finanziert ausschließlich die Werkstatt. (Alte Spielstände laden die
+  zurückgelassenen Zähler gefahrlos los.)
+- **Kill-Regeneration**: Siege heilen nicht mehr. Der Held regeneriert im Feld
+  nie von selbst — heilen tut nur das Rasten am Schrein (bzw. das Betreten des
+  Felds vom HUB aus) und, mit Glück, eine Lifeleech-Waffe. Die Offline-
+  Simulation rechnet beide Lifeleech-Varianten.
+
+### Behoben
+- **Gegner trafen das ganze Spiel lang für exakt 1 Schaden**: Beim Wachstum
+  rundete `Math.round(1 × 1,34)` stets zu 1 — Schadenswachstum, Boss- und
+  Elite-Multiplikatoren waren wirkungslose Zierde. Gegnerschaden bleibt jetzt
+  Float und wird erst beim Spawn bzw. Zuschlagen gerundet. (Die obige
+  Balance-Überholung stand auf diesem Bein.)
+- **Spielstand zurücksetzen resettet jetzt wirklich**: Zuvor löschte der Knopf
+  nur den Hauptspielstand — die Backup-Kette blieb, und der nächste Start lud
+  still das alte Backup samt der irreführenden Meldung „Hauptspielstand war
+  beschädigt". Der Reset räumt jetzt auch die drei Backups weg und verhindert
+  im selben Zug, dass ein Zwischenspeicher den alten Zustand vor dem Reload
+  zurückschreibt.
+- Epische Drops warfen eine `ReferenceError` (fehlender `rollMastery`-Import in
+  `src/items.js`) und blockierten den Kampf-Tick, statt Beute ins Inventar zu
+  legen.
+
+
 ## [0.9.1] — 2026-10-14
 
 ### Hinzugefügt

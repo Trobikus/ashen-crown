@@ -4,15 +4,15 @@ import { state, settings, SAVE_KEY, SAVE_VERSION } from './state.js';
 
 import { loadSettings, saveSettings, applySettings } from './settings.js';
 
-import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, INVENTORY_CAP, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, DEATH_ASH_PENALTY, KILL_REGEN_PCT, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, continentKeyOf, xpNeeded, upgradeCost, zoneDef, sanitizeItem, asCount, formatNum } from './data.js';
+import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, INVENTORY_CAP, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, DEATH_ASH_PENALTY, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, sanitizeItem, asCount, formatNum } from './data.js';
 
-import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier } from './stats.js';
+import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier, heroLifeleech } from './stats.js';
 
 import { buildSkillTree, renderSkillTree, bindSkillTreeEvents, applySkillView } from './skilltree.js';
 
 import { buildZoneList, renderZones, resetZoneView, switchZoneView } from './zones.js';
 
-import { sfx } from './audio.js';
+import { sfx, setLowHp, setBossFight } from './audio.js';
 
 import { toast, levelUpFloat } from './feedback.js';
 
@@ -54,6 +54,10 @@ let resetArmed = false;
 
 let resetTimer = null;
 
+// True zwischen „Spielstand zurücksetzen" und dem Reload: in diesem Fenster
+// darf kein save() den alten Zustand zurück ins localStorage schreiben.
+let saveSuppressed = false;
+
 let importArmed = false;
 
 let importTimer = null;
@@ -72,6 +76,52 @@ function flash(figure) {
   setTimeout(() => figure.classList.remove('hit'), 150);
 }
 
+// Kurzlebige Animations-Klasse: entfernen, Reflow erzwingen (startet die
+// Keyframes neu), wieder anheften, nach ms abräumen.
+function pulseClass(element, cls, ms = 260) {
+  element.classList.remove(cls);
+  void element.offsetWidth;
+  element.classList.add(cls);
+  clearTimeout(element.__pulseTimer);
+  element.__pulseTimer = setTimeout(() => element.classList.remove(cls), ms);
+}
+
+// Treibende Partikel pro Kontinent — nur DOM-Aufbau, Bewegung macht CSS.
+const ARENA_PARTICLES = {
+  aschenlande: { anim: 'particle-rise', color: '#d98f4a', count: 18, alpha: 0.75 },
+  frostreich: { anim: 'particle-fall', color: '#cfe3ef', count: 26, alpha: 0.8 },
+  faulmoor: { anim: 'particle-drift', color: '#8fae6d', count: 20, alpha: 0.5 },
+  blutmark: { anim: 'particle-fall', color: '#a03a3a', count: 18, alpha: 0.6 },
+  sternenleere: { anim: 'particle-rise', color: '#9fb4e8', count: 24, alpha: 0.7 },
+  tiefen: { anim: 'particle-fall', color: '#6f6862', count: 22, alpha: 0.5 },
+};
+
+let particleContinent = null;
+
+function refreshArenaParticles() {
+  const key = continentKeyOf(state.zone);
+  if (key === particleContinent) return;
+  particleContinent = key;
+  const cfg = ARENA_PARTICLES[key] ?? ARENA_PARTICLES.aschenlande;
+  el.arenaParticles.replaceChildren();
+  for (let i = 0; i < cfg.count; i += 1) {
+    const p = document.createElement('span');
+    p.className = 'arena-particle';
+    const size = 2 + Math.random() * 4;
+    p.style.left = `${(Math.random() * 100).toFixed(1)}%`;
+    p.style.top = `${(Math.random() * 100).toFixed(1)}%`;
+    p.style.width = `${size.toFixed(1)}px`;
+    p.style.height = `${(size * (0.6 + Math.random() * 0.8)).toFixed(1)}px`;
+    p.style.setProperty('--p-color', cfg.color);
+    p.style.setProperty('--p-anim', cfg.anim);
+    p.style.setProperty('--p-dur', `${(6 + Math.random() * 9).toFixed(1)}s`);
+    p.style.setProperty('--p-delay', `${(-Math.random() * 12).toFixed(1)}s`);
+    p.style.setProperty('--p-drift', `${(Math.random() * 10 - 5).toFixed(1)}vw`);
+    p.style.setProperty('--p-alpha', cfg.alpha);
+    el.arenaParticles.appendChild(p);
+  }
+}
+
 function spawnDamageFloat(fighter, amount, isCrit = false) {
   if (!settings.damageNumbers) return;
   const span = document.createElement('span');
@@ -88,6 +138,16 @@ function spawnHealFloat(fighter, amount) {
   span.className = 'dmg-float heal';
   span.textContent = `+${formatNum(amount)}`;
   span.style.left = `${35 + Math.random() * 30}%`;
+  fighter.appendChild(span);
+  setTimeout(() => span.remove(), 900);
+}
+
+function spawnMissFloat(fighter) {
+  if (!settings.damageNumbers) return;
+  const span = document.createElement('span');
+  span.className = 'dmg-float miss';
+  span.textContent = 'Verfehlt';
+  span.style.left = `${30 + Math.random() * 40}%`;
   fighter.appendChild(span);
   setTimeout(() => span.remove(), 900);
 }
@@ -165,10 +225,17 @@ function spawnEnemy() {
     type = 'elite';
   }
   const def = scaledEnemy(type);
-  enemy = { type, name: def.name, hp: def.hp, maxHp: def.hp, damage: def.damage, attackIntervalMs: def.attackIntervalMs, enraged: false };
+  enemy = { type, name: def.name, level: def.level, hp: def.hp, maxHp: def.hp, damage: def.damage, attackIntervalMs: def.attackIntervalMs, enraged: false };
   setEnemyFigure(state.zone, def.boss);
+  el.enemyFigure.classList.remove('dying');
+  pulseClass(el.enemyFigure, 'spawn', 600);
+  refreshArenaParticles();
   el.enemyName.textContent = def.name;
-  el.enemyProfile.textContent = def.profileLabel;
+  const typeLabel = type === 'boss' ? 'Boss' : type === 'elite' ? 'Elite' : 'Normal';
+  el.enemyLevel.textContent = `Lv ${def.level} · ${typeLabel}`;
+  // Beim Boss zeigt die Level-Zeile den Typ; die Profil-Zeile bleibt der Wut
+  // vorbehalten, damit nicht zweimal „Boss" steht.
+  el.enemyProfile.textContent = def.boss ? '' : def.profileLabel;
   el.enemyProfile.classList.remove('enraged-label');
   enemyAttackProgress = 0;
   if (def.boss) {
@@ -183,8 +250,9 @@ function gainXp(amount) {
   while (state.xp >= xpNeeded(state.level)) {
     state.xp -= xpNeeded(state.level);
     state.level += 1;
-    state.statPoints += 3;
-    state.skillPoints += 1;
+    state.statPoints += STAT_POINTS_PER_LEVEL;
+    // Runenpunkte gibt es erst, sobald der Fertigkeitenbaum offen ist.
+    if (state.level >= SKILL_TREE_UNLOCK_LEVEL) state.skillPoints += 1;
     heroHp = heroMaxHp();
     sfx.levelUp();
     levelUpFloat(state.level);
@@ -226,21 +294,26 @@ function bindHoldToRepeat(button, action) {
   button.addEventListener('pointercancel', stop);
 }
 
-function healFromKill() {
-  const heal = Math.round(heroMaxHp() * KILL_REGEN_PCT);
-  if (heal <= 0) return;
+// Lifeleech heilt beim Treffer: fester Anteil pro Schlag plus Prozent des
+// ausgeteilten Schadens. Die einzige Heilung im Feld — Rasten am Schrein
+// füllt komplett auf.
+function applyLifeleech(damage) {
+  const { pct, flat } = heroLifeleech();
+  const heal = flat + Math.round(damage * pct / 100);
+  if (heal <= 0 || heroHp >= heroMaxHp()) return;
   const before = heroHp;
   heroHp = Math.min(heroMaxHp(), heroHp + heal);
-  if (heroHp > before) spawnHealFloat(el.heroFighter, heroHp - before);
+  spawnHealFloat(el.heroFighter, heroHp - before);
 }
 
 function killEnemy() {
   const def = scaledEnemy(enemy.type);
+  pulseClass(el.enemyFigure, 'dying', 500);
   state.kills += 1;
   state.zoneKills += 1;
   state.ash += Math.round(def.ash * (1 + statBonus('ash') / 100));
-  gainXp(def.xp);
-  healFromKill();
+  // Gegner unter dem Helden-Niveau tragen weniger bis keine Erfahrung bei.
+  gainXp(Math.round(def.xp * enemyXpMultiplier(enemy.level, state.level)));
   rollDrop(enemy.type);
   sfx.kill();
   if (def.boss) {
@@ -272,15 +345,25 @@ function killEnemy() {
 }
 
 function heroAttack() {
-  let damage = heroDamage();
+  // Auch der Held verfehlt manchmal — harte Gegner bleiben harte Gegner.
+  if (Math.random() < HERO_MISS_CHANCE) {
+    spawnMissFloat(el.enemyFighter);
+    return;
+  }
+  // Der Schaden rollt in einer Spanne — kein Schlag trifft gleich hart.
+  let damage = Math.round(heroDamage() * (1 - DAMAGE_VARIANCE + Math.random() * DAMAGE_VARIANCE * 2));
   const isCrit = Math.random() * 100 < heroCritChance();
   if (isCrit) {
     damage = Math.round(damage * critMultiplier());
     sfx.crit();
+    pulseClass(el.arena, 'shake');
   } else {
     sfx.hit();
   }
+  pulseClass(el.heroFigure, 'lunge');
+  pulseClass(el.enemyFigure, 'recoil');
   enemy.hp -= damage;
+  applyLifeleech(damage);
   flash(el.heroFigure);
   spawnDamageFloat(el.enemyFighter, damage, isCrit);
   if (enemy.hp <= 0) {
@@ -291,11 +374,21 @@ function heroAttack() {
 }
 
 function enemyAttack() {
+  // Der Schwung passiert immer — auch ein Fehlschlag war ein Angriff.
+  pulseClass(el.enemyFigure, 'lunge');
+  if (enemy.type === 'boss') pulseClass(el.arena, 'shake-strong');
+  // Nicht jeder Gegner-Schlag trifft — Fehlschläge entlasten den Helden.
+  if (Math.random() < ENEMY_MISS_CHANCE) {
+    spawnMissFloat(el.heroFighter);
+    return;
+  }
   const armor = heroArmor();
-  const reduction = armor / (armor + ARMOR_RESISTANCE * enemy.damage);
+  // Rüstung mindert höchstens die Hälfte — mindestens 50 % treffen immer.
+  const reduction = Math.min(0.5, armor / (armor + ARMOR_RESISTANCE * enemy.damage));
   const taken = Math.max(1, Math.round(enemy.damage * (1 - reduction)));
   heroHp -= taken;
   flash(el.enemyFigure);
+  pulseClass(el.heroFigure, 'recoil');
   spawnDamageFloat(el.heroFighter, taken);
   if (heroHp <= 0) {
     die();
@@ -315,6 +408,8 @@ function die() {
   heroHp = 0;
   paused = true;
   state.inField = false;
+  setLowHp(false);
+  setBossFight(false);
   const toll = takeDeathToll();
   sfx.death();
   showOverlay(toll > 0
@@ -329,25 +424,6 @@ function die() {
   }, 2000);
 }
 
-function buyUpgrade(kind) {
-  if (kind === 'damage') {
-    const cost = upgradeCost(10, state.damageUps);
-    if (state.ash < cost) return;
-    state.ash -= cost;
-    state.damageUps += 1;
-    state.damage += 1;
-  } else {
-    const cost = upgradeCost(15, state.hpUps);
-    if (state.ash < cost) return;
-    state.ash -= cost;
-    state.hpUps += 1;
-    state.maxHp += 5;
-    heroHp += 5;
-  }
-  save();
-  render();
-}
-
 function enemyAttackInterval() {
   return enemy.attackIntervalMs * (enemy.enraged ? ENRAGE_INTERVAL_MULT : 1);
 }
@@ -358,7 +434,7 @@ function updateEnrage() {
   if (enraged === enemy.enraged) return;
   enemy.enraged = enraged;
   el.enemyFigure.classList.toggle('enraged', enraged);
-  el.enemyProfile.textContent = enraged ? 'Wütend' : 'Boss';
+  el.enemyProfile.textContent = enraged ? 'Wütend' : '';
   el.enemyProfile.classList.toggle('enraged-label', enraged);
   if (enraged) sfx.enrage();
 }
@@ -366,6 +442,8 @@ function updateEnrage() {
 function tick() {
   if (paused || !enemy) return;
   updateEnrage();
+  setBossFight(enemy.type === 'boss');
+  setLowHp(heroHp / heroMaxHp() <= 0.25);
   heroAttackProgress += TICK_MS * heroAttackSpeed();
   enemyAttackProgress += TICK_MS;
   if (heroAttackProgress >= ATTACK_INTERVAL_MS) {
@@ -395,7 +473,11 @@ function render() {
   }
   el.skillPointsHud.textContent = state.skillPoints;
   el.skillPointsHud.classList.toggle('has-points', state.skillPoints > 0);
-  el.tileSkillsSub.textContent = state.skillPoints > 0 ? `${state.skillPoints} Punkte frei` : 'Wähle weise';
+  const skillsLocked = state.level < SKILL_TREE_UNLOCK_LEVEL;
+  el.tileSkills.disabled = skillsLocked;
+  el.tileSkillsSub.textContent = skillsLocked
+    ? `Erwacht ab Stufe ${SKILL_TREE_UNLOCK_LEVEL}`
+    : state.skillPoints > 0 ? `${state.skillPoints} Punkte frei` : 'Wähle weise';
   const zone = zoneDef(state.zone);
   el.hudZone.textContent = `${zone.continent} · ${zone.name}`;
   const showProgress = state.cleared <= state.zone;
@@ -417,32 +499,38 @@ function render() {
   el.modalHeroLevel.textContent = state.level;
   el.modalHeroXp.textContent = `${formatNum(state.xp)} / ${formatNum(xpNeeded(state.level))}`;
   el.modalHeroHp.textContent = formatNum(heroMaxHp());
-  el.modalHeroDamage.textContent = formatNum(heroDamage());
+  const dmgBase = heroDamage();
+  el.modalHeroDamage.textContent = `${formatNum(Math.round(dmgBase * (1 - DAMAGE_VARIANCE)))} – ${formatNum(Math.round(dmgBase * (1 + DAMAGE_VARIANCE)))}`;
   el.modalHeroArmor.textContent = formatNum(heroArmor());
   el.modalHeroCrit.textContent = `${heroCritChance()} %`;
   el.modalHeroCritDmg.textContent = `${Math.round(critMultiplier() * 100)} %`;
+  const leech = heroLifeleech();
+  el.modalHeroLeech.textContent = leech.pct && leech.flat
+    ? `${leech.pct} % · +${formatNum(leech.flat)}`
+    : leech.pct ? `${leech.pct} %`
+    : leech.flat ? `+${formatNum(leech.flat)} / Treffer`
+    : '0 %';
   el.modalHeroSpeed.textContent = `${heroAttackSpeed().toFixed(1).replace('.', ',')} / s`;
   el.modalHeroKills.textContent = formatNum(state.kills);
+  el.heroLevel.textContent = `Lv ${state.level} · Held`;
+  el.game.classList.toggle('low-hp', state.inField && !paused && heroHp / heroMaxHp() <= 0.25);
   el.heroHp.style.width = `${Math.max(0, heroHp / heroMaxHp()) * 100}%`;
   el.heroHpText.textContent = `${formatNum(Math.max(0, heroHp))} / ${formatNum(heroMaxHp())}`;
   if (enemy) {
     el.enemyName.textContent = enemy.name;
+    el.enemyLevel.textContent = `Lv ${enemy.level} · ${enemy.type === 'boss' ? 'Boss' : enemy.type === 'elite' ? 'Elite' : 'Normal'}`;
     el.enemyHp.style.width = `${Math.max(0, enemy.hp / enemy.maxHp) * 100}%`;
     el.enemyHpText.textContent = `${formatNum(Math.max(0, enemy.hp))} / ${formatNum(enemy.maxHp)}`;
   } else {
+    el.enemyLevel.textContent = '—';
     el.enemyHp.style.width = '0%';
     el.enemyHpText.textContent = '—';
   }
-  const dmgCost = upgradeCost(10, state.damageUps);
-  const hpCost = upgradeCost(15, state.hpUps);
-  el.costDamage.textContent = formatNum(dmgCost);
-  el.costHp.textContent = formatNum(hpCost);
-  el.upDamage.disabled = state.ash < dmgCost;
-  el.upHp.disabled = state.ash < hpCost;
   renderGearIfDirty();
 }
 
 function save() {
+  if (saveSuppressed) return;
   state.lastSeen = Date.now();
   rotateBackups();
   localStorage.setItem(SAVE_KEY, JSON.stringify(state));
@@ -465,7 +553,7 @@ function parseSave(raw) {
 
 // ——— Onboarding: Einmal-Hinweise im richtigen Moment ———
 
-const ONBOARDING_HINT_KEYS = ['hint-combat', 'hint-levelup', 'hint-drop', 'hint-epic', 'hint-boss', 'hint-skills', 'hint-map', 'hint-crafting'];
+const ONBOARDING_HINT_KEYS = ['hint-combat', 'hint-levelup', 'hint-drop', 'hint-epic', 'hint-leech', 'hint-boss', 'hint-skills', 'hint-map', 'hint-crafting'];
 
 function hintOnce(key, text, { duration = 4400, pauseCombat = false } = {}) {
   if (state.hints[key]) return;
@@ -483,21 +571,32 @@ function hintOnce(key, text, { duration = 4400, pauseCombat = false } = {}) {
 // Zustandsbasierte Hinweise: in jedem render geprüft, fire-once.
 function checkOnboardingHints() {
   if (state.level >= 2) {
-    hintOnce('hint-levelup', 'Jede Stufe bringt 3 Statpunkte (Held-Screen) und 1 Runenpunkt (Fertigkeiten). Verteile sie, wann du willst.');
+    hintOnce('hint-levelup', 'Jede Stufe bringt 2 Statpunkte (Held-Screen). Ab Stufe 20 erwacht der Fertigkeitenbaum — danach kommt pro Stufe 1 Runenpunkt dazu.');
   }
   if (state.inventory.length > 0) {
     hintOnce('hint-drop', 'Beute landet im Inventar deines Helden — „Bestes anlegen" rüstet das Stärkste in einem Klick an.');
   }
   if (ownsEpic()) {
-    hintOnce('hint-epic', 'Epische Stücke tragen eine goldene Meisterschaft — einen Prozentbonus, den es sonst nirgends gibt. Halte ihn in Ehren.');
+    hintOnce('hint-epic', 'Legendäre Stücke (orange) tragen eine goldene Meisterschaft — einen Prozentbonus, den es sonst nirgends gibt. Halte ihn in Ehren.');
+  }
+  if (ownsLifeleech()) {
+    hintOnce('hint-leech', 'Lifeleech sitzt selten auf epischen und legendären Waffen — als Prozente deines Schadens oder als feste Zahl pro Treffer. Ein netter Bonus, der dich im Feld länger auf die Beine hält.');
   }
 }
 
 function ownsEpic() {
   for (const slot of GEAR_SLOTS) {
-    if (state.equipment[slot.key]?.rarity === 'episch') return true;
+    if (state.equipment[slot.key]?.rarity === 'legendär') return true;
   }
-  return state.inventory.some((item) => item.rarity === 'episch');
+  return state.inventory.some((item) => item.rarity === 'legendär');
+}
+
+function ownsLifeleech() {
+  for (const slot of GEAR_SLOTS) {
+    const item = state.equipment[slot.key];
+    if ((item?.lifeleech ?? 0) > 0 || (item?.lifeleechFlat ?? 0) > 0) return true;
+  }
+  return state.inventory.some((item) => (item.lifeleech ?? 0) > 0 || (item.lifeleechFlat ?? 0) > 0);
 }
 
 function playCombatIntro() {
@@ -553,8 +652,6 @@ function prepareSave(data) {
   data.level = Math.max(1, asNumber(data.level, 1));
   data.maxHp = Math.max(1, asNumber(data.maxHp, 30));
   data.damage = Math.max(1, asNumber(data.damage, 2));
-  data.damageUps = Math.max(0, asNumber(data.damageUps, 0));
-  data.hpUps = Math.max(0, asNumber(data.hpUps, 0));
   data.kills = Math.max(0, asNumber(data.kills, 0));
   data.zoneKills = Math.max(0, asNumber(data.zoneKills, 0));
   data.statPoints = Math.max(0, asNumber(data.statPoints, 0));
@@ -585,7 +682,10 @@ function prepareSave(data) {
   if (!Array.isArray(data.skills)) data.skills = ['start'];
   if (!data.skills.includes('start')) data.skills.unshift('start');
   data.skills = data.skills.filter((id) => SKILL_NODES_BY_ID[id]);
-  data.skillPoints = Math.max(0, data.level - data.skills.length);
+  // Runenpunkte gibt es erst ab SKILL_TREE_UNLOCK_LEVEL — verdient pro Stufe
+  // darüber, verbraucht vom Startknoten abgesehen.
+  const earnedSkillPoints = Math.max(0, data.level - SKILL_TREE_UNLOCK_LEVEL + 1);
+  data.skillPoints = Math.max(0, earnedSkillPoints - (data.skills.length - 1));
   data.zone = Math.max(0, Math.min(Math.trunc(asNumber(data.zone, 0)), MAX_ZONE));
   data.cleared = Math.max(0, Math.min(Math.trunc(asNumber(data.cleared, 0)), MAX_ZONE));
   data.zone = Math.min(data.zone, data.cleared);
@@ -730,13 +830,14 @@ function formatDuration(ms) {
 }
 
 // Simulierter Kampf (Offline-Fortschritt): rechnet mit denselben Formeln wie
-// das Live-Gefecht — Krit, Tempo, Gegnerprofile, erlittener Schaden, Kill-
-// Regeneration. Stoppt am Boss (Bosse verlangen deine Anwesenheit) oder beim
+// das Live-Gefecht — Krit, Tempo, Gegnerprofile, erlittener Schaden und
+// Lifeleech. Stoppt am Boss (Bosse verlangen deine Anwesenheit) oder beim
 // Tod. Rückgabe: 'time' | 'boss' | 'died'.
 function simulateKills(seconds) {
   const speed = heroAttackSpeed();
   const critFactor = 1 + (Math.min(100, heroCritChance()) / 100) * (critMultiplier() - 1);
   const avgHit = heroDamage() * critFactor;
+  const { pct, flat } = heroLifeleech();
   let remaining = seconds;
   let guard = 0;
   while (remaining > 0 && guard < 200000) {
@@ -744,20 +845,24 @@ function simulateKills(seconds) {
     if (state.cleared <= state.zone && state.zoneKills >= BOSS_AFTER_KILLS) return 'boss';
     const isElite = state.zoneKills > 0 && state.zoneKills % ELITE_EVERY_KILLS === 0;
     const def = scaledEnemy(isElite ? 'elite' : 'normal');
-    const fightS = Math.max(1, Math.ceil(def.hp / avgHit)) * (ATTACK_INTERVAL_MS / 1000) / speed;
+    // Erwartete Treffer: HERO_MISS_CHANCE der eigenen Schläge geht daneben.
+    const fightS = Math.max(1, Math.ceil(def.hp / avgHit)) * (ATTACK_INTERVAL_MS / 1000) / speed / (1 - HERO_MISS_CHANCE);
     const duration = fightS + ENEMY_RESPAWN_S;
     if (duration > remaining) return 'time';
     remaining -= duration;
     const swings = Math.max(0, Math.floor(fightS / (def.attackIntervalMs / 1000)) - 1);
-    const reduction = heroArmor() / (heroArmor() + ARMOR_RESISTANCE * def.damage);
+    const reduction = Math.min(0.5, heroArmor() / (heroArmor() + ARMOR_RESISTANCE * def.damage));
     const taken = Math.max(1, Math.round(def.damage * (1 - reduction)));
-    if (swings * taken >= heroHp) return 'died';
-    heroHp -= swings * taken;
+    const heroHits = Math.ceil(def.hp / avgHit) / (1 - HERO_MISS_CHANCE);
+    const healed = Math.round(def.hp * pct / 100) + flat * heroHits;
+    // Erwartungswert: ENEMY_MISS_CHANCE der Gegner-Schläge geht daneben.
+    const expectedTaken = swings * taken * (1 - ENEMY_MISS_CHANCE);
+    if (expectedTaken - healed >= heroHp) return 'died';
+    heroHp = Math.min(heroMaxHp(), heroHp - expectedTaken + healed);
     state.kills += 1;
     state.zoneKills += 1;
     state.ash += Math.round(def.ash * (1 + statBonus('ash') / 100));
-    gainXp(def.xp);
-    healFromKill();
+    gainXp(Math.round(def.xp * enemyXpMultiplier(def.level, state.level)));
     rollDrop(isElite ? 'elite' : 'normal');
   }
   return 'time';
@@ -855,6 +960,8 @@ function playIntro() {
 function showVictory() {
   paused = true;
   state.inField = false;
+  setLowHp(false);
+  setBossFight(false);
   sfx.victory();
   if (tickTimer) {
     clearInterval(tickTimer);
@@ -874,6 +981,8 @@ function returnToHub() {
   }
   paused = true;
   state.inField = false;
+  setLowHp(false);
+  setBossFight(false);
   if (tickTimer) {
     clearInterval(tickTimer);
     tickTimer = null;
@@ -890,9 +999,11 @@ function returnToMenu() {
 }
 
 function bindEvents() {
-  el.upDamage.addEventListener('click', () => buyUpgrade('damage'));
-  el.upHp.addEventListener('click', () => buyUpgrade('hp'));
-  el.shrineButton.addEventListener('click', returnToHub);
+  el.shrineButton.addEventListener('click', () => {
+    // Der Schrein verwirft den laufenden Kampf — Bosse heilen sich voll.
+    if (enemy?.type === 'boss') toast('Der Boss heilt sich beim Verlassen vollständig.');
+    returnToHub();
+  });
   el.btnDescend.addEventListener('click', descend);
   el.doorButton.addEventListener('click', () => {
     if (state.zone + 1 > state.cleared) return;
@@ -945,7 +1056,11 @@ function bindEvents() {
       return;
     }
     clearTimeout(resetTimer);
-    localStorage.removeItem(SAVE_KEY);
+    // Rücksichtslos löschen heißt: Hauptstand UND Backup-Kette — sonst lädt
+    // der nächste Start still das Backup und der „gelöschte" Held kehrt
+    // zurück. saveSuppressed hält Zwischenspeicherer aus dem Fenster.
+    saveSuppressed = true;
+    for (const key of [SAVE_KEY, ...BACKUP_KEYS]) localStorage.removeItem(key);
     location.reload();
   });
   el.exportButton.addEventListener('click', () => {
@@ -969,6 +1084,7 @@ function bindEvents() {
   });
   el.tileHero.addEventListener('click', () => showScreen(el.sceneHero));
   el.tileSkills.addEventListener('click', () => {
+    if (state.level < SKILL_TREE_UNLOCK_LEVEL) return;
     showScreen(el.sceneSkills);
     hintOnce('hint-skills', 'Benachbarte Runen schalten andere frei — klicke verfügbare an. „Runen neu schneiden" bricht alles zurück und erstattet die Punkte.');
   });

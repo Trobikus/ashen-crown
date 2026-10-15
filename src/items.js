@@ -4,7 +4,7 @@ import helmIcon from './assets/icons/helm.svg';
 import hoseIcon from './assets/icons/hose.svg';
 import schuheIcon from './assets/icons/schuhe.svg';
 import handIcon from './assets/icons/hand.svg';
-import { INVENTORY_CAP, GEAR_SLOTS, RARITIES, DROP_CHANCES, zoneDef, gearSlotOf, rarityOf, rollRarity, rollItemValues, itemStats, itemStatsText, itemScore, SKILL_EFFECT_LABELS, formatNum } from './data.js';
+import { INVENTORY_CAP, GEAR_SLOTS, RARITIES, DROP_CHANCES, zoneDef, gearSlotOf, rarityOf, rollRarity, rollItemValues, itemStats, itemStatsText, itemScore, rollMastery, SKILL_EFFECT_LABELS, formatNum } from './data.js';
 
 import { state } from './state.js';
 
@@ -225,6 +225,8 @@ function tooltipHtml(item, action, showValue = false) {
     stats.hp ? `<div class="tt-stat">+${formatNum(stats.hp)} Lebenskraft</div>` : null,
     stats.armor ? `<div class="tt-stat">+${formatNum(stats.armor)} Rüstung</div>` : null,
     stats.critChance ? `<div class="tt-stat">+${stats.critChance} % Kritchance</div>` : null,
+    stats.lifeleech ? `<div class="tt-leech">+${stats.lifeleech} % Lifeleech</div>` : null,
+    stats.lifeleechFlat ? `<div class="tt-leech">+${formatNum(stats.lifeleechFlat)} Lifeleech pro Treffer</div>` : null,
     item.enhance ? `<div class="tt-enhance">Verstärkt +${item.enhance}</div>` : null,
     item.mastery ? `<div class="tt-mastery">Meisterschaft: ${SKILL_EFFECT_LABELS[item.mastery.stat](item.mastery.value)}</div>` : null,
   ]

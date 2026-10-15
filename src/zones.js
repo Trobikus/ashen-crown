@@ -1,6 +1,9 @@
-import { CONTINENTS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, zoneDef } from './data.js';
+import { CONTINENTS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, zoneDef, enemyLevelOf } from './data.js';
 import { state } from './state.js';
 import { el } from './dom.js';
+
+// Levelrange eines Gebiets: von der Normal-Kreatur bis zum Boss.
+const zoneLevelRange = (index) => `Lv ${enemyLevelOf(index, 'normal')}–${enemyLevelOf(index, 'boss')}`;
 
 let viewIndex = null;
 
@@ -71,7 +74,7 @@ function syncDepthRows() {
     row.className = 'zone-row';
     row.dataset.zone = index;
     row.title = zoneDef(index).name;
-    row.innerHTML = `<span class="zone-name">${zoneDef(index).name}</span><span class="zone-status"></span>`;
+    row.innerHTML = `<span class="zone-level">${zoneLevelRange(index)}</span><span class="zone-name">${zoneDef(index).name}</span><span class="zone-status"></span>`;
     group.appendChild(row);
   }
 }
@@ -104,7 +107,7 @@ export function buildZoneList() {
       row.className = 'zone-row';
       row.dataset.zone = index;
       row.title = zone.name;
-      row.innerHTML = `<span class="zone-name">${zone.name}</span><span class="zone-status"></span>`;
+      row.innerHTML = `<span class="zone-level">${zoneLevelRange(index)}</span><span class="zone-name">${zone.name}</span><span class="zone-status"></span>`;
       group.appendChild(row);
       index += 1;
     }

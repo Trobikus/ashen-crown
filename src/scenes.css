@@ -16,6 +16,21 @@
   gap: 1.4rem;
   text-align: left;
   padding: 0 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: #3a352e transparent;
+}
+
+#chronicle-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+#chronicle-list::-webkit-scrollbar-thumb {
+  background: #3a352e;
+  border-radius: 4px;
+}
+
+#chronicle-list::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .chronicle-section h3 {
@@ -160,9 +175,11 @@
 }
 
 .inventory-empty {
+  grid-column: 1 / -1;
+  text-align: center;
   color: #5f584e;
   font-style: italic;
-  padding: 0.25rem 0;
+  padding: 0.75rem 0;
 }
 
 #zone-list {
@@ -249,13 +266,27 @@
 }
 
 .zone-row .zone-name {
+  flex: 1 1 auto;
+  min-width: 0;
   font-size: 0.88rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+.zone-row .zone-level {
+  width: 5rem;
+  text-align: left;
+  font-size: 0.68rem;
+  color: #d9a03f;
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+  font-style: italic;
+}
+
 .zone-row .zone-status {
+  width: 6.4rem;
+  text-align: right;
   font-size: 0.68rem;
   color: #5f584e;
   letter-spacing: 0.14em;

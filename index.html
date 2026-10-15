@@ -79,7 +79,7 @@
             </div>
             <div class="has-tooltip">
               <dt>Stufe</dt><dd id="hero-modal-level">1</dd>
-              <div class="tooltip">Jede Stufe gewährt 3 Statpunkte zur freien Verteilung.</div>
+              <div class="tooltip">Jede Stufe gewährt 2 Statpunkte zur freien Verteilung.</div>
             </div>
             <div class="has-tooltip">
               <dt>Erfahrung</dt><dd id="hero-modal-xp">0 / 10</dd>
@@ -93,12 +93,12 @@
             <div class="has-tooltip">
               <dt>Schaden</dt><dd id="hero-modal-damage">2</dd>
               <button class="stat-plus" data-stat="damage" hidden>+</button>
-              <div class="tooltip">Dein Wucht pro Schlag — aus Stufe, Übungen und Waffe. Ein Punkt: +1.</div>
+              <div class="tooltip">Dein Schaden pro Schlag rollt in dieser Spanne — aus Stufe, Statpunkten, Ausrüstung und Runen. Ein Punkt: +1 auf beide Enden.</div>
             </div>
             <div class="has-tooltip">
               <dt>Rüstung</dt><dd id="hero-modal-armor">0</dd>
               <button class="stat-plus" data-stat="armor" hidden>+</button>
-              <div class="tooltip">Wandelt Rüstung in Schadensminderung um — der Schutz wächst mit der Rüstung, aber schwindende Zuwächse: starke Gegner durchdringen mehr. Mindestens 1 Schaden kommt immer durch. Ein Punkt: +1.</div>
+              <div class="tooltip">Wandelt Rüstung in Schadensminderung um — der Schutz wächst mit der Rüstung, aber schwindende Zuwächse: starke Gegner durchdringen mehr. Und egal wie viel Rüstung du stapelst: Mehr als die Hälfte des Schadens kommt immer durch. Mindestens 1 Schaden trifft sowieso. Ein Punkt: +1.</div>
             </div>
             <div class="has-tooltip">
               <dt>Kritische Chance</dt><dd id="hero-modal-crit">5 %</dd>
@@ -108,6 +108,10 @@
             <div class="has-tooltip">
               <dt>Kritischer Schaden</dt><dd id="hero-modal-critdmg">200 %</dd>
               <div class="tooltip">Multiplikator eines kritischen Treffers.</div>
+            </div>
+            <div class="has-tooltip">
+              <dt>Lifeleech</dt><dd id="hero-modal-leech">0 %</dd>
+              <div class="tooltip">Heilt dir anteilig zum verursachten Schaden. Kommt nur als seltenes Affix auf Beute vor — auf dem Feld heilt sonst nichts.</div>
             </div>
             <div class="has-tooltip">
               <dt>Angriffstempo</dt><dd id="hero-modal-speed">1,0 / s</dd>
@@ -282,28 +286,41 @@
       <div id="arena">
         <div class="fighter" id="hero-fighter">
           <div class="figure" id="hero-figure"></div>
+          <div class="fighter-level" id="hero-level">—</div>
           <div class="fighter-name">Der Erweckte</div>
           <div class="hp-bar"><div class="hp-fill hero-fill" id="hero-hp"></div></div>
           <div class="hp-text" id="hero-hp-text">—</div>
         </div>
         <div class="fighter" id="enemy-fighter">
           <div class="figure" id="enemy-figure"></div>
+          <div class="fighter-level" id="enemy-level">—</div>
           <div class="fighter-name" id="enemy-name">—</div>
           <div class="fighter-profile" id="enemy-profile"></div>
           <div class="hp-bar"><div class="hp-fill enemy-fill" id="enemy-hp"></div></div>
           <div class="hp-text" id="enemy-hp-text">—</div>
         </div>
+        <div id="arena-particles"></div>
+        <div id="arena-grain"></div>
       </div>
       <div id="actions">
-        <div id="upgrade-row">
-          <button id="up-damage">Klinge schärfen · <span id="cost-damage">10</span> Asche</button>
-          <button id="up-hp">Haut härten · <span id="cost-hp">15</span> Asche</button>
-        </div>
         <button id="btn-door" hidden>Durch die Tür gehen</button>
       </div>
       <div id="toasts"></div>
     </div>
     <div id="overlay"><p id="overlay-text"></p></div>
+    <div id="patchnotes" hidden>
+      <div class="patch-window">
+        <div class="patch-head">
+          <span class="patch-title">Patchnotes <span id="patch-version"></span></span>
+          <span class="patch-date" id="patch-date"></span>
+        </div>
+        <div class="patch-body" id="patch-body"></div>
+        <div class="patch-foot">
+          <label class="patch-skip"><input type="checkbox" id="patch-skip-checkbox"> Heute nicht mehr anzeigen</label>
+          <button id="patch-close">Los geht's</button>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

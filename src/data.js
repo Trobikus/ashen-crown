@@ -112,19 +112,30 @@ const LAST_ZONE_INDEX = MAIN_ZONE_COUNT - 1;
 
 const CONTINENT_BUMP = { hp: 1.12, damage: 1.08, ilvl: 1.15 };
 
-const ENEMY_GROWTH = { hp: 1.4, damage: 1.26, ash: 1.48, xp: 1.38 };
+// XP wächst bewusst deutlich langsamer als Gegnerkraft: Stufen sollen mit dem
+// Zonenfortschritt mithalten (Stufenvorsprung wird durch enemyXpMultiplier
+// gedeckelt), nicht ihn explosionsartig überholen. Der Schaden wächst
+// schneller als früher — Wände sind gewollt: Wer an einem Boss zerbricht,
+// kehrt zurück, farmt Gear und Asche und schlägt dann zurück.
+const ENEMY_GROWTH = { hp: 1.4, damage: 1.24, ash: 1.48, xp: 1.15 };
 
-const DEPTH_GROWTH = { hp: 1.4, damage: 1.24, ash: 1.48, xp: 1.12 };
+const DEPTH_GROWTH = { hp: 1.4, damage: 1.3, ash: 1.48, xp: 1.12 };
 
 const ELITE_RATIOS = { hp: 2.4, damage: 1.25, ash: 3.5, xp: 2.8 };
 
-const BOSS_RATIOS = { hp: 4, damage: 1.5, ash: 10, xp: 8 };
+const BOSS_RATIOS = { hp: 4.2, damage: 1.55, ash: 10, xp: 8 };
 
-const BASE_NORMAL = { hp: 10, damage: 1, ash: 4, xp: 30 };
+const BASE_NORMAL = { hp: 10, damage: 1, ash: 4, xp: 10 };
+
+// Startzonen-Fundament: Extra-Leben für die ersten Gebiete, das linear bis
+// Zone EARLY_HP_BONUS_ZONES schwindet (siehe ZONE_ENEMIES-Aufbau).
+const EARLY_HP_BONUS = 12;
+
+const EARLY_HP_BONUS_ZONES = 10;
 
 const ILVL_BASE = 2;
 
-const ILVL_GROWTH = 1.28;
+const ILVL_GROWTH = 1.29;
 
 const ilvlOf = (n) => Math.max(1, Math.round(ILVL_BASE * ILVL_GROWTH ** n * (n > 0 && n % 10 === 0 ? CONTINENT_BUMP.ilvl : 1)));
 
@@ -210,9 +221,12 @@ const DEPTH_ENEMY_NAMES = {
 
 const sig3 = (value) => Number(value.toPrecision(3));
 
+// WICHTIG: Gegner-Schaden bleibt Float — früher rundete Math.round(1 × 1.34)
+// zu 1 und jeder Gegner traf das ganze Spiel lang für exakt 1 Schaden.
+// Gerundet wird erst beim Spawn (scaledEnemy) bzw. beim Zuschlagen.
 const growNormal = (stats, growth) => ({
   hp: sig3(stats.hp * growth.hp),
-  damage: Math.max(1, Math.round(stats.damage * growth.damage)),
+  damage: Math.max(1, sig3(stats.damage * growth.damage)),
   ash: sig3(stats.ash * growth.ash),
   xp: sig3(stats.xp * growth.xp),
 });
@@ -222,14 +236,14 @@ const enemiesOf = (normalName, eliteName, bossName, stats) => ({
   elite: {
     name: eliteName,
     hp: stats.hp * ELITE_RATIOS.hp,
-    damage: Math.max(1, Math.round(stats.damage * ELITE_RATIOS.damage)),
+    damage: Math.max(1, sig3(stats.damage * ELITE_RATIOS.damage)),
     ash: Math.round(stats.ash * ELITE_RATIOS.ash),
     xp: Math.round(stats.xp * ELITE_RATIOS.xp),
   },
   boss: {
     name: bossName,
     hp: stats.hp * BOSS_RATIOS.hp,
-    damage: Math.max(1, Math.round(stats.damage * BOSS_RATIOS.damage)),
+    damage: Math.max(1, sig3(stats.damage * BOSS_RATIOS.damage)),
     ash: stats.ash * BOSS_RATIOS.ash,
     xp: stats.xp * BOSS_RATIOS.xp,
     boss: true,
@@ -249,14 +263,21 @@ const ZONE_ENEMIES = [];
       if (n % 10 === 0) {
         stats = {
           hp: sig3(stats.hp * CONTINENT_BUMP.hp),
-          damage: Math.max(1, Math.round(stats.damage * CONTINENT_BUMP.damage)),
+          damage: Math.max(1, sig3(stats.damage * CONTINENT_BUMP.damage)),
           ash: stats.ash,
           xp: stats.xp,
         };
       }
     }
+    // Startzonen-Fundament: Normale Gegner starten mit spürbar mehr Leben,
+    // das relative Extra schwindet bis Zone 10 — Damage-All-in soll nicht
+    // durch die ersten Gebiete oneshotten. Der Bonus wird nicht zurück in
+    // die Wachstumsrechnung gespeist.
+    const zoneStats = n < EARLY_HP_BONUS_ZONES
+      ? { ...stats, hp: sig3(stats.hp + EARLY_HP_BONUS * (1 - n / EARLY_HP_BONUS_ZONES)) }
+      : stats;
     const [normalName, eliteName, bossName] = enemyNamesOf(n);
-    ZONE_ENEMIES.push(enemiesOf(normalName, eliteName, bossName, stats));
+    ZONE_ENEMIES.push(enemiesOf(normalName, eliteName, bossName, zoneStats));
   }
 }
 
@@ -327,18 +348,77 @@ const GEAR_SLOTS = [
 ];
 
 const RARITIES = [
-  { key: 'gewoehnlich', label: 'Gewöhnlich', suffix: 'der Asche', color: '#8a7f6d', weight: 70, mult: 1 },
-  { key: 'selten', label: 'Selten', suffix: 'der Gebeine', color: '#6d8a7a', weight: 25, mult: 2 },
-  { key: 'episch', label: 'Episch', suffix: 'der Krone', color: '#9d6d8a', weight: 5, mult: 4 },
+  { key: 'gewoehnlich', label: 'Gewöhnlich', suffix: 'der Asche', color: '#8a7f6d', weight: 54, mult: 1 },
+  { key: 'magisch', label: 'Magisch', suffix: 'des Funkens', color: '#6d8aa6', weight: 26, mult: 1.5 },
+  { key: 'selten', label: 'Selten', suffix: 'der Gebeine', color: '#bfa24a', weight: 14, mult: 2.2 },
+  { key: 'episch', label: 'Episch', suffix: 'der Krone', color: '#9d6d8a', weight: 5, mult: 3.4 },
+  { key: 'legendär', label: 'Legendär', suffix: 'der Aschenkrone', color: '#c1663a', weight: 1, mult: 5.2 },
 ];
 
-const DROP_CHANCES = { normal: 0.02, elite: 0.15, boss: 1 };
+// Beute ist ein Ereignis, kein Dauerregen — der Tester will spürbare Finds.
+const DROP_CHANCES = { normal: 0.01, elite: 0.08, boss: 0.5 };
 
 // Tod kostet Zoll: Anteil der aktuellen Asche, den die Asche beim Fallen einbehält.
 const DEATH_ASH_PENALTY = 0.15;
 
-// Nachhaltigkeit: Anteil der maximalen Lebenskraft, den jeder Kill heilt.
-const KILL_REGEN_PCT = 0.1;
+// Kritchance auf Waffen je Seltenheit — als Wertebereich, damit Rollen zählen.
+const CRIT_BY_RARITY = {
+  magisch: [2, 3],
+  selten: [4, 6],
+  episch: [7, 10],
+  legendär: [11, 14],
+};
+
+// Lifeleech sitzt ausschließlich auf Waffen und erst ab Episch (lila) — und
+// selbst dort nur mit Chance, nie garantiert. Eine von zwei Varianten:
+// Prozent (Anteil des ausgeteilten Schadens) oder Flat (feste Lebenskraft
+// pro Treffer). Lifeleech hält das Farmen normaler Gegner über Wasser; Bosse
+// brechen durch die Rate hindurch. Rasten am Schrein heilt alles.
+const LIFELEECH_CHANCE_BY_RARITY = { episch: 0.5, legendär: 0.75 };
+
+const LIFELEECH_PCT_BY_RARITY = {
+  episch: [10, 14],
+  legendär: [15, 20],
+};
+
+const LIFELEECH_FLAT_BY_RARITY = {
+  episch: { base: 3, ilvl: 0.15 },
+  legendär: { base: 4, ilvl: 0.22 },
+};
+
+// Variantenwurf: Prozent-Skaliert mit dem Schaden und bleibt damit die
+// Sustain-Arbeitstier; Flat ist der frühe, konstante Weg.
+const LIFELEECH_PCT_ODDS = 0.65;
+
+// Kämpfen ist kein Selbstläufer: Gegner greifen manchmal daneben.
+const ENEMY_MISS_CHANCE = 0.15;
+
+// Und auch der Held verfehlt — jeder Schlag sitzt nie garantiert. Das federt
+// DPS-Spitzen und macht harte Gegner zu echten Wänden.
+const HERO_MISS_CHANCE = 0.12;
+
+// Schadensspanne des Helden: Jeder Schlag rollt ±DAMAGE_VARIANCE um seinen
+// Wert (gleichverteilt, Erwartungswert unverändert — Sims reichen weiter).
+const DAMAGE_VARIANCE = 0.15;
+
+// Kritchance ist gedeckelt — volle Trefferquote bleibt unerreichbar.
+const CRIT_CHANCE_CAP = 75;
+
+// Fertigkeitenbaum: Öffnet sich ab dieser Stufe, Runenpunkte gibt es nur ab da.
+const SKILL_TREE_UNLOCK_LEVEL = 20;
+
+// Statpunkte pro Stufenaufstieg.
+const STAT_POINTS_PER_LEVEL = 2;
+
+// Über-levelte Gegner magern XP ab: pro Level Differenz ein Zwanzigstel,
+// ab ENEMY_XP_CUTOFF_LEVELS Stufen Unterschied gibt es nichts mehr.
+const ENEMY_XP_CUTOFF_LEVELS = 20;
+
+function enemyXpMultiplier(enemyLevel, heroLevel) {
+  const diff = heroLevel - enemyLevel;
+  if (diff <= 0) return 1;
+  return Math.max(0, 1 - diff / ENEMY_XP_CUTOFF_LEVELS);
+}
 
 // Enrage: Bosse attackieren beschleunigt, sobald ihre Lebenskraft unter die
 // Schwelle fällt — Phase zwei jedes Bosskampfs.
@@ -363,6 +443,16 @@ function profileOf(zoneIndex, type) {
   return { key, ...ENEMY_PROFILES[key] };
 }
 
+// Gegnerstufen steigen 3 pro Gebiet (Normal 3N−2, Elite +2, Boss +4) — jede
+// Range spannt 5 Stufen und beginnt damit nie mehr als 1 unter der Höchst-
+// stufe des Vorgehenden: eine lückenlose Leiter (Anzeige & XP-Abmagerung).
+const ENEMY_TYPE_LEVEL_OFFSETS = { normal: 0, elite: 2, boss: 4 };
+
+function enemyLevelOf(zoneIndex, type) {
+  const base = Math.max(1, zoneIndex * 3 + 1);
+  return base + (ENEMY_TYPE_LEVEL_OFFSETS[type] ?? 0);
+}
+
 function continentKeyOf(zoneIndex) {
   const i = Math.max(0, Math.min(Math.trunc(zoneIndex) || 0, MAX_ZONE));
   if (i >= MAIN_ZONE_COUNT) return 'tiefen';
@@ -378,6 +468,10 @@ const BASE_ATTACK_SPEED = 1;
 const ARMOR_RESISTANCE = 12;
 
 const SKILL_SPOKE_ANGLES = [-30, 0, 30];
+
+// Der Baum soll stärken, nicht überflügeln: Alle Runenwerte werden beim
+// Graphaufbau mit diesem Faktor gedämpft (Anzeige nutzt dieselben Werte).
+const SKILL_VALUE_SCALE = 0.5;
 
 const SKILL_SMALL_OFFSET = 9;
 
@@ -569,7 +663,7 @@ const SKILL_BRIDGE_TIERS = [
   { suffix: 'o', radius: 470 },
 ];
 
-const skillEffectsOf = (map) => Object.entries(map).map(([stat, value]) => ({ stat, value }));
+const skillEffectsOf = (map) => Object.entries(map).map(([stat, value]) => ({ stat, value: Math.round(value * SKILL_VALUE_SCALE) }));
 
 const SKILL_GRAPH = (() => {
   const nodes = [{
@@ -697,9 +791,7 @@ function rollMastery(slotStat) {
   return { stat: roll.stat, value: Math.round(roll.min + Math.random() * (roll.max - roll.min)) };
 }
 
-const xpNeeded = (level) => Math.round(4 * level * level + 6 * level);
-
-const upgradeCost = (base, ups) => Math.round(base * 1.6 ** ups);
+const xpNeeded = (level) => Math.round(9 * level * level + 13 * level);
 
 const rarityOf = (key) => RARITIES.find((rarity) => rarity.key === key);
 
@@ -716,16 +808,29 @@ function rollRarity() {
 }
 
 function rollItemValues(slot, rarity, ilvl) {
+  // Affixe rollen in Bereichen statt fest — das „perfekte" Stück ist ein
+  // Fund, kein Rechenresultat.
+  const roll = (min, max) => min + Math.random() * (max - min);
+  const rollInt = (min, max) => Math.floor(roll(min, max + 1));
   const base = slot.stat === 'damage' ? 1 + ilvl * 0.4 : 4 + ilvl * 1.1;
-  const amount = Math.max(1, Math.round(base * rarity.mult));
-  const values = { damage: 0, hp: 0, armor: 0, critChance: 0 };
+  const amount = Math.max(1, Math.round(base * rarity.mult * roll(0.85, 1.15)));
+  const values = { damage: 0, hp: 0, armor: 0, critChance: 0, lifeleech: 0, lifeleechFlat: 0 };
   if (slot.stat === 'damage') {
     values.damage = amount;
-    if (rarity.key === 'selten') values.critChance = 5;
-    if (rarity.key === 'episch') values.critChance = 10;
+    const crit = CRIT_BY_RARITY[rarity.key];
+    if (crit) values.critChance = rollInt(crit[0], crit[1]);
   } else {
     values.hp = amount;
-    values.armor = Math.max(1, Math.round(amount * 0.4));
+    values.armor = Math.max(1, Math.round(amount * 0.4 * roll(0.85, 1.15)));
+  }
+  const pctRange = LIFELEECH_PCT_BY_RARITY[rarity.key];
+  if (slot.key === 'waffe' && pctRange && Math.random() < LIFELEECH_CHANCE_BY_RARITY[rarity.key]) {
+    if (Math.random() < LIFELEECH_PCT_ODDS) {
+      values.lifeleech = rollInt(pctRange[0], pctRange[1]);
+    } else {
+      const flat = LIFELEECH_FLAT_BY_RARITY[rarity.key];
+      values.lifeleechFlat = Math.max(1, Math.round((flat.base + ilvl * flat.ilvl) * roll(0.85, 1.15)));
+    }
   }
   return values;
 }
@@ -736,6 +841,8 @@ function normalizeItem(item) {
   item.hp ??= 0;
   item.armor ??= 0;
   item.critChance ??= 0;
+  item.lifeleech ??= 0;
+  item.lifeleechFlat ??= 0;
   item.enhance ??= 0;
   item.enhanceBonus ??= null;
   item.mastery ??= null;
@@ -757,6 +864,8 @@ function sanitizeItem(item) {
   item.hp = asCount(item.hp);
   item.armor = asCount(item.armor);
   item.critChance = asCount(item.critChance);
+  item.lifeleech = Math.min(LIFELEECH_PCT_BY_RARITY[rarity.key]?.[1] ?? 0, asCount(item.lifeleech));
+  item.lifeleechFlat = asCount(item.lifeleechFlat);
   item.enhance = asCount(item.enhance);
   item.enhanceBonus = item.enhanceBonus && typeof item.enhanceBonus === 'object'
     ? { damage: asCount(item.enhanceBonus.damage), hp: asCount(item.enhanceBonus.hp), armor: asCount(item.enhanceBonus.armor) }
@@ -770,14 +879,17 @@ function sanitizeItem(item) {
 }
 
 function itemStats(item) {
-  const stats = { damage: item.damage, hp: item.hp, armor: item.armor, critChance: item.critChance };
+  const stats = { damage: item.damage, hp: item.hp, armor: item.armor, critChance: item.critChance, lifeleech: item.lifeleech, lifeleechFlat: item.lifeleechFlat };
   for (const [stat, value] of Object.entries(item.enhanceBonus ?? {})) stats[stat] += value;
   return stats;
 }
 
 function itemScore(item) {
   const s = itemStats(item);
-  return s.damage * 2 + s.hp * 0.5 + s.armor + s.critChance * 3 + (item.mastery ? item.mastery.value * 2 : 0);
+  // Lifeleech ist ein Survivability-Bonus, kein Ersatz für Werten — „Bestes
+  // anlegen" soll es modest berücksichtigen, nicht zum König krönen.
+  const leechBonus = (s.lifeleech > 0 || s.lifeleechFlat > 0) ? s.damage * 0.25 : 0;
+  return s.damage * 2 + s.hp * 0.5 + s.armor + s.critChance * 3 + leechBonus + (item.mastery ? item.mastery.value * 2 : 0);
 }
 
 function itemStatsText(item) {
@@ -788,6 +900,8 @@ function itemStatsText(item) {
       s.hp ? `+${formatNum(s.hp)} Lebenskraft` : null,
       s.armor ? `+${formatNum(s.armor)} Rüstung` : null,
       s.critChance ? `+${s.critChance} % Kritchance` : null,
+      s.lifeleech ? `+${s.lifeleech} % Lifeleech` : null,
+      s.lifeleechFlat ? `+${formatNum(s.lifeleechFlat)} Lifeleech pro Treffer` : null,
     ]
       .filter(Boolean)
       .join(' · ') || 'Keine Werte'
@@ -808,11 +922,19 @@ export {
 
   SKILL_NODES, SKILL_EDGES, SKILL_NODES_BY_ID, skillSigned, SKILL_EFFECT_LABELS, MASTERY_POOL,
 
-  rollMastery, xpNeeded, upgradeCost, rarityOf, gearSlotOf, zoneDef, enemyDef, rollRarity, rollItemValues,
+  rollMastery, xpNeeded, rarityOf, gearSlotOf, zoneDef, enemyDef, rollRarity, rollItemValues,
 
   itemStats, itemScore, itemStatsText, normalizeItem, sanitizeItem, asCount,
 
-  DEATH_ASH_PENALTY, KILL_REGEN_PCT, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT,
+  DEATH_ASH_PENALTY, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT,
+
+  CRIT_BY_RARITY, LIFELEECH_CHANCE_BY_RARITY, LIFELEECH_PCT_BY_RARITY, LIFELEECH_FLAT_BY_RARITY,
+
+  ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, CRIT_CHANCE_CAP, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL,
+
+  ENEMY_TYPE_LEVEL_OFFSETS, enemyLevelOf,
+
+  ENEMY_XP_CUTOFF_LEVELS, enemyXpMultiplier, SKILL_VALUE_SCALE,
 
   ENEMY_PROFILES, PROFILE_CYCLE, profileOf, continentKeyOf,
 

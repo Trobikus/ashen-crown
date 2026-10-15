@@ -14,7 +14,7 @@
 
   *Web & Desktop — ohne Framework, ohne Server, mit Speicherstand im Browser.*
 
-  **🧪 Aktuell: Closed Alpha (v0.9.1)** — Installer über die
+  **🧪 Aktuell: Closed Alpha (v0.10.0)** — Installer über die
   [Releases](releases), Updates installieren sich im Spiel von selbst.
 </div>
 
@@ -40,9 +40,17 @@ Denn die Asche erinnert sich — an jedes Reich, das vor dir versuchte, ihr zu e
   und irgendwann das Tor zum nächsten Kontinent.
   Jede Zone kämpft mit eigenem Temperament (*Flink* oder *Massiv*), Bosse verfallen
   unter 35 % Lebenskraft in **Wut** — und jeder Gegner trägt die Färbung seines
-  Kontinents. Jeder Sieg heilt 10 % deiner Lebenskraft; stirbst du, behält die Asche
-  15 % deines Vorrats als Zoll. Im Feld kämpft dein Held weiter — am Schrein rastet
-  und heilt er.
+  Kontinents. Kämpfen ist Handwerk: **Gegner greifen gelegentlich daneben** (15 %),
+  dein Held verfehlt auch (12 %), die Kritchance deckelt bei 75 %, und Rüstung
+  mindert nie mehr als die Hälfte — mindestens 50 % jedes Schlags kommen durch.
+  Im Feld regeneriert dein Held nie von selbst: Kämpfe zehren, und stirbst du,
+  behält die Asche 15 % deines Vorrats als Zoll. Nur das Rasten am Schrein
+  heilt — und **Lifeleech**, das es ausschließlich auf epischen und legendären
+  Waffen gibt: als Prozente deines Schadens oder als feste Zahl pro Treffer.
+  Erfahrung gibt es nur von Würdigen: Gegner unter deinem Niveau tragen weniger
+  bei, 20 Stufen darunter gar nichts. Und mancher Boss ist eine echte **Wand**:
+  Dann heißt es zurück, Asche und Beute farmen, besser schmieden — und es ihm
+  nochmal zeigen.
   Die Bestiarien erzählen dabei ihre Reiche: der verbrannte Hof (Grabesdiener,
   Ascheschreiber, Leichenprediger), das geflohene Frostvolk (Frostpilger,
   Eiskämmerin, Winterbotschafter), die ertränkten Gelehrten (Archivarsleim,
@@ -54,16 +62,19 @@ Denn die Asche erinnert sich — an jedes Reich, das vor dir versuchte, ihr zu e
 - **Fertigkeitenbaum** — **217 Knoten** im Path-of-Exile-Stil: vier Pfade
   (Krieg, Haut, Asche, Geist) mit kleinen Passives, Notables und **12 Keystones mit
   Tradeoffs**. **12 Brücken** verbinden die Pfade miteinander — für Misch-Builds,
-  die es so kein zweites Mal gibt.
-- **Loot & Inventar** — **7 Rüstungsslots**, **3 Raritäten** (Gewöhnlich → Episch).
-  Die Itemstärke wächst mit der Tiefe der Ebene: Wer tiefer kämpft, findet Besseres.
-  Verkaufen, Sortieren und „Bestes anlegen" inklusive.
+  die es so kein zweites Mal gibt. Der Baum **erwacht ab Stufe 20** — erst dann
+  gibt es Runenpunkte, und seine Werte sind bewusst gedämpft.
+- **Loot & Inventar** — **7 Rüstungsslots**, **5 Raritäten** (Gewöhnlich →
+  Magisch → Selten → Episch → Legendär). Jedes Stück **rollt seine Werte** —
+  das perfekte Exemplar ist ein Fund, kein Rechenresultat. Beute ist ein
+  Ereignis, kein Dauerregen: Wer tief kämpft, findet Besseres. Verkaufen,
+  Sortieren und „Bestes anlegen" inklusive.
 - **Crafting** — Die Werkstatt macht Asche zu Macht: Ausrüstungsstufen **verstärken**
   (steile Kostenkurve pro Stufe) oder **umschmieden** (Rarity-Upgrade mit Neuwurf).
-  Epische Items rollen eine goldene **Meisterschaft** — Prozentboni, die es sonst auf
+  Legendäre Items rollen eine goldene **Meisterschaft** — Prozentboni, die es sonst auf
   Gear nirgends gibt. Alles skaliert mit der tiefsten errungenen Ebene.
-- **Stufen & Asche** — Jede Stufe bringt 3 Statpunkte und 1 Skillpunkt; Asche finanziert
-  Klinge und Haut im Kampf selbst — oder in der Werkstatt Verstärkung und Umschmieden.
+- **Stufen & Asche** — Jede Stufe bringt **2 Statpunkte**; Runenpunkte kommen
+  ab Stufe 20 dazu. Asche finanziert die Werkstatt: Verstärkung und Umschmieden.
   Beide Wege stärken denselben Helden, keinen zweiten.
 - **Zahlen, die mitwachsen** — Spät werden Werte astronomisch; das Spiel hält sie
   lesbar: kompakte Kurzschreibweise mit deutschem Komma („12,4K", „3,2M", „1,5B").
@@ -89,11 +100,11 @@ Denn die Asche erinnert sich — an jedes Reich, das vor dir versuchte, ihr zu e
 
 | # | Kontinent | Gebiete (ilvl) | Bestie an der Spitze |
 | --- | --- | --- | --- |
-| 1 | **Die Aschenlande** | 2–18 | *Der Aschegott* im Herz der Asche |
-| 2 | **Das Frostreich** | 27–218 | *Der Frostgott* im Herz des Winters |
-| 3 | **Das Faulmoor** | 321–2.571 | *Der Moorgott* im Herz des Moores |
-| 4 | **Das Blutmark** | 3.785–30.354 | *Der Blutgott* im Herz des Blutes |
-| 5 | **Die Sternenleere** | 44.681–358.359 | *Die Aschenkrone* im Herz der Leere |
+| 1 | **Die Aschenlande** | 2–20 | *Der Aschegott* im Herz der Asche |
+| 2 | **Das Frostreich** | 29–252 | *Der Frostgott* im Herz des Winters |
+| 3 | **Das Faulmoor** | 375–3.222 | *Der Moorgott* im Herz des Moores |
+| 4 | **Das Blutmark** | 4.780–41.118 | *Der Blutgott* im Herz des Blutes |
+| 5 | **Die Sternenleere** | 60.998–524.718 | *Die Aschenkrone* im Herz der Leere |
 
 Die Zahlen hinter jedem Kontinent sind die Gegenstandsstufen (ilvl) seiner zehn
 Gebiete — je tiefer die Ebene, desto besser Beute und Werkstatt.
@@ -109,7 +120,7 @@ Gebiete — je tiefer die Ebene, desto besser Beute und Werkstatt.
 
 ## 🧪 Closed Alpha
 
-Ashen Crown befindet sich im geschlossenen Alpha-Stadium (aktuell **v0.9.1**):
+Ashen Crown befindet sich im geschlossenen Alpha-Stadium (aktuell **v0.10.0**):
 
 - **Mitmachen:** Installer aus den [Releases](releases) laden und installieren —
   das Spiel aktualisiert sich danach bei neuen Versionen von selbst.

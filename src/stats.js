@@ -1,4 +1,4 @@
-import { GEAR_SLOTS, enemyDef, BASE_CRIT_CHANCE, CRIT_MULTIPLIER, BASE_ATTACK_SPEED, ARMOR_RESISTANCE, ATTACK_INTERVAL_MS, itemStats, profileOf } from './data.js';
+import { GEAR_SLOTS, enemyDef, BASE_CRIT_CHANCE, CRIT_MULTIPLIER, BASE_ATTACK_SPEED, ARMOR_RESISTANCE, ATTACK_INTERVAL_MS, CRIT_CHANCE_CAP, itemStats, profileOf, enemyLevelOf } from './data.js';
 import { state } from './state.js';
 import { skillBonus } from './skilltree.js';
 
@@ -7,6 +7,7 @@ export function scaledEnemy(type) {
   const profile = profileOf(state.zone, type);
   return {
     name: base.name,
+    level: enemyLevelOf(state.zone, type),
     hp: Math.max(1, Math.round(base.hp * profile.hp)),
     damage: Math.max(1, Math.round(base.damage * profile.damage)),
     ash: base.ash,
@@ -64,7 +65,7 @@ export function heroCritChance() {
     const item = state.equipment[slot.key];
     if (item) crit += itemStats(item).critChance;
   }
-  return crit + statBonus('crit');
+  return Math.min(CRIT_CHANCE_CAP, crit + statBonus('crit'));
 }
 
 export function heroAttackSpeed() {
@@ -73,4 +74,18 @@ export function heroAttackSpeed() {
 
 export function critMultiplier() {
   return CRIT_MULTIPLIER + statBonus('critDmg') / 100;
+}
+
+// Lifeleech existiert nur als Waffen-Affix ab Episch — Prozent des Schadens
+// und/oder Flat pro Treffer (in der Praxis eine der beiden Varianten).
+export function heroLifeleech() {
+  let pct = 0;
+  let flat = 0;
+  for (const slot of GEAR_SLOTS) {
+    const item = state.equipment[slot.key];
+    if (!item) continue;
+    pct += itemStats(item).lifeleech;
+    flat += itemStats(item).lifeleechFlat;
+  }
+  return { pct, flat };
 }

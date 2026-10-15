@@ -3,6 +3,7 @@ import { initUpdater, suppressUpdate } from './updater.js';
 import { initAudio } from './audio.js';
 import { loadSettings } from './settings.js';
 import { applyFullscreenSetting } from './display.js';
+import { initPatchNotes } from './patchnotes.js';
 import { version as appVersion } from '../package.json';
 
 // Vollbild-Wunsch aus den Settings früh anwenden, damit nicht erst der
@@ -37,6 +38,7 @@ document.getElementById('btn-quit').addEventListener('click', () => {
 });
 
 initUpdater();
+initPatchNotes();
 
 async function showVersion() {
   const el = document.getElementById('version-tag');
