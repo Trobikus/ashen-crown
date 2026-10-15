@@ -1,11 +1,12 @@
 name: GitHub Pages
 
-# Das Spiel als Web-Build auf GitHub Pages: jeder Stand auf main, jeder
-# Release-Tag und manuelle Läufe aktualisieren die Seite.
+# Das Spiel als Web-Build auf GitHub Pages: jeder Stand auf main und
+# manuelle Läufe aktualisieren die Seite. Keine Tag-Trigger — die
+# github-pages-Umgebung erlaubt nur Deployments aus main, und Releases
+# werden ohnehin von main getaggt.
 on:
   push:
     branches: [main]
-    tags: ['v*']
   workflow_dispatch:
 
 permissions:
