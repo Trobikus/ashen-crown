@@ -17,6 +17,11 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
   und auf voll warten): Kampagne 24,3 h → 25,8 h bei unveränderten 151 Toden.
 
 ### Behoben
+- **Auto-Tür bricht nicht mehr ab, wenn man aufs Boss-Gate klickt**: Der
+  Vorwärtslauf hing am selben Timer wie die Overlays — ein Klick auf das Gate
+  cancelte ihn und ließ eine leere Arena zurück. Der Klick löst den Lauf jetzt
+  sofort aus (Klick heißt: sofort weiter); der Schrein-Knopf bricht weiterhin
+  ab, und der Tür-Knopf heilt nach wie vor voll.
 - **Tiefenrelikt ehrt den Beutelschein**: Der Inventar-Check beim Relikt-Fund
   nutzte die Grundgrenze (40) statt der echten Obergrenze — mit Beutelschein
   wurde ein Relikt trotz freiem Platz zu Asche. Jetzt zählt `inventoryCap()`.

@@ -40,6 +40,8 @@ let enemyAttackProgress = 0;
 
 let sceneTimer = null;
 
+let autoDoorTimer = null;
+
 let overlayDismissible = false;
 
 let hasSave = false;
@@ -193,6 +195,12 @@ function showDismissibleOverlay(text, duration, html = false, onDone = null) {
 
 function dismissOverlay() {
   if (!overlayDismissible) return;
+  if (autoDoorTimer) {
+    // Klick aufs Boss-Gate heißt bei aktiver Auto-Tür: sofort weiter — nicht
+    // abbrechen, sonst bliebe die Arena leer und der Lauf verfallen.
+    autoDoorAdvance();
+    return;
+  }
   if (sceneTimer) {
     clearTimeout(sceneTimer);
     sceneTimer = null;
@@ -202,6 +210,26 @@ function dismissOverlay() {
 
 function hideOverlay() {
   document.getElementById('overlay').classList.remove('show');
+}
+
+// Der Auto-Tür-Lauf hängt an einem eigenen Timer-Register statt an sceneTimer:
+// dismissOverlay räumt sceneTimer ab, ein Klick aufs Gate würde den Lauf sonst
+// canceln und die Arena leer zurücklassen. Klick aufs Gate führt den Lauf
+// sofort aus — Tür auf, voll heilen, Kampf an.
+function autoDoorAdvance() {
+  clearTimeout(autoDoorTimer);
+  autoDoorTimer = null;
+  if (sceneTimer) {
+    clearTimeout(sceneTimer);
+    sceneTimer = null;
+  }
+  hideOverlay();
+  overlayDismissible = false;
+  enterZone(state.zone + 1);
+  heroAttackProgress = 0;
+  enemyAttackProgress = 0;
+  heroHp = heroMaxHp();
+  spawnEnemy();
 }
 
 function showScreen(target) {
@@ -370,16 +398,7 @@ function killEnemy() {
         clearTimeout(sceneTimer);
         sceneTimer = null;
       }
-      sceneTimer = setTimeout(() => {
-        sceneTimer = null;
-        hideOverlay();
-        overlayDismissible = false;
-        enterZone(state.zone + 1);
-        heroAttackProgress = 0;
-        enemyAttackProgress = 0;
-        heroHp = heroMaxHp();
-        spawnEnemy();
-      }, 2200);
+      autoDoorTimer = setTimeout(autoDoorAdvance, 2200);
       enemy = null;
       save();
       render();
@@ -1273,11 +1292,17 @@ function showVictory() {
 }
 
 function returnToHub() {
+  if (autoDoorTimer) {
+    // Das Feld verlassen bricht den Auto-Tür-Lauf ab — kein Weitergehen aus dem Hub.
+    clearTimeout(autoDoorTimer);
+    autoDoorTimer = null;
+  }
   if (sceneTimer) {
     clearTimeout(sceneTimer);
     sceneTimer = null;
-    hideOverlay();
   }
+  hideOverlay();
+  overlayDismissible = false;
   paused = true;
   state.inField = false;
   setLowHp(false);
