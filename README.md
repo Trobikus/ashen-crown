@@ -128,17 +128,21 @@ Gebiete — je tiefer die Ebene, desto besser Beute und Werkstatt.
 Ashen Crown befindet sich im geschlossenen Alpha-Stadium (aktuell **v0.11.0**):
 
 - **Mitmachen:** Installer aus den [Releases](releases) laden und installieren —
-  das Spiel aktualisiert sich danach bei neuen Versionen von selbst.
+  das Spiel aktualisiert sich danach bei neuen Versionen von selbst. Ohne
+  Installation geht es auch direkt im Browser:
+  **[trobikus.github.io/ashen-crown](https://trobikus.github.io/ashen-crown/)**
+  (Web-Build, Stand `main`; Desktop bleibt die empfohlene Variante).
 - **Spielstand:** Liegt sicher im Browser-Speicher der App, mit Backups;
   unter Optionen → Spiel lässt er sich als JSON exportieren und wieder
-  einspielen (z. B. vor Experimenten).
+  einspielen (z. B. vor Experimenten). Im Web-Build liegt er im
+  Browser-Speicher der Seite.
 - **Feedback:** Am liebsten als [Issue](issues) — der Knopf dafür steckt auch
   im Spiel unter Optionen → Spiel. Drei Fragen interessieren uns am meisten:
   1. Wo hängst du fest oder weißt nicht weiter?
   2. Wo langweilt es dich?
   3. Wann stirbst du, ohne zu verstehen warum?
-- **Empfehlung:** Desktop-Build spielen; der Web-Build (`pnpm dev`) ist
-  Dev-Vorschau ohne Touch-Feinschliff.
+- **Empfehlung:** Desktop-Build spielen; der Web-Build (GitHub Pages bzw.
+  `pnpm dev`) ist Dev-Vorschau ohne Touch-Feinschliff.
 
 ## 🗺️ Auf dem Weg zu 1.0
 
