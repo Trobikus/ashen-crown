@@ -3,10 +3,17 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.11.0',
+  version: '0.11.1',
   date: '15.10.2026',
   headline: 'Loot nach Diablo-Handwerk — und eine Werkstatt, die den Endgame-Ascheberg frisst',
   sections: [
+    {
+      heading: '0.11.1 — Die Krone überall',
+      items: [
+        'Setup-Installer und Browser-Tabs tragen jetzt ebenfalls die Aschenkrone.',
+        'Das Spiel läuft zusätzlich im Browser: trobikus.github.io/ashen-crown',
+      ],
+    },
     {
       heading: 'Loot — Basen, Tiers, Affixe',
       items: [

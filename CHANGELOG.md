@@ -4,14 +4,18 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
-## [Unreleased]
+## [0.11.1] — 2026-10-15
 
-### Hinzugefügt
-- **GitHub Pages**: Das Spiel läuft jetzt auch direkt im Browser unter
-  <https://trobikus.github.io/ashen-crown/> — die Seite aktualisiert sich
-  bei jedem Push auf `main` und jedem Release-Tag automatisch (Web-Build
-  mit relativen Pfaden via neuem `deploy-pages`-Workflow; der Spielstand
-  liegt wie gewohnt im Browser-Speicher der Seite).
+### Behoben
+- **Branding lückenlos auf die Aschenkrone**: Der Windows-Setup-Installer
+  trug bisher den NSIS-Standardpfeil — jetzt die Aschenkrone
+  (`bundle.windows.nsis.installerIcon`). Die Spiel-Exe selbst
+  (Desktop-Shortcut, Taskleiste, Explorer) trägt die Krone bereits seit
+  0.11.0; dort zeigte nur der Altstand 0.10.0 noch das Tauri-Logo, bis
+  das Auto-Update greift.
+- **Favicon & Apple-Touch-Icon** für den Web-Build: Browser-Tabs auf
+  GitHub Pages (und im Dev-Server) zeigen jetzt die Krone statt des
+  Browser-Standard-Icons.
 
 ## [0.11.0] — 2026-10-15
 
@@ -445,6 +449,7 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Desktop-Shell via Tauri 2, Vollbild-Start.
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
+[0.11.1]: https://github.com/Trobikus/ashen-crown/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/Trobikus/ashen-crown/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/Trobikus/ashen-crown/compare/v0.9.1...v0.10.0
 [0.9.1]: https://github.com/Trobikus/ashen-crown/compare/v0.9.0...v0.9.1
