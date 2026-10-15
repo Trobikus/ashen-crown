@@ -4,7 +4,121 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
-## [Unreleased]
+## [0.11.0] — 2026-10-15
+
+### Hinzugefügt
+- **Meisterschaft neu schmieden**: Der goldene Bonus auf Legendär-Stücken
+  lässt sich in der Werkstatt gegen viel Asche neu würfeln — die Endgame-
+  Asche-Senke und das Zuhause der Perfekt-Wurf-Jagd (Kosten skalieren mit
+  der Werkstatt-Stufe, Doppelklick bestätigt, damit kein Fehlklick den
+  guten Wurf wegwirft).
+- **Auto-Tür** (Optionen → Spiel, standardmäßig an): Nach einem besiegten
+  Boss geht die Tür von allein weiter — der Epitaph bleibt kurz lesbar,
+  der Eintritt ins nächste Gebiet heilt voll. Abschaltbar für alle, die
+  nach dem Boss erst farmen wollen.
+- **Auto-Verkauf** (Optionen → Spiel): Beute unter einer gewählten
+  Seltenheit („alles unter Selten“ / „alles unter Episch“) wird beim Fund
+  sofort zum Verkaufspreis in Asche umgetauscht — das Inventar bleibt für
+  echte Funde.
+- **Der Held im Hub** (oben links): Name, Stufe und Lebenskraft-Balken. Der
+  Schrein atmet — außerhalb des Felds regeneriert der Held **2 % seines
+  maximalen Lebens pro Sekunde** (50 s von null auf voll). Die Rückkehr ins
+  Hub heilt nicht mehr automatisch: Gefallen oder Rückzug hinterlässt den
+  Balken, wie das Feld ihn hinterlassen hat; der Abstieg in die Krypta
+  heilt weiterhin voll.
+- **Itemlevel sichtbar**: Tooltips und die Werkstatt-Beschreibung zeigen
+  „Seltenheit · Ilvl n". Neue Stücke speichern ihr Ilvl; Altbestand erhält
+  eine Schätzung aus dem Hauptwert. Das Umschmieden zieht das Ilvl auf die
+  aktuelle Werkstatt-Stufe.
+- **Alt-Taste zeigt Roll-Spannen** (Diablo-Lese): Solange Alt gedrückt ist,
+  steht hinter jedem Wert die Spanne, die dieses Feld bei Seltenheit, Ilvl
+  und Basis hätte rollen können — z. B. „+45 % Kritschaden [30 – 60]“.
+  Ohne Alt nur der gerollte Wert. Die Spannen spiegeln die Wurf-Arithmetik
+  inklusive Zwischenrundung und Basis-Prägungen (Axt verschiebt die
+  Krit-Spanne, Tier- und Seltenheitsmultiplikatoren die Hauptwerte).
+- **Loot nach Diablo-Handwerk**: Seltenheit kauft **Affixplätze** (Gewöhnlich
+  0, Magisch 1, Selten 2, Episch 3, Legendär 4) aus einem Slot-Pool ohne
+  Doppelte — Waffen würfeln Kritchance/Kritschaden/%Schaden/Flatschaden,
+  Rüstung %Lebenskraft/Lebenskraft/%Rüstung/Rüstung, Handschuhe mischen
+  beides (inkl. Rüstung wie in D4). Die Wertebereiche steigen je Seltenheit
+  (z. B. Kritschaden Legendär 30–60 %). Neue Item-Affixe fließen in alle
+  Heldenwerte ein: **+X % Schaden, +X % Lebenskraft, +X % Rüstung,
+  +X % Kritschaden**.
+- **Basen als Stufenleiter** (D4): Die fünf Basen je Slot sind jetzt Tier
+  1–5 und schalten per ilvl frei (ungefähr Zone 5/10/19/22); höhere Stufen
+  rollen bis zu +50 % Hauptwert. Alte Basen veralten damit natürlich. Die
+  Basis-Prägungen (Axt: Wucht, Speer: Präzision, Sense: doppelte
+  Lifeleech-Chance, Kettenhandschuhe: Rüstung, …) bleiben als inhärente
+  Identität erhalten; Lifeleech selbst bleibt Chance-Affix ab Episch.
+- **Meisterschaft = Legendary Power**: rollt nur noch auf Legendär — auch
+  bei Drops (bisher fälschlich schon auf Episch) und beim Umschmieden.
+
+- **Statistik-Zähler im Spielstand**: Tode, Spielzeit und gefundene Beute
+  (je Seltenheit) werden ab jetzt mitgezählt — das Fundament für die
+  kommende Statistik-Seite. Alte Spielstände starten bei null und zählen
+  ab dem Laden weiter; kaputte Werte zieht der Loader auf sichere Grenzen.
+
+### Geändert
+- Kritchance ist kein garantierter Waffen-Wert mehr, sondern ein Affix im
+  Pool — ein magisches Stück kann sie haben oder auch nicht (Wertebereich
+  leicht gesenkt: 2–3/3–5/5–8/7–10). „Bestes anlegen" bewertet die neuen
+  %-Affixe heuristisch mit.
+- **Fünf Item-Basen pro Slot** (35 statt 7): Jeder Drop würfelt eine Basis —
+  Waffe: Klinge/Axt/Streitkolben/Speer/Sense, Brust: Brustplatte/Kettenhemd/
+  Schuppenpanzer/Plattenharnisch/Knochenpanzer, Helm: Helm/Kübelhelm/
+  Spangenhelm/Hornhelm/Kettenhaube, Hose: Beinlinge/Kettenbeinlinge/
+  Plattenhose/Knochenhose/Schattenhose, Schuhe: Stiefel/Plattenschuhe/
+  Knochenstiefel/Sporenstiefel/Wanderstiefel, Handschuhe: Handschuh/
+  Fäustling/Kettenhandschuhe/Plattenhandschuhe/Krallenhandschuhe. Alte
+  Spielstände behalten ihre Items samt Namen; das Umschmieden erhält die
+  Basis des Stücks.
+- **Basen tragen Prägungen**: Jede Basis hat eine eigene Stat-Identität —
+  Wucht gegen Präzision bei Waffen (Axt/Streitkolben: mehr Schaden, weniger
+  Krit; Speer: weniger Schaden, mehr Krit; Sense: doppelte Lifeleech-Chance),
+  Ketten- und Plattenhandschuhe geben als Schadens-Slots zusätzlich Rüstung,
+  und Rüstungsbasen schieben auf der Achse Lebenskraft ↔ Rüstung (z. B.
+  Plattenharnisch: −15 % LP, +35 % Rüstung; Knochenpanzer: +25 % LP,
+  −30 % Rüstung). Die erste Basis je Slot bleibt die neutrale Referenz;
+  die Prägungen sind im Schnitt machtwertneutral.
+- **Offline-Zusammenfassung meldet jetzt auch Beute** („…, 3 Beutestücke
+  gefunden") — wie es der README bereits versprochen hat. Tode offline
+  zählen mit in den Todes-Zähler.
+- **Balance-Simulator spielt das echte Loot-System**: Seltenheitswürfe,
+  Basen & Tiers, Affix-Pools, Lifeleech-Chancen und die Meisterschaft
+  kommen direkt aus der echten `src/data.js` statt aus einer abgewandelten
+  Kopie; `--verify --depths` rechnet die Tiefen jetzt wirklich (vorher
+  endete die echte Welt bei Zone 50 und der Modus war ein No-op). Die
+  Endlos-Wand bricht die Simulation sauber ab, statt Müllzeilen zu
+  produzieren. Neu verifiziert (Seed 1234): **~58,4 h / 713 Tode /
+  langsamste Killzeit ~71 s** bis zur Aschenkrone — der Loot-Overhaul hat
+  das Hauptspiel gegenüber der 0.10.0-Messung (48,7 h / 618 Tode / ~40 s)
+  spürbar verlängert; die Streuung zwischen Seeds ist groß (Glück bei
+  Lifeleech- und Krit-Affixen). Die Gesamtlänge vor einem Release
+  wohlwollend prüfen.
+- **Umschmieden mit Ilvl-Sockel**: Das Umschmieden zieht das Ilvl auf die
+  Werkstatt-Stufe, senkt es aber nie mehr — Tiefen-Beute (höheres ilvl als
+  der Werkstatt-Deckel) verliert beim Umschmieden nicht ihre Werte, und die
+  Würfe rollen auf der Sockel-Höhe statt auf der Werkstatt-Stufe.
+- **Save-Version 5** (vor 0.11.0: v4): Kennzeichnet das Loot-Format (Basis,
+  Ilvl) und die Statistik-Zähler. Keine Migration nötig — der Loader härtet
+  Altbestand ohnehin nach.
+- Die Alpha-Version heißt ab jetzt **0.11.0** (package.json, Tauri,
+  Cargo — der Cargo-Stand hing noch bei 0.9.1).
+
+### Behoben
+- **Inventar voll ist kein Verlust mehr**: Beute wird bei vollem Inventar
+  sofort zum Verkaufspreis in Asche umgetauscht (mit Meldung) — vorher
+  versprach der Toast einen Asche-Zerfall, den es nie gab.
+- **Neue Drops tragen ihr Ilvl sofort** — bisher setzten erst geparsede
+  Spielstände (also ein Neuladen) das Feld, wodurch Ilvl-Anzeige und
+  Alt-Roll-Spannen bis dahin auf der neutralen Schätzung statt auf der
+  echten Basis saßen.
+- **Boss-Wand-Guidance beim Tod**: Stirbt der Held an einem unbesiegten
+  Boss, erklärt der Todes-Screen jetzt den Weg zurück — das Gebiet spawnt
+  bis zur Befreiung nur noch den Boss, und der erneute Eintritt über die
+  Gebiete-Karte setzt das Zählwerk für sicheres Farmen zurück.
+- Getragene Stücke lassen sich bei vollem Inventar nicht mehr still
+  ablegen — eine Meldung weist auf den vollen Beutel.
 
 ## [0.10.0] — 2026-10-15
 
@@ -322,7 +436,12 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Desktop-Shell via Tauri 2, Vollbild-Start.
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
-[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.6.0...HEAD
+[0.11.0]: https://github.com/Trobikus/ashen-crown/compare/v0.10.0...v0.11.0
+[0.10.0]: https://github.com/Trobikus/ashen-crown/compare/v0.9.1...v0.10.0
+[0.9.1]: https://github.com/Trobikus/ashen-crown/compare/v0.9.0...v0.9.1
+[0.9.0]: https://github.com/Trobikus/ashen-crown/compare/v0.8.0...v0.9.0
+[0.8.0]: https://github.com/Trobikus/ashen-crown/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/Trobikus/ashen-crown/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/Trobikus/ashen-crown/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/Trobikus/ashen-crown/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Trobikus/ashen-crown/compare/v0.3.0...v0.4.0

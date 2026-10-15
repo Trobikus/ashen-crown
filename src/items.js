@@ -4,9 +4,9 @@ import helmIcon from './assets/icons/helm.svg';
 import hoseIcon from './assets/icons/hose.svg';
 import schuheIcon from './assets/icons/schuhe.svg';
 import handIcon from './assets/icons/hand.svg';
-import { INVENTORY_CAP, GEAR_SLOTS, RARITIES, DROP_CHANCES, zoneDef, gearSlotOf, rarityOf, rollRarity, rollItemValues, itemStats, itemStatsText, itemScore, rollMastery, SKILL_EFFECT_LABELS, formatNum } from './data.js';
+import { INVENTORY_CAP, GEAR_SLOTS, RARITIES, DROP_CHANCES, zoneDef, gearSlotOf, rarityOf, rollRarity, pickBase, rollItemValues, itemStats, itemStatsText, itemStatRanges, itemIlvl, itemScore, rollMastery, rollRangesVisible, setRollRanges, SKILL_EFFECT_LABELS, formatNum } from './data.js';
 
-import { state } from './state.js';
+import { state, settings } from './state.js';
 
 import { el } from './dom.js';
 
@@ -34,7 +34,27 @@ const selectedForSale = new Set();
 
 let hooks = { clampHp: () => {}, save: () => {}, render: () => {} };
 
-export function initItems(deps) { hooks = deps; }
+export function initItems(deps) {
+  hooks = deps;
+  // Alt gedrückt: Tooltips zeigen die Roll-Spannen der Werte (Diablo-Lese).
+  // Ein Tastendruck rendert neu — losgelassen wieder nur die Würfe.
+  const setAlt = (on) => {
+    if (rollRangesVisible === on) return;
+    setRollRanges(on);
+    gearDirty = true;
+    hooks.render();
+  };
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Alt') {
+      e.preventDefault();
+      setAlt(true);
+    }
+  });
+  window.addEventListener('keyup', (e) => {
+    if (e.key === 'Alt') setAlt(false);
+  });
+  window.addEventListener('blur', () => setAlt(false));
+}
 
 export function selectAllForSale() {
 
@@ -110,30 +130,56 @@ export function renderGearIfDirty() {
 
 function generateItem() {
   const slot = GEAR_SLOTS[Math.floor(Math.random() * GEAR_SLOTS.length)];
+  const ilvl = zoneDef(state.zone).ilvl;
   const rarity = rollRarity();
+  const baseItem = pickBase(slot, ilvl);
   return {
     id: ++state.itemSeq,
     slot: slot.key,
-    name: `${slot.base} ${rarity.suffix}`,
+    base: baseItem.name,
+    name: `${baseItem.name} ${rarity.suffix}`,
     rarity: rarity.key,
+    ilvl,
     enhance: 0,
-    mastery: rarity.key === 'episch' ? rollMastery(slot.stat) : null,
-    ...rollItemValues(slot, rarity, zoneDef(state.zone).ilvl),
+    // Meisterschaft ist das „Legendary Power" — nur dort, nie auf Episch.
+    mastery: rarity.key === 'legendär' ? rollMastery(slot.stat) : null,
+    ...rollItemValues(slot, rarity, ilvl, baseItem),
   };
 }
 
 let lastFullNotice = 0;
 
+let lastAutoSellNotice = 0;
+
+// Auto-Verkauf: Beute unter der gewählten Seltenheit wird beim Fund sofort
+// zum Verkaufspreis in Asche umgetauscht — das Inventar bleibt für Funde.
+const autoSellThreshold = () => {
+  if (settings.autoSell === 'unter-selten') return 2;
+  if (settings.autoSell === 'unter-episch') return 3;
+  return RARITIES.length;
+};
+
 function rollDrop(enemyType) {
   if (Math.random() >= (DROP_CHANCES[enemyType] ?? 0)) return;
-  if (state.inventory.length >= INVENTORY_CAP) {
-    if (Date.now() - lastFullNotice > 30000) {
+  const item = generateItem();
+  state.drops[item.rarity] = (state.drops[item.rarity] ?? 0) + 1;
+  const autoSold = RARITIES.findIndex((rarity) => rarity.key === item.rarity) < autoSellThreshold();
+  if (autoSold || state.inventory.length >= INVENTORY_CAP) {
+    // Volles Inventar ist kein Verlust: Die Beute wird sofort zum
+    // Verkaufspreis in Asche umgetauscht — statt sich zu verflüchtigen.
+    const ash = itemSellValue(item);
+    state.ash += ash;
+    if (autoSold) {
+      if (Date.now() - lastAutoSellNotice > 30000) {
+        lastAutoSellNotice = Date.now();
+        toast(`Auto-Verkauf: ${item.name} — +${formatNum(ash)} Asche.`);
+      }
+    } else if (Date.now() - lastFullNotice > 30000) {
       lastFullNotice = Date.now();
-      toast('Inventar voll — die Beute verfällt zu Asche.');
+      toast(`Inventar voll — Beute sofort verkauft: +${formatNum(ash)} Asche.`);
     }
     return;
   }
-  const item = generateItem();
   state.inventory.push(item);
   gearDirty = true;
   if (item.rarity === 'episch') {
@@ -161,7 +207,11 @@ function equipItem(id) {
 
 function unequipItem(slotKey) {
   const item = state.equipment[slotKey];
-  if (!item || state.inventory.length >= INVENTORY_CAP) return;
+  if (!item) return;
+  if (state.inventory.length >= INVENTORY_CAP) {
+    toast('Inventar voll — erst Platz schaffen.');
+    return;
+  }
   state.equipment[slotKey] = null;
   state.inventory.push(item);
   gearDirty = true;
@@ -220,13 +270,22 @@ function tooltipHtml(item, action, showValue = false) {
   if (!item) return '<span class="tt-empty">Leer</span>';
   const rarity = rarityOf(item.rarity);
   const stats = itemStats(item);
+  const ranges = rollRangesVisible ? itemStatRanges(item) : null;
+  const rangeTag = (field) => {
+    const range = ranges?.[field];
+    return range ? ` <span class="tt-range">[${range[0]} – ${range[1]}]</span>` : '';
+  };
   const rows = [
-    stats.damage ? `<div class="tt-stat">+${formatNum(stats.damage)} Schaden</div>` : null,
-    stats.hp ? `<div class="tt-stat">+${formatNum(stats.hp)} Lebenskraft</div>` : null,
-    stats.armor ? `<div class="tt-stat">+${formatNum(stats.armor)} Rüstung</div>` : null,
-    stats.critChance ? `<div class="tt-stat">+${stats.critChance} % Kritchance</div>` : null,
-    stats.lifeleech ? `<div class="tt-leech">+${stats.lifeleech} % Lifeleech</div>` : null,
-    stats.lifeleechFlat ? `<div class="tt-leech">+${formatNum(stats.lifeleechFlat)} Lifeleech pro Treffer</div>` : null,
+    stats.damage ? `<div class="tt-stat">+${formatNum(stats.damage)} Schaden${rangeTag('damage')}</div>` : null,
+    stats.damagePct ? `<div class="tt-stat">+${stats.damagePct} % Schaden${rangeTag('damagePct')}</div>` : null,
+    stats.hp ? `<div class="tt-stat">+${formatNum(stats.hp)} Lebenskraft${rangeTag('hp')}</div>` : null,
+    stats.hpPct ? `<div class="tt-stat">+${stats.hpPct} % Lebenskraft${rangeTag('hpPct')}</div>` : null,
+    stats.armor ? `<div class="tt-stat">+${formatNum(stats.armor)} Rüstung${rangeTag('armor')}</div>` : null,
+    stats.armorPct ? `<div class="tt-stat">+${stats.armorPct} % Rüstung${rangeTag('armorPct')}</div>` : null,
+    stats.critChance ? `<div class="tt-stat">+${stats.critChance} % Kritchance${rangeTag('critChance')}</div>` : null,
+    stats.critDmg ? `<div class="tt-stat">+${stats.critDmg} % Kritschaden${rangeTag('critDmg')}</div>` : null,
+    stats.lifeleech ? `<div class="tt-leech">+${stats.lifeleech} % Lifeleech${rangeTag('lifeleech')}</div>` : null,
+    stats.lifeleechFlat ? `<div class="tt-leech">+${formatNum(stats.lifeleechFlat)} Lifeleech pro Treffer${rangeTag('lifeleechFlat')}</div>` : null,
     item.enhance ? `<div class="tt-enhance">Verstärkt +${item.enhance}</div>` : null,
     item.mastery ? `<div class="tt-mastery">Meisterschaft: ${SKILL_EFFECT_LABELS[item.mastery.stat](item.mastery.value)}</div>` : null,
   ]
@@ -234,7 +293,7 @@ function tooltipHtml(item, action, showValue = false) {
     .join('');
   return `
     <div class="tt-name" style="color:${rarity.color}">${item.name}</div>
-    <div class="tt-rarity" style="color:${rarity.color}">${rarity.label}</div>
+    <div class="tt-rarity" style="color:${rarity.color}">${rarity.label} · Ilvl ${formatNum(itemIlvl(item))}</div>
     ${rows}
     ${showValue ? `<div class="tt-stat">Wert: ${formatNum(itemSellValue(item))} Asche</div>` : ''}
     ${comparisonHtml(item)}

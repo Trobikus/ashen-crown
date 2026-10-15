@@ -3,36 +3,37 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.10.0',
+  version: '0.11.0',
   date: '15.10.2026',
-  headline: 'Das große Balance-Update: härter, tiefer, lohnender',
+  headline: 'Loot nach Diablo-Handwerk — und eine Werkstatt, die den Endgame-Ascheberg frisst',
   sections: [
     {
-      heading: 'Loot — neu aufgebaut',
+      heading: 'Loot — Basen, Tiers, Affixe',
       items: [
-        'Fünf Raritäten: Gewöhnlich, Magisch (neu), Selten (gelb), Episch (lila), Legendär (orange, neu).',
-        'Jedes Stück rollt seine Werte — das perfekte Exemplar ist ein Fund.',
-        'Lifeleech sitzt nur auf Waffen ab Episch: als Prozente deines Schadens oder als feste Zahl pro Treffer.',
-        'Beute ist selten geworden — jeder Drop zählt.',
+        'Fünf Item-Basen pro Slot (35 insgesamt): Klinge bis Sense, Brustplatte bis Plattenharnisch — höhere Basen schalten per Itemlevel frei und rollen bis +50 % Hauptwert.',
+        'Jede Basis trägt eine Prägung: Axt-Wucht gegen Speer-Präzision, Plattenharnisch gegen Knochenpanzer.',
+        'Seltenheit kauft Affixplätze (0–4) aus Slot-Pools — Krit ist ab jetzt ein Wurf, kein Garant.',
+        'Itemlevel sichtbar; gedrückte Alt-Taste zeigt die Roll-Spannen jedes Werts (Diablo-Lese).',
+        'Meisterschaft rollt nur noch auf Legendär — und lässt sich jetzt neu schmieden.',
       ],
     },
     {
-      heading: 'Kampf — nichts ist gratis',
+      heading: 'Werkstatt & Komfort',
       items: [
-        'Der Held verfehlt 12 % seiner Schläge, Gegner 15 % — „Verfehlt" über dem Ziel.',
-        'Kritchance deckelt bei 75 %, Rüstung mindert nie mehr als die Hälfte.',
-        'Schadensspanne: Jeder Schlag rollt ±15 %.',
-        'Keine Kill-Heilung mehr: Nur der Schrein heilt — und Lifeleech-Waffen.',
-        'Gegner tragen jetzt ihr Level (Normal = Gebietsnummer, Elite +2, Boss +4) und richten echten Schaden an.',
+        'Meisterschaft neu schmieden: Der goldene Bonus lässt sich gegen viel Asche neu würfeln — die Jagd nach dem Perfekt-Wurf hat ein Zuhause (Doppelklick bestätigt).',
+        'Umschmieden senkt das Itemlevel nie mehr — Tiefen-Beute bleibt beim Umschmieden wertvoll.',
+        'Auto-Tür: Nach dem Boss geht es von allein weiter (Optionen → Spiel, abschaltbar).',
+        'Auto-Verkauf: Beute unter einer gewählten Seltenheit wird beim Fund sofort zu Asche (Optionen → Spiel).',
+        'Inventar voll? Beute wird sofort zum Verkaufspreis in Asche umgetauscht statt zu verfallen.',
       ],
     },
     {
-      heading: 'Fortschritt — der lange Weg',
+      heading: 'Im Hintergrund',
       items: [
-        '2 Statpunkte pro Stufe; der Fertigkeitenbaum erwacht ab Stufe 20 (gedämpfte Werte).',
-        'Erfahrung gibt es nur von Würdigen — 20 Stufen unter dir bringen nichts.',
-        'Bosse sind Wände: Stirbst du, farmst du Asche und Gear — und schlägst zurück.',
-        'Hauptspiel-Ziel: rund 40–50 Stunden bis zur Aschenkrone. Viel Erfolg.',
+        'Die Offline-Zusammenfassung meldet jetzt auch gefundene Beutestücke.',
+        'Tod an einer Boss-Wand erklärt den Weg: Gebiets-Reise (auch erneut ins gleiche Gebiet) setzt das Zählwerk zurück.',
+        'Der Spielstand zählt jetzt Tode, Spielzeit und Beute je Seltenheit — Fundament für die Statistik-Seite.',
+        'Der Balance-Simulator spielt das echte Loot-System mit: Neu vermessen ~58 Stunden bis zur Aschenkrone.',
       ],
     },
   ],

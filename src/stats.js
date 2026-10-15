@@ -34,29 +34,44 @@ export function statBonus(stat) {
 
 export function heroDamage() {
   let damage = state.damage;
+  let pct = 0;
   for (const slot of GEAR_SLOTS) {
     const item = state.equipment[slot.key];
-    if (item) damage += itemStats(item).damage;
+    if (item) {
+      const stats = itemStats(item);
+      damage += stats.damage;
+      pct += stats.damagePct;
+    }
   }
-  return Math.round((damage + statBonus('damage')) * (1 + statBonus('damagePct') / 100));
+  return Math.round((damage + statBonus('damage')) * (1 + (statBonus('damagePct') + pct) / 100));
 }
 
 export function heroMaxHp() {
   let maxHp = state.maxHp;
+  let pct = 0;
   for (const slot of GEAR_SLOTS) {
     const item = state.equipment[slot.key];
-    if (item) maxHp += itemStats(item).hp;
+    if (item) {
+      const stats = itemStats(item);
+      maxHp += stats.hp;
+      pct += stats.hpPct;
+    }
   }
-  return Math.round((maxHp + statBonus('hp')) * (1 + statBonus('hpPct') / 100));
+  return Math.round((maxHp + statBonus('hp')) * (1 + (statBonus('hpPct') + pct) / 100));
 }
 
 export function heroArmor() {
   let armor = state.armorBase;
+  let pct = 0;
   for (const slot of GEAR_SLOTS) {
     const item = state.equipment[slot.key];
-    if (item) armor += itemStats(item).armor;
+    if (item) {
+      const stats = itemStats(item);
+      armor += stats.armor;
+      pct += stats.armorPct;
+    }
   }
-  return Math.round((armor + statBonus('armor')) * (1 + statBonus('armorPct') / 100));
+  return Math.round((armor + statBonus('armor')) * (1 + (statBonus('armorPct') + pct) / 100));
 }
 
 export function heroCritChance() {
@@ -73,7 +88,12 @@ export function heroAttackSpeed() {
 }
 
 export function critMultiplier() {
-  return CRIT_MULTIPLIER + statBonus('critDmg') / 100;
+  let critDmg = statBonus('critDmg');
+  for (const slot of GEAR_SLOTS) {
+    const item = state.equipment[slot.key];
+    if (item) critDmg += itemStats(item).critDmg;
+  }
+  return CRIT_MULTIPLIER + critDmg / 100;
 }
 
 // Lifeleech existiert nur als Waffen-Affix ab Episch — Prozent des Schadens

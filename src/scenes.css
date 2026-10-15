@@ -379,6 +379,28 @@
   letter-spacing: 0.04em;
 }
 
+.option-select {
+  flex: none;
+  min-width: 180px;
+  padding: 0.35rem 0.5rem;
+  background: #14110f;
+  color: #cfc4b0;
+  border: 1px solid #3a352e;
+  font: inherit;
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+
+.option-select:hover {
+  border-color: #8a7f6d;
+}
+
+.option-select:focus-visible {
+  outline: 1px solid #8a7f6d;
+  outline-offset: 1px;
+}
+
 .toggle {
   position: relative;
   width: 42px;

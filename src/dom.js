@@ -6,6 +6,9 @@ function cacheDom() {
   el.game = document.getElementById('game');
   el.hubLevel = document.getElementById('hub-level');
   el.hubAsh = document.getElementById('hub-ash');
+  el.hubHeroLevel = document.getElementById('hub-hero-level');
+  el.hubHeroHp = document.getElementById('hub-hero-hp');
+  el.hubHeroHpText = document.getElementById('hub-hero-hp-text');
   el.hudLevel = document.getElementById('hud-level');
   el.hudAsh = document.getElementById('hud-ash');
   el.hudZone = document.getElementById('hud-zone');

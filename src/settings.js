@@ -28,6 +28,9 @@ function applySettings() {
   for (const input of el.optionsPanel.querySelectorAll('[data-volume]')) {
     input.value = settings[input.dataset.volume];
   }
+  for (const select of el.optionsPanel.querySelectorAll('[data-choicesetting]')) {
+    select.value = settings[select.dataset.choicesetting] ?? 'aus';
+  }
   setVolumes({ master: settings.volumeMaster, sfx: settings.volumeSfx, music: settings.volumeMusic });
   applyFullscreenSetting();
 }

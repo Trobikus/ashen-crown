@@ -14,7 +14,7 @@
 
   *Web & Desktop — ohne Framework, ohne Server, mit Speicherstand im Browser.*
 
-  **🧪 Aktuell: Closed Alpha (v0.10.0)** — Installer über die
+  **🧪 Aktuell: Closed Alpha (v0.11.0)** — Installer über die
   [Releases](releases), Updates installieren sich im Spiel von selbst.
 </div>
 
@@ -70,9 +70,14 @@ Denn die Asche erinnert sich — an jedes Reich, das vor dir versuchte, ihr zu e
   Ereignis, kein Dauerregen: Wer tief kämpft, findet Besseres. Verkaufen,
   Sortieren und „Bestes anlegen" inklusive.
 - **Crafting** — Die Werkstatt macht Asche zu Macht: Ausrüstungsstufen **verstärken**
-  (steile Kostenkurve pro Stufe) oder **umschmieden** (Rarity-Upgrade mit Neuwurf).
-  Legendäre Items rollen eine goldene **Meisterschaft** — Prozentboni, die es sonst auf
-  Gear nirgends gibt. Alles skaliert mit der tiefsten errungenen Ebene.
+  (steile Kostenkurve pro Stufe) oder **umschmieden** (Rarity-Upgrade mit Neuwurf,
+  senkt das Ilvl nie). Legendäre Items rollen eine goldene **Meisterschaft** —
+  Prozentboni, die es sonst auf Gear nirgends gibt, und die sich gegen viel Asche
+  **neu schmieden** lassen: die Endgame-Jagd nach dem Perfekt-Wurf. Alles skaliert
+  mit der tiefsten errungenen Ebene.
+- **Komfort auf Wunsch** — **Auto-Tür** (nach dem Boss geht es von allein weiter) und
+  **Auto-Verkauf** (Beute unter einer gewählten Seltenheit wird beim Fund zu Asche)
+  unter Optionen → Spiel; volles Inventar tauscht Beute ohnehin sofort in Asche.
 - **Stufen & Asche** — Jede Stufe bringt **2 Statpunkte**; Runenpunkte kommen
   ab Stufe 20 dazu. Asche finanziert die Werkstatt: Verstärkung und Umschmieden.
   Beide Wege stärken denselben Helden, keinen zweiten.
@@ -120,7 +125,7 @@ Gebiete — je tiefer die Ebene, desto besser Beute und Werkstatt.
 
 ## 🧪 Closed Alpha
 
-Ashen Crown befindet sich im geschlossenen Alpha-Stadium (aktuell **v0.10.0**):
+Ashen Crown befindet sich im geschlossenen Alpha-Stadium (aktuell **v0.11.0**):
 
 - **Mitmachen:** Installer aus den [Releases](releases) laden und installieren —
   das Spiel aktualisiert sich danach bei neuen Versionen von selbst.
@@ -137,7 +142,6 @@ Ashen Crown befindet sich im geschlossenen Alpha-Stadium (aktuell **v0.10.0**):
 
 ## 🗺️ Auf dem Weg zu 1.0
 
-- Automatisierung: Auto-Tür nach Bosskämpfen, Auto-Verkauf fürs Inventar
 - Statistik-Seite und Bestiarium (der Chronik Schwester)
 - Prestige/Meta-Progression und Belohnungen in den Aschentiefen
 - Achievements

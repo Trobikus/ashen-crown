@@ -1,4 +1,4 @@
-import { GEAR_SLOTS, RARITIES, LAST_ZONE_INDEX, SKILL_EFFECT_LABELS, gearSlotOf, rarityOf, zoneDef, rollItemValues, itemStatsText, rollMastery, formatNum } from './data.js';
+import { GEAR_SLOTS, RARITIES, LAST_ZONE_INDEX, SKILL_EFFECT_LABELS, gearSlotOf, baseOf, rarityOf, zoneDef, rollItemValues, itemStatsText, itemIlvl, rollMastery, formatNum } from './data.js';
 
 import { state } from './state.js';
 
@@ -10,7 +10,24 @@ import { el } from './dom.js';
 // in den Tiefen wächst sie nicht mehr mit (Balance-Siehe tools/balance-sim.mjs).
 const craftIlvl = () => zoneDef(Math.min(state.cleared, LAST_ZONE_INDEX)).ilvl;
 
+// Umschmieden zieht das Ilvl auf die Werkstatt-Stufe — senkt es aber nie:
+// Tiefen-Beute (höheres ilvl) verliert beim Umschmieden ihren Wert nicht.
+const reforgeIlvlOf = (item) => Math.max(itemIlvl(item), craftIlvl());
+
 let selectedCraftSlot = null;
+
+// Meisterschaft neu schmieden ist die teuerste wiederholbare Handlung —
+// Doppelklick-Bestätigung wie bei Respec/Reset, damit kein Fehlklick den
+// Perfekt-Wurf wegwirft.
+let masteryArmed = false;
+
+let masteryArmTimer = null;
+
+const disarmMastery = () => {
+  masteryArmed = false;
+  clearTimeout(masteryArmTimer);
+  masteryArmTimer = null;
+};
 
 function buildCraftSlots() {
   if (el.craftSlots.children.length) return;
@@ -36,6 +53,28 @@ function reforgeCost(item) {
   const bases = [600, 3000, 12000, 50000];
   const index = RARITIES.findIndex((rarity) => rarity.key === item.rarity);
   return Math.round(bases[Math.max(0, index)] * (1 + 0.4 * craftIlvl()));
+}
+
+// Die Endgame-Asche-Senke: Die goldene Meisterschaft lässt sich neu würfeln —
+// deutlich billiger als ein Legendär-Umschmieden, aber wiederholbar teuer
+// genug, dass die Jagd nach dem Perfekt-Wurf Tiefen-Asche schluckt.
+function masteryRerollCost() {
+  return Math.round(30000 * (1 + 0.4 * craftIlvl()));
+}
+
+function craftRerollMastery(slotKey, hooks) {
+  const item = state.equipment[slotKey];
+  if (!item?.mastery) return;
+  const cost = masteryRerollCost();
+  if (state.ash < cost) {
+    disarmMastery();
+    renderCrafting();
+    return;
+  }
+  state.ash -= cost;
+  item.mastery = rollMastery(gearSlotOf(slotKey).stat);
+  disarmMastery();
+  hooks.after();
 }
 
 function craftEnhance(slotKey, hooks) {
@@ -64,9 +103,15 @@ function craftReforge(slotKey, hooks) {
   if (state.ash < cost) return;
   state.ash -= cost;
   const slot = gearSlotOf(slotKey);
+  const baseItem = baseOf(slot, item.base);
+  const reforgeIlvl = reforgeIlvlOf(item);
   item.rarity = next.key;
-  item.name = `${slot.base} ${next.suffix}`;
-  Object.assign(item, rollItemValues(slot, next, craftIlvl()));
+  // Die gewürfelte Basis bleibt dem Stück erhalten — Name und Prägung wandern
+  // mit; die Werte rollen neu auf der Ilvl-Sockel-Höhe (Werkstatt-Stufe oder
+  // aktuelles Ilvl, je nachdem welches höher liegt).
+  item.ilvl = reforgeIlvl;
+  item.name = `${baseItem.name} ${next.suffix}`;
+  Object.assign(item, rollItemValues(slot, next, reforgeIlvl, baseItem));
   if (next.key === 'legendär') item.mastery = rollMastery(slot.stat);
   hooks.after();
 }
@@ -103,10 +148,18 @@ function renderCraftDetail() {
   const nextRarity = RARITIES[RARITIES.findIndex((rarity) => rarity.key === item.rarity) + 1] ?? null;
   const rCost = nextRarity ? reforgeCost(item) : 0;
   const masteryHint = nextRarity?.key === 'legendär' ? 'Rollt eine Meisterschaft' : nextRarity ? 'Werte werden neu gewürfelt' : '';
+  const mCost = masteryRerollCost();
+  const masteryAction = item.mastery
+    ? `
+    <div class="craft-action">
+      <div class="craft-action-head">Meisterschaft neu schmieden<span>Würfelt den goldenen Bonus neu — der alte Wurf verfällt</span></div>
+      <button class="btn-small ${masteryArmed ? 'armed' : ''}" data-craft="mastery" ${state.ash < mCost ? 'disabled' : ''}>${masteryArmed ? 'Wirklich? Neu würfeln.' : `Neu schmieden · ${formatNum(mCost)} Asche`}</button>
+    </div>`
+    : '';
   el.craftDetail.innerHTML = `
     <div class="craft-item">
       <div class="tt-name" style="color:${rarity.color}">${item.name}${item.enhance ? ` +${item.enhance}` : ''}</div>
-      <div class="tt-rarity" style="color:${rarity.color}">${rarity.label}</div>
+      <div class="tt-rarity" style="color:${rarity.color}">${rarity.label} · Ilvl ${formatNum(itemIlvl(item))}</div>
       <div class="tt-stat">${itemStatsText(item)}</div>
       ${item.enhanceBonus ? '<div class="tt-enhance">Verstärkt durch die Werkstatt</div>' : ''}
       ${item.mastery ? `<div class="tt-mastery">Meisterschaft: ${SKILL_EFFECT_LABELS[item.mastery.stat](item.mastery.value)}</div>` : ''}
@@ -120,7 +173,8 @@ function renderCraftDetail() {
       ${nextRarity
         ? `<button class="btn-small" data-craft="reforge" ${state.ash < rCost ? 'disabled' : ''}>Umschmieden · ${formatNum(rCost)} Asche</button>`
         : '<span class="craft-hint">Maximale Seltenheit erreicht.</span>'}
-    </div>`;
+    </div>
+    ${masteryAction}`;
 }
 
 export function bindCraftEvents(hooks) {
@@ -130,6 +184,8 @@ export function bindCraftEvents(hooks) {
     const row = e.target.closest('.craft-slot');
 
     if (!row) return;
+
+    if (selectedCraftSlot !== row.dataset.slot) disarmMastery();
 
     selectedCraftSlot = row.dataset.slot;
 
@@ -145,7 +201,24 @@ export function bindCraftEvents(hooks) {
 
     if (btn.dataset.craft === 'enhance') craftEnhance(selectedCraftSlot, hooks);
 
-    else craftReforge(selectedCraftSlot, hooks);
+    else if (btn.dataset.craft === 'reforge') craftReforge(selectedCraftSlot, hooks);
+
+    else if (btn.dataset.craft === 'mastery') {
+      // Doppelklick-Bestätigung: Erster Klick bewaffnet, vier Sekunden später
+      // entschärft sich der Knopf von selbst.
+      if (!masteryArmed) {
+        masteryArmed = true;
+        clearTimeout(masteryArmTimer);
+        masteryArmTimer = setTimeout(() => {
+          masteryArmed = false;
+          masteryArmTimer = null;
+          renderCrafting();
+        }, 4000);
+        renderCrafting();
+        return;
+      }
+      craftRerollMastery(selectedCraftSlot, hooks);
+    }
 
   });
 

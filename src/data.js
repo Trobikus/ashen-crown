@@ -337,14 +337,76 @@ function zoneDef(index) {
   };
 }
 
+// Je Slot fünf Basen in Stufenordnung (Tier 1–5, siehe BASE_TIERS) — der
+// erste Eintrag ist der historische Name alter Spielstände und die neutrale
+// Referenz. Der Item-Name entsteht als „<name> <Seltenheits-Suffix>"; die
+// Werte würfelt rollItemValues aus Seltenheit + ilvl + Tier und prägt die
+// Basis darüber:
+//   damageMult / hpMult / armorMult — Multiplikator auf den Grundwert (1 = neutral)
+//   critDelta        — flache Krit-Punkte auf den Krit-Affix (0 = neutral, geklemmt bei 0)
+//   armorShare       — Anteil am Rüstungs-Grundwert als Extrarüstung auf Schadens-Slots
+//   leechChanceMult  — Multiplikator auf die Lifeleech-Chance (nur Waffe)
+const HANDSCHUH_BASES = [
+  { name: 'Handschuh', tier: 1 },
+  { name: 'Fäustling', tier: 2, damageMult: 1.15, critDelta: -4 },
+  { name: 'Krallenhandschuhe', tier: 3, damageMult: 0.85, critDelta: 5 },
+  { name: 'Kettenhandschuhe', tier: 4, damageMult: 0.9, armorShare: 0.25 },
+  { name: 'Plattenhandschuhe', tier: 5, damageMult: 0.8, armorShare: 0.4 },
+];
+
 const GEAR_SLOTS = [
-  { key: 'waffe', label: 'Waffe', base: 'Klinge', abbrev: 'KL', stat: 'damage' },
-  { key: 'brust', label: 'Brust', base: 'Brustplatte', abbrev: 'BP', stat: 'hp' },
-  { key: 'helm', label: 'Helm', base: 'Helm', abbrev: 'HE', stat: 'hp' },
-  { key: 'hose', label: 'Hose', base: 'Beinlinge', abbrev: 'BE', stat: 'hp' },
-  { key: 'schuhe', label: 'Schuhe', base: 'Stiefel', abbrev: 'ST', stat: 'hp' },
-  { key: 'hand-links', label: 'Handschuh Links', base: 'Handschuh', abbrev: 'HL', stat: 'damage' },
-  { key: 'hand-rechts', label: 'Handschuh Rechts', base: 'Handschuh', abbrev: 'HR', stat: 'damage' },
+  {
+    key: 'waffe', label: 'Waffe', abbrev: 'KL', stat: 'damage', pool: 'waffe',
+    bases: [
+      { name: 'Klinge', tier: 1 },
+      { name: 'Axt', tier: 2, damageMult: 1.15, critDelta: -4 },
+      { name: 'Speer', tier: 3, damageMult: 0.85, critDelta: 5 },
+      { name: 'Streitkolben', tier: 4, damageMult: 1.3, critDelta: -7 },
+      { name: 'Sense', tier: 5, damageMult: 0.9, critDelta: 2, leechChanceMult: 2 },
+    ],
+  },
+  {
+    key: 'brust', label: 'Brust', abbrev: 'BP', stat: 'hp', pool: 'armor',
+    bases: [
+      { name: 'Brustplatte', tier: 1 },
+      { name: 'Kettenhemd', tier: 2, hpMult: 0.9, armorMult: 1.25 },
+      { name: 'Schuppenpanzer', tier: 3, hpMult: 1.1, armorMult: 0.9 },
+      { name: 'Knochenpanzer', tier: 4, hpMult: 1.25, armorMult: 0.7 },
+      { name: 'Plattenharnisch', tier: 5, hpMult: 0.85, armorMult: 1.35 },
+    ],
+  },
+  {
+    key: 'helm', label: 'Helm', abbrev: 'HE', stat: 'hp', pool: 'armor',
+    bases: [
+      { name: 'Helm', tier: 1 },
+      { name: 'Spangenhelm', tier: 2, hpMult: 1.1, armorMult: 0.9 },
+      { name: 'Kettenhaube', tier: 3, hpMult: 0.95, armorMult: 1.15 },
+      { name: 'Hornhelm', tier: 4, hpMult: 1.2, armorMult: 0.8 },
+      { name: 'Kübelhelm', tier: 5, hpMult: 0.85, armorMult: 1.3 },
+    ],
+  },
+  {
+    key: 'hose', label: 'Hose', abbrev: 'BE', stat: 'hp', pool: 'armor',
+    bases: [
+      { name: 'Beinlinge', tier: 1 },
+      { name: 'Kettenbeinlinge', tier: 2, hpMult: 0.9, armorMult: 1.25 },
+      { name: 'Schattenhose', tier: 3, hpMult: 1.15, armorMult: 0.85 },
+      { name: 'Knochenhose', tier: 4, hpMult: 1.25, armorMult: 0.7 },
+      { name: 'Plattenhose', tier: 5, hpMult: 0.85, armorMult: 1.35 },
+    ],
+  },
+  {
+    key: 'schuhe', label: 'Schuhe', abbrev: 'ST', stat: 'hp', pool: 'armor',
+    bases: [
+      { name: 'Stiefel', tier: 1 },
+      { name: 'Wanderstiefel', tier: 2, hpMult: 1.15, armorMult: 0.85 },
+      { name: 'Sporenstiefel', tier: 3, hpMult: 0.9, armorMult: 1.2 },
+      { name: 'Knochenstiefel', tier: 4, hpMult: 1.25, armorMult: 0.7 },
+      { name: 'Plattenschuhe', tier: 5, hpMult: 0.85, armorMult: 1.3 },
+    ],
+  },
+  { key: 'hand-links', label: 'Handschuh Links', bases: HANDSCHUH_BASES, abbrev: 'HL', stat: 'damage', pool: 'hands' },
+  { key: 'hand-rechts', label: 'Handschuh Rechts', bases: HANDSCHUH_BASES, abbrev: 'HR', stat: 'damage', pool: 'hands' },
 ];
 
 const RARITIES = [
@@ -361,13 +423,43 @@ const DROP_CHANCES = { normal: 0.01, elite: 0.08, boss: 0.5 };
 // Tod kostet Zoll: Anteil der aktuellen Asche, den die Asche beim Fallen einbehält.
 const DEATH_ASH_PENALTY = 0.15;
 
-// Kritchance auf Waffen je Seltenheit — als Wertebereich, damit Rollen zählen.
-const CRIT_BY_RARITY = {
-  magisch: [2, 3],
-  selten: [4, 6],
-  episch: [7, 10],
-  legendär: [11, 14],
+// Loot à la Diablo: Seltenheit kauft Affixplätze (0/1/2/3/4) — der
+// Seltenheits-Multiplikator auf den Hauptwert bleibt der obendrauf gezahlte
+// Zins. Legendär krönt das Ganze mit der Meisterschaft (Legendary Power).
+const AFFIX_COUNTS = { gewoehnlich: 0, magisch: 1, selten: 2, episch: 3, 'legendär': 4 };
+
+// Affix-Wertebereiche je Seltenheit; fehlt eine Seltenheit, rollt das Affix
+// dort nicht (Kritschaden z. B. erst ab Selten). Flat-Affixe sind Anteile am
+// jeweiligen ilvl-Grundwert, Prozente ganze Punkte.
+const AFFIX_RANGES = {
+  crit: { magisch: [2, 3], selten: [3, 5], episch: [5, 8], legendär: [7, 10] },
+  critDmg: { selten: [10, 20], episch: [18, 35], legendär: [30, 60] },
+  damagePct: { magisch: [3, 5], selten: [5, 10], episch: [8, 15], legendär: [12, 20] },
+  flatDamage: { magisch: [0.2, 0.3], selten: [0.35, 0.55], episch: [0.6, 0.85], legendär: [0.9, 1.25] },
+  armorFlat: { magisch: [0.15, 0.25], selten: [0.25, 0.4], episch: [0.4, 0.55], legendär: [0.55, 0.75] },
+  hpFlat: { magisch: [0.3, 0.45], selten: [0.5, 0.7], episch: [0.7, 0.9], legendär: [0.9, 1.2] },
+  hpPct: { selten: [4, 8], episch: [6, 12], legendär: [10, 18] },
+  armorPct: { selten: [6, 12], episch: [10, 18], legendär: [15, 25] },
 };
+
+// Affix-Pools je Slot-Typ: Waffen schärfen den Angriff, Rüstung das
+// Überleben, Handschuhe mischen beides (D4: Handschuhe tragen Rüstung).
+const AFFIX_POOLS = {
+  waffe: ['crit', 'critDmg', 'damagePct', 'flatDamage'],
+  hands: ['crit', 'critDmg', 'damagePct', 'armorFlat'],
+  armor: ['hpFlat', 'hpPct', 'armorFlat', 'armorPct'],
+};
+
+// Basen-Stufen: Höhere Basen schalten per ilvl frei (das Sortiment wächst
+// mit dem Helden — Zone 5 / 10 / 19 / 22 ungefähr) und rollen bessere
+// Hauptwerte. Alte Basen veralten damit natürlich im Lauf des Spiels.
+const BASE_TIERS = [
+  { unlock: 1, mult: 1 },
+  { unlock: 8, mult: 1.1 },
+  { unlock: 24, mult: 1.2 },
+  { unlock: 110, mult: 1.35 },
+  { unlock: 500, mult: 1.5 },
+];
 
 // Lifeleech sitzt ausschließlich auf Waffen und erst ab Episch (lila) — und
 // selbst dort nur mit Chance, nie garantiert. Eine von zwei Varianten:
@@ -425,6 +517,10 @@ function enemyXpMultiplier(enemyLevel, heroLevel) {
 const ENRAGE_THRESHOLD = 0.35;
 
 const ENRAGE_INTERVAL_MULT = 0.65;
+
+// Hub-Regeneration: Der Schrein atmet — im Hub kehrt die Lebenskraft mit
+// 2 % des Maximums pro Sekunde zurück (50 s von null auf voll).
+const HUB_REGEN_PER_SECOND = 0.02;
 
 // Verhaltensprofile: Alle Gegner einer Zone teilen ein Temperament (rotiert
 // pro Zone), Bosse kämpfen standardisiert und verfallen in Wut.
@@ -797,6 +893,18 @@ const rarityOf = (key) => RARITIES.find((rarity) => rarity.key === key);
 
 const gearSlotOf = (key) => GEAR_SLOTS.find((slot) => slot.key === key);
 
+// Basis würfeln — nur Stufen, deren ilvl-Schwelle erreicht ist; ganz ohne
+// ilvl (Alter Spielstand, Werkstatt-Edge) fällt die Würfelwahl auf Tier 1 zurück.
+const pickBase = (slot, ilvl = 1) => {
+  const unlocked = slot.bases.filter((base) => (BASE_TIERS[base.tier - 1] ?? BASE_TIERS[0]).unlock <= ilvl);
+  const list = unlocked.length ? unlocked : [slot.bases[0]];
+  return list[Math.floor(Math.random() * list.length)];
+};
+
+// Basis eines Items nach Namen — fremde Namen (alte oder manipulierte
+// Spielstände) fallen auf die neutrale Referenzbasis zurück.
+const baseOf = (slot, name) => slot.bases.find((base) => base.name === name) ?? slot.bases[0];
+
 function rollRarity() {
   const total = RARITIES.reduce((sum, rarity) => sum + rarity.weight, 0);
   let roll = Math.random() * total;
@@ -807,24 +915,53 @@ function rollRarity() {
   return RARITIES[0];
 }
 
-function rollItemValues(slot, rarity, ilvl) {
+function rollItemValues(slot, rarity, ilvl, baseItem = slot.bases[0]) {
   // Affixe rollen in Bereichen statt fest — das „perfekte" Stück ist ein
   // Fund, kein Rechenresultat.
   const roll = (min, max) => min + Math.random() * (max - min);
   const rollInt = (min, max) => Math.floor(roll(min, max + 1));
+  const tier = BASE_TIERS[baseItem.tier - 1] ?? BASE_TIERS[0];
   const base = slot.stat === 'damage' ? 1 + ilvl * 0.4 : 4 + ilvl * 1.1;
-  const amount = Math.max(1, Math.round(base * rarity.mult * roll(0.85, 1.15)));
-  const values = { damage: 0, hp: 0, armor: 0, critChance: 0, lifeleech: 0, lifeleechFlat: 0 };
+  const amount = Math.max(1, Math.round(base * tier.mult * rarity.mult * roll(0.85, 1.15)));
+  const values = { damage: 0, hp: 0, armor: 0, critChance: 0, critDmg: 0, damagePct: 0, hpPct: 0, armorPct: 0, lifeleech: 0, lifeleechFlat: 0 };
   if (slot.stat === 'damage') {
-    values.damage = amount;
-    const crit = CRIT_BY_RARITY[rarity.key];
-    if (crit) values.critChance = rollInt(crit[0], crit[1]);
+    values.damage = Math.max(1, Math.round(amount * (baseItem.damageMult ?? 1)));
   } else {
-    values.hp = amount;
-    values.armor = Math.max(1, Math.round(amount * 0.4 * roll(0.85, 1.15)));
+    values.hp = Math.max(1, Math.round(amount * (baseItem.hpMult ?? 1)));
+    values.armor = Math.max(1, Math.round(amount * 0.4 * (baseItem.armorMult ?? 1) * roll(0.85, 1.15)));
+  }
+  if (baseItem.armorShare) values.armor += Math.max(1, Math.round(base * baseItem.armorShare * roll(0.85, 1.15)));
+  // Affix-Plätze je Seltenheit, Pool je Slot-Typ, ohne Doppelte. Krit ist
+  // hier nur noch ein Affix unter mehreren — die Prägung der Basis verschiebt
+  // seinen Wurf.
+  const pool = AFFIX_POOLS[slot.pool].filter((key) => AFFIX_RANGES[key][rarity.key]);
+  for (let i = pool.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  for (const key of pool.slice(0, AFFIX_COUNTS[rarity.key] ?? 0)) {
+    const [min, max] = AFFIX_RANGES[key][rarity.key];
+    if (key === 'crit') {
+      values.critChance = Math.max(0, rollInt(min, max) + (baseItem.critDelta ?? 0));
+    } else if (key === 'critDmg') {
+      values.critDmg = rollInt(min, max);
+    } else if (key === 'damagePct') {
+      values.damagePct = rollInt(min, max);
+    } else if (key === 'hpPct') {
+      values.hpPct = rollInt(min, max);
+    } else if (key === 'armorPct') {
+      values.armorPct = rollInt(min, max);
+    } else if (key === 'flatDamage') {
+      values.damage += Math.max(1, Math.round((1 + ilvl * 0.4) * roll(min, max) * roll(0.85, 1.15)));
+    } else if (key === 'armorFlat') {
+      values.armor += Math.max(1, Math.round((4 + ilvl * 1.1) * roll(min, max) * roll(0.85, 1.15)));
+    } else if (key === 'hpFlat') {
+      values.hp += Math.max(1, Math.round((4 + ilvl * 1.1) * roll(min, max) * roll(0.85, 1.15)));
+    }
   }
   const pctRange = LIFELEECH_PCT_BY_RARITY[rarity.key];
-  if (slot.key === 'waffe' && pctRange && Math.random() < LIFELEECH_CHANCE_BY_RARITY[rarity.key]) {
+  const leechChance = Math.min(1, LIFELEECH_CHANCE_BY_RARITY[rarity.key] * (baseItem.leechChanceMult ?? 1));
+  if (slot.key === 'waffe' && pctRange && Math.random() < leechChance) {
     if (Math.random() < LIFELEECH_PCT_ODDS) {
       values.lifeleech = rollInt(pctRange[0], pctRange[1]);
     } else {
@@ -841,6 +978,10 @@ function normalizeItem(item) {
   item.hp ??= 0;
   item.armor ??= 0;
   item.critChance ??= 0;
+  item.critDmg ??= 0;
+  item.damagePct ??= 0;
+  item.hpPct ??= 0;
+  item.armorPct ??= 0;
   item.lifeleech ??= 0;
   item.lifeleechFlat ??= 0;
   item.enhance ??= 0;
@@ -859,11 +1000,19 @@ function sanitizeItem(item) {
   const slot = gearSlotOf(item.slot);
   const rarity = rarityOf(item.rarity);
   if (!slot || !rarity) return null;
-  if (typeof item.name !== 'string' || !item.name) item.name = `${slot.base} ${rarity.suffix}`;
+  // Items ohne Basis sind Altbestand — sie trugen den ersten Namen ihres
+  // Slots. Fremde Basen fallen dorthin zurück, der Name bleibt unberührt.
+  item.base = baseOf(slot, item.base).name;
+  if (typeof item.name !== 'string' || !item.name) item.name = `${item.base} ${rarity.suffix}`;
   item.damage = asCount(item.damage);
   item.hp = asCount(item.hp);
   item.armor = asCount(item.armor);
   item.critChance = asCount(item.critChance);
+  item.critDmg = asCount(item.critDmg);
+  item.damagePct = asCount(item.damagePct);
+  item.hpPct = asCount(item.hpPct);
+  item.armorPct = asCount(item.armorPct);
+  item.ilvl = asCount(item.ilvl) || itemIlvl(item);
   item.lifeleech = Math.min(LIFELEECH_PCT_BY_RARITY[rarity.key]?.[1] ?? 0, asCount(item.lifeleech));
   item.lifeleechFlat = asCount(item.lifeleechFlat);
   item.enhance = asCount(item.enhance);
@@ -879,7 +1028,7 @@ function sanitizeItem(item) {
 }
 
 function itemStats(item) {
-  const stats = { damage: item.damage, hp: item.hp, armor: item.armor, critChance: item.critChance, lifeleech: item.lifeleech, lifeleechFlat: item.lifeleechFlat };
+  const stats = { damage: item.damage, hp: item.hp, armor: item.armor, critChance: item.critChance, critDmg: item.critDmg, damagePct: item.damagePct, hpPct: item.hpPct, armorPct: item.armorPct, lifeleech: item.lifeleech, lifeleechFlat: item.lifeleechFlat };
   for (const [stat, value] of Object.entries(item.enhanceBonus ?? {})) stats[stat] += value;
   return stats;
 }
@@ -889,19 +1038,112 @@ function itemScore(item) {
   // Lifeleech ist ein Survivability-Bonus, kein Ersatz für Werten — „Bestes
   // anlegen" soll es modest berücksichtigen, nicht zum König krönen.
   const leechBonus = (s.lifeleech > 0 || s.lifeleechFlat > 0) ? s.damage * 0.25 : 0;
-  return s.damage * 2 + s.hp * 0.5 + s.armor + s.critChance * 3 + leechBonus + (item.mastery ? item.mastery.value * 2 : 0);
+  // Prozent-Affixe fließen heuristisch ein — ihr wahres Gewicht hängt vom
+  // aktuellen Helden ab, die Faktoren bilden die Größenordnung ab.
+  return s.damage * 2 + s.hp * 0.5 + s.armor + s.critChance * 3
+    + s.critDmg * 1.5 + s.damagePct * 0.8 + s.hpPct * 0.4 + s.armorPct * 0.4
+    + leechBonus + (item.mastery ? item.mastery.value * 2 : 0);
 }
+
+// Itemlevel: Neue Stücke speichern es; Altbestand ohne Feld bekommt eine
+// Schätzung aus dem Hauptwert (neutrale Prägung angenommen — für die Anzeige
+// gut genug).
+function itemIlvl(item) {
+  if (typeof item.ilvl === 'number' && Number.isFinite(item.ilvl) && item.ilvl >= 1) return Math.round(item.ilvl);
+  const slot = gearSlotOf(item.slot);
+  const isDamage = slot?.stat === 'damage';
+  const main = isDamage ? item.damage : item.hp;
+  return Math.max(1, Math.round((main - (isDamage ? 1 : 4)) / (isDamage ? 0.4 : 1.1)));
+}
+
+// Roll-Spannen je Statfeld für die Alt-Anzeige: Was KONNTE dieses Feld bei
+// Seltenheit + ilvl + Basis rollen? Gemergte Felder (Hauptwert + Flat-Affix)
+// spannen von „nur Hauptwert" bis „Hauptwert + bester Flat" — welcher Affix
+// tatsächlich saß, wird nicht am Item gespeichert.
+function itemStatRanges(item) {
+  const slot = gearSlotOf(item.slot);
+  const rarity = rarityOf(item.rarity);
+  if (!slot || !rarity) return null;
+  const baseItem = baseOf(slot, item.base);
+  const tier = BASE_TIERS[baseItem.tier - 1] ?? BASE_TIERS[0];
+  const ilvl = itemIlvl(item);
+  const mainBase = slot.stat === 'damage' ? 1 + ilvl * 0.4 : 4 + ilvl * 1.1;
+  const span = (value) => [Math.max(1, Math.round(value * 0.85)), Math.round(value * 1.15)];
+  // Flats rollen am Grundwert ihres Stats — Flatschaden an der Schadens-,
+  // Rüstung/LP-Flats an der Rüstungsbasis (4 + ilvl × 1.1).
+  const flatBase = (key) => (key === 'flatDamage' ? 1 + ilvl * 0.4 : 4 + ilvl * 1.1);
+  const flatMax = (key) => {
+    const range = AFFIX_RANGES[key]?.[rarity.key];
+    return range ? Math.round(flatBase(key) * range[1] * 1.15) : 0;
+  };
+  const ranges = {};
+  if (slot.stat === 'damage') {
+    ranges.damage = span(mainBase * tier.mult * rarity.mult * (baseItem.damageMult ?? 1));
+    ranges.damage[1] += flatMax('flatDamage');
+    if (item.armor > 0) {
+      const flatRange = AFFIX_RANGES.armorFlat[rarity.key];
+      const flatMin = flatRange ? Math.max(1, Math.round((4 + ilvl * 1.1) * flatRange[0] * 0.85)) : 0;
+      if (baseItem.armorShare) {
+        const share = span(mainBase * baseItem.armorShare);
+        ranges.armor = [share[0], share[1] + flatMax('armorFlat')];
+      } else if (flatMin) {
+        ranges.armor = [flatMin, flatMax('armorFlat')];
+      }
+    }
+  } else {
+    ranges.hp = span(mainBase * tier.mult * rarity.mult * (baseItem.hpMult ?? 1));
+    ranges.hp[1] += flatMax('hpFlat');
+    // Rüstung würfelt doppelt (amount-Roll × Rüstungs-Roll) — die Spanne
+    // spiegelt die Arithmetik des Wurfs inklusive Zwischenrundung.
+    const amountMin = Math.max(1, Math.round(mainBase * tier.mult * rarity.mult * 0.85));
+    const amountMax = Math.round(mainBase * tier.mult * rarity.mult * 1.15);
+    ranges.armor = [
+      Math.max(1, Math.round(amountMin * 0.4 * (baseItem.armorMult ?? 1) * 0.85)),
+      Math.round(amountMax * 0.4 * (baseItem.armorMult ?? 1) * 1.15),
+    ];
+    ranges.armor[1] += flatMax('armorFlat');
+  }
+  const crit = AFFIX_RANGES.crit[rarity.key];
+  if (item.critChance > 0 && crit) {
+    const delta = baseItem.critDelta ?? 0;
+    ranges.critChance = [Math.max(0, crit[0] + delta), crit[1] + delta];
+  }
+  for (const key of ['critDmg', 'damagePct', 'hpPct', 'armorPct']) {
+    if (item[key] > 0 && AFFIX_RANGES[key][rarity.key]) ranges[key] = [...AFFIX_RANGES[key][rarity.key]];
+  }
+  if (item.lifeleech > 0 && LIFELEECH_PCT_BY_RARITY[rarity.key]) ranges.lifeleech = [...LIFELEECH_PCT_BY_RARITY[rarity.key]];
+  if (item.lifeleechFlat > 0 && LIFELEECH_FLAT_BY_RARITY[rarity.key]) {
+    const flat = LIFELEECH_FLAT_BY_RARITY[rarity.key];
+    const value = flat.base + ilvl * flat.ilvl;
+    ranges.lifeleechFlat = [Math.max(1, Math.round(value * 0.85)), Math.round(value * 1.15)];
+  }
+  return ranges;
+}
+
+// Alt-gedrückt: Item-Texte zeigen die Roll-Spannen statt nur dem Wurf.
+let rollRangesVisible = false;
+
+const setRollRanges = (on) => { rollRangesVisible = !!on; };
 
 function itemStatsText(item) {
   const s = itemStats(item);
+  const ranges = rollRangesVisible ? itemStatRanges(item) : null;
+  const tag = (field) => {
+    const range = ranges?.[field];
+    return range ? ` [${range[0]} – ${range[1]}]` : '';
+  };
   return (
     [
-      s.damage ? `+${formatNum(s.damage)} Schaden` : null,
-      s.hp ? `+${formatNum(s.hp)} Lebenskraft` : null,
-      s.armor ? `+${formatNum(s.armor)} Rüstung` : null,
-      s.critChance ? `+${s.critChance} % Kritchance` : null,
-      s.lifeleech ? `+${s.lifeleech} % Lifeleech` : null,
-      s.lifeleechFlat ? `+${formatNum(s.lifeleechFlat)} Lifeleech pro Treffer` : null,
+      s.damage ? `+${formatNum(s.damage)} Schaden${tag('damage')}` : null,
+      s.damagePct ? `+${s.damagePct} % Schaden${tag('damagePct')}` : null,
+      s.hp ? `+${formatNum(s.hp)} Lebenskraft${tag('hp')}` : null,
+      s.hpPct ? `+${s.hpPct} % Lebenskraft${tag('hpPct')}` : null,
+      s.armor ? `+${formatNum(s.armor)} Rüstung${tag('armor')}` : null,
+      s.armorPct ? `+${s.armorPct} % Rüstung${tag('armorPct')}` : null,
+      s.critChance ? `+${s.critChance} % Kritchance${tag('critChance')}` : null,
+      s.critDmg ? `+${s.critDmg} % Kritschaden${tag('critDmg')}` : null,
+      s.lifeleech ? `+${s.lifeleech} % Lifeleech${tag('lifeleech')}` : null,
+      s.lifeleechFlat ? `+${formatNum(s.lifeleechFlat)} Lifeleech pro Treffer${tag('lifeleechFlat')}` : null,
     ]
       .filter(Boolean)
       .join(' · ') || 'Keine Werte'
@@ -922,13 +1164,13 @@ export {
 
   SKILL_NODES, SKILL_EDGES, SKILL_NODES_BY_ID, skillSigned, SKILL_EFFECT_LABELS, MASTERY_POOL,
 
-  rollMastery, xpNeeded, rarityOf, gearSlotOf, zoneDef, enemyDef, rollRarity, rollItemValues,
+  rollMastery, xpNeeded, rarityOf, gearSlotOf, pickBase, baseOf, zoneDef, enemyDef, rollRarity, rollItemValues,
 
-  itemStats, itemScore, itemStatsText, normalizeItem, sanitizeItem, asCount,
+  itemStats, itemScore, itemStatsText, itemIlvl, itemStatRanges, rollRangesVisible, setRollRanges, normalizeItem, sanitizeItem, asCount,
 
-  DEATH_ASH_PENALTY, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT,
+  DEATH_ASH_PENALTY, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND,
 
-  CRIT_BY_RARITY, LIFELEECH_CHANCE_BY_RARITY, LIFELEECH_PCT_BY_RARITY, LIFELEECH_FLAT_BY_RARITY,
+  AFFIX_COUNTS, AFFIX_RANGES, AFFIX_POOLS, BASE_TIERS, LIFELEECH_CHANCE_BY_RARITY, LIFELEECH_PCT_BY_RARITY, LIFELEECH_FLAT_BY_RARITY,
 
   ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, CRIT_CHANCE_CAP, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL,
 

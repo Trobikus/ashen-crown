@@ -4,7 +4,7 @@ const SAVE_KEY = 'ashen-crown-save';
 
 const SETTINGS_KEY = 'ashen-crown-settings';
 
-const SAVE_VERSION = 4;
+const SAVE_VERSION = 5;
 
 const DEFAULT_SETTINGS = {
   damageNumbers: true,
@@ -13,6 +13,8 @@ const DEFAULT_SETTINGS = {
   offlineProgress: true,
   offlineSummary: true,
   displayFullscreen: false,
+  autoDoor: true,
+  autoSell: 'aus',
   volumeMaster: 80,
   volumeSfx: 85,
   volumeMusic: 60,
@@ -44,6 +46,12 @@ const state = {
   inField: false,
   seenContinents: [],
   hints: {},
+  // Statistik-Zähler (Fundament für die Statistik-Seite): Tode, Spielzeit
+  // und gefundene Beute je Seltenheit — alte Spielstände zählen ab dem
+  // Laden weiter (prepareSave härtet die Felder gegen kaputte Werte).
+  deaths: 0,
+  playtimeMs: 0,
+  drops: { gewoehnlich: 0, magisch: 0, selten: 0, episch: 0, legendär: 0 },
 };
 
 export { SAVE_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, SAVE_VERSION, settings, state };

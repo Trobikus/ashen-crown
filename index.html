@@ -26,6 +26,13 @@
       <p id="alpha-tag">Closed Alpha — alles Ungewöhnliche gern auf GitHub melden.</p>
     </main>
     <div id="hub" hidden>
+      <div id="hub-hero">
+        <span id="hub-hero-name">Held · Lv <strong id="hub-hero-level">1</strong></span>
+        <div class="hp-bar hub-hp-bar">
+          <div id="hub-hero-hp" class="hp-fill hero-fill"></div>
+          <span id="hub-hero-hp-text">100 / 100</span>
+        </div>
+      </div>
       <button id="hub-menu" class="btn-small">Hauptmenü</button>
       <button id="hub-options" class="btn-small">Optionen</button>
       <div id="hub-hud">
@@ -213,6 +220,18 @@
           <label class="option-row">
             <span class="option-label">Offline-Zusammenfassung<span class="option-desc">Beim Start anzeigen, was offline passiert ist</span></span>
             <span class="toggle"><input type="checkbox" data-setting="offlineSummary" checked><span class="toggle-slider"></span></span>
+          </label>
+          <label class="option-row">
+            <span class="option-label">Auto-Tür<span class="option-desc">Nach einem besiegten Boss geht die Tür von allein weiter — der Eintritt heilt voll</span></span>
+            <span class="toggle"><input type="checkbox" data-setting="autoDoor" checked><span class="toggle-slider"></span></span>
+          </label>
+          <label class="option-row">
+            <span class="option-label">Auto-Verkauf<span class="option-desc">Schlechtere Beute wird beim Fund sofort in Asche umgetauscht — das Inventar bleibt für Funde</span></span>
+            <select class="option-select" data-choicesetting="autoSell">
+              <option value="aus">Aus — alles ins Inventar</option>
+              <option value="unter-selten">Alles unter Selten</option>
+              <option value="unter-episch">Alles unter Episch</option>
+            </select>
           </label>
           <div class="option-row">
             <span class="option-label">Spielstand exportieren<span class="option-desc">Fortschritt als JSON-Datei sichern</span></span>

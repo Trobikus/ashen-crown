@@ -4,7 +4,7 @@ import { state, settings, SAVE_KEY, SAVE_VERSION } from './state.js';
 
 import { loadSettings, saveSettings, applySettings } from './settings.js';
 
-import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, INVENTORY_CAP, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, DEATH_ASH_PENALTY, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, sanitizeItem, asCount, formatNum } from './data.js';
+import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, INVENTORY_CAP, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, RARITIES, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, DEATH_ASH_PENALTY, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, sanitizeItem, asCount, formatNum } from './data.js';
 
 import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier, heroLifeleech } from './stats.js';
 
@@ -57,6 +57,8 @@ let resetTimer = null;
 // True zwischen „Spielstand zurücksetzen" und dem Reload: in diesem Fenster
 // darf kein save() den alten Zustand zurück ins localStorage schreiben.
 let saveSuppressed = false;
+
+let lastPlayTick = null;
 
 let importArmed = false;
 
@@ -337,6 +339,28 @@ function killEnemy() {
       true,
     );
     sfx.unlock();
+    // Auto-Tür: Das Gate geht von allein weiter — Epitaph kurz lesen lassen,
+    // dann heilt der Eintritt ins nächste Gebiet und der Kampf läuft an.
+    if (settings.autoDoor) {
+      if (sceneTimer) {
+        clearTimeout(sceneTimer);
+        sceneTimer = null;
+      }
+      sceneTimer = setTimeout(() => {
+        sceneTimer = null;
+        hideOverlay();
+        overlayDismissible = false;
+        enterZone(state.zone + 1);
+        heroAttackProgress = 0;
+        enemyAttackProgress = 0;
+        heroHp = heroMaxHp();
+        spawnEnemy();
+      }, 2200);
+      enemy = null;
+      save();
+      render();
+      return;
+    }
   }
   enemy = null;
   save();
@@ -411,10 +435,17 @@ function die() {
   setLowHp(false);
   setBossFight(false);
   const toll = takeDeathToll();
+  state.deaths += 1;
   sfx.death();
-  showOverlay(toll > 0
+  // An einer unüberwundenen Boss-Wand erklärt der Tod den Weg zurück:
+  // Dieses Gebiet spawnt bis zur Befreiung nur noch den Boss — Farmen
+  // läuft über die Gebiete-Reise (erneutes Betreten setzt das Zählwerk).
+  const wallHint = enemy?.type === 'boss' && state.cleared <= state.zone
+    ? '<br><br>Wand erreicht: In diesem Gebiet wartet jetzt nur noch der Boss. Reise über die Gebiete zurück — erneutes Betreten setzt das Zählwerk zurück und stellt sichere Gegner zum Farmen. Komm stärker zurück.'
+    : '';
+  showOverlay((toll > 0
     ? `Die Asche nimmt dich zurück — und ihren Zoll: ${formatNum(toll)} Asche.`
-    : 'Die Asche nimmt dich zurück.');
+    : 'Die Asche nimmt dich zurück.') + wallHint, true);
   render();
   save();
   sceneTimer = setTimeout(() => {
@@ -456,9 +487,27 @@ function tick() {
   }
 }
 
+// Der Schrein atmet: Außerhalb des Felds kehrt die Lebenskraft zurück —
+// 2 % des Maximums pro Sekunde, ganz ohne Zutun.
+function hubTick() {
+  if (state.inField) return;
+  const max = heroMaxHp();
+  if (heroHp >= max) return;
+  heroHp = Math.min(max, heroHp + max * HUB_REGEN_PER_SECOND * (TICK_MS / 1000));
+  renderHubHero();
+}
+
+function renderHubHero() {
+  const max = heroMaxHp();
+  el.hubHeroLevel.textContent = state.level;
+  el.hubHeroHp.style.width = `${Math.max(0, Math.min(100, (heroHp / max) * 100))}%`;
+  el.hubHeroHpText.textContent = `${formatNum(Math.ceil(Math.max(0, heroHp)))} / ${formatNum(max)}`;
+}
+
 function render() {
   el.hubLevel.textContent = state.level;
   el.hubAsh.textContent = formatNum(state.ash);
+  renderHubHero();
   el.hudLevel.textContent = state.level;
   el.hudAsh.textContent = formatNum(state.ash);
   el.inventoryCount.textContent = `${state.inventory.length} / ${INVENTORY_CAP}`;
@@ -627,6 +676,8 @@ function migrateSave(data) {
       for (const key of ONBOARDING_HINT_KEYS) data.hints[key] = true;
     }
   }
+  // Spielstände vor 0.11.0 (v4): Keine Migration nötig — die Felder Basis,
+  // Ilvl und die Statistik-Zähler härtet prepareSave für Altbestand nach.
   // Künftige Migrationen hier anhängen (if (data.saveVersion === n) …).
   data.saveVersion = SAVE_VERSION;
   return data;
@@ -691,6 +742,12 @@ function prepareSave(data) {
   data.zone = Math.min(data.zone, data.cleared);
   data.crownWon = data.crownWon === true;
   data.inField = data.inField === true;
+  // Statistik-Zähler: Alte Spielstände starten bei null, kaputte Werte
+  // werden auf sichere Grenzen gezogen.
+  data.deaths = Math.max(0, asNumber(data.deaths, 0));
+  data.playtimeMs = Math.max(0, asNumber(data.playtimeMs, 0));
+  data.drops = data.drops && typeof data.drops === 'object' && !Array.isArray(data.drops) ? data.drops : {};
+  for (const rarity of RARITIES) data.drops[rarity.key] = Math.max(0, asNumber(data.drops[rarity.key], 0));
   data.seenContinents = Array.isArray(data.seenContinents)
     ? data.seenContinents.filter((key) => typeof key === 'string')
     : [];
@@ -884,13 +941,17 @@ function applyOfflineProgress() {
   const ashBefore = state.ash;
   const levelBefore = state.level;
   const killsBefore = state.kills;
+  const dropsBefore = totalDropCount();
   const result = simulateKills(capped / 1000);
   const ash = state.ash - ashBefore;
   const levels = state.level - levelBefore;
   const kills = state.kills - killsBefore;
+  const found = totalDropCount() - dropsBefore;
   const levelsPart = levels > 0 ? `, +${levels} ${levels === 1 ? 'Stufe' : 'Stufen'}` : '';
-  let summary = `Während du fort warst (${formatDuration(capped)}): ${kills} Kämpfe, +${formatNum(ash)} Asche${levelsPart}`;
+  const dropsPart = found > 0 ? `, ${found} ${found === 1 ? 'Beutestück gefunden' : 'Beutestücke gefunden'}` : '';
+  let summary = `Während du fort warst (${formatDuration(capped)}): ${kills} Kämpfe, +${formatNum(ash)} Asche${levelsPart}${dropsPart}`;
   if (result === 'died') {
+    state.deaths += 1;
     const toll = takeDeathToll();
     summary += ` — gefallen. Die Asche nahm ${formatNum(toll)} Asche.`;
   } else if (result === 'boss') {
@@ -904,7 +965,14 @@ function applyOfflineProgress() {
   }
 }
 
+const totalDropCount = () => Object.values(state.drops ?? {}).reduce((sum, n) => sum + (Number.isFinite(n) ? n : 0), 0);
+
 function idleTick() {
+  // Spielzeit: echte Wanduhr-Deltas, bei Kommastillstand (Throttling,
+  // Ruhezustand) auf eine Minute je Tick geklemmt.
+  const now = Date.now();
+  if (lastPlayTick !== null) state.playtimeMs += Math.min(60000, now - lastPlayTick);
+  lastPlayTick = now;
   save();
   render();
 }
@@ -987,7 +1055,8 @@ function returnToHub() {
     clearInterval(tickTimer);
     tickTimer = null;
   }
-  heroHp = heroMaxHp();
+  // Die Lebenskraft bleibt, wie das Feld sie hinterließ — der Schrein im
+  // Hub regeneriert sie stetig (hubTick). Der Abstieg heilt weiter voll.
   enemy = null;
   save();
   showScreen(el.hub);
@@ -1031,8 +1100,15 @@ function bindEvents() {
   });
   el.optionsPanel.addEventListener('change', (e) => {
     const input = e.target.closest('[data-setting]');
-    if (!input) return;
-    settings[input.dataset.setting] = input.checked;
+    if (input) {
+      settings[input.dataset.setting] = input.checked;
+      saveSettings();
+      applySettings();
+      return;
+    }
+    const select = e.target.closest('[data-choicesetting]');
+    if (!select) return;
+    settings[select.dataset.choicesetting] = select.value;
     saveSettings();
     applySettings();
   });
@@ -1161,6 +1237,7 @@ function ensureInit() {
     applyOfflineProgress();
   }
   setInterval(idleTick, STATS_SYNC_INTERVAL_MS);
+  setInterval(hubTick, TICK_MS);
 }
 
 export function startGame() {
