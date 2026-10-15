@@ -1197,6 +1197,9 @@ function bindEvents() {
   });
   el.tileCrafting.addEventListener('click', () => {
     showScreen(el.sceneCrafting);
+    // Sofort rendern — sonst bleiben die Slots leer, bis der 3-Sekunden-Tick
+    // die Szene das nächste Mal streift.
+    renderCrafting();
     hintOnce('hint-crafting', 'Die Werkstatt stärkt getragene Ausrüstung: Verstärken hebt die Werte, Umschmieden die Seltenheit. Beides kostet Asche.');
   });
   el.tileChronik.addEventListener('click', () => {

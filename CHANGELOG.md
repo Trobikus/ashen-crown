@@ -4,6 +4,13 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.12.1] — 2026-10-15
+
+### Behoben
+- **Werkstatt zeigt Slots sofort**: Beim Öffnen des Crafting-Menüs blieb die
+  Slot-Liste leer, bis der globale 3-Sekunden-Tick die Szene das nächste Mal
+  rendernte — die Szene wird jetzt direkt beim Öffnen gerendert.
+
 ## [0.12.0] — 2026-10-15
 
 ### Hinzugefügt
@@ -492,6 +499,7 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Desktop-Shell via Tauri 2, Vollbild-Start.
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
+[0.12.1]: https://github.com/Trobikus/ashen-crown/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/Trobikus/ashen-crown/compare/v0.11.2...v0.12.0
 [0.11.2]: https://github.com/Trobikus/ashen-crown/compare/v0.11.1...v0.11.2
 [0.11.1]: https://github.com/Trobikus/ashen-crown/compare/v0.11.0...v0.11.1

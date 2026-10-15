@@ -3,10 +3,16 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.12.0',
+  version: '0.12.1',
   date: '15.10.2026',
   headline: 'Loot nach Diablo-Handwerk — und eine Werkstatt, die den Endgame-Ascheberg frisst',
   sections: [
+    {
+      heading: '0.12.1 — Hotfix: Werkstatt ohne Wartezeit',
+      items: [
+        'Die Werkstatt zeigt ihre Slots jetzt sofort beim Öffnen statt bis zu 3 Sekunden später.',
+      ],
+    },
     {
       heading: '0.12.0 — Zahlwerk & Härtung',
       items: [
