@@ -687,6 +687,17 @@ function renderHubHero() {
   el.hubHeroLevel.textContent = state.level;
   setHpBar(el.hubHeroHp, el.hubHeroHpGhost, (heroHp / max) * 100);
   el.hubHeroHpText.textContent = `${formatNum(Math.ceil(Math.max(0, heroHp)))} / ${formatNum(max)}`;
+  // Schrein-Regeneration sichtbar machen: Der Balken schimmert, während er
+  // kehrt, und daneben zählt ein Timer die Sekunden bis zum vollen Leben.
+  const regenerating = !state.inField && heroHp < max;
+  el.hubHeroHpBar.classList.toggle('regen', regenerating);
+  if (regenerating) {
+    const seconds = Math.ceil((max - heroHp) / (max * HUB_REGEN_PER_SECOND));
+    el.hubHeroRegen.hidden = false;
+    el.hubHeroRegen.textContent = seconds === 1 ? 'voll in 1 s' : `voll in ${seconds} s`;
+  } else {
+    el.hubHeroRegen.hidden = true;
+  }
 }
 
 // Die Statistik-Seite: Spielzeit, Tode, Beute je Seltenheit — die Zähler

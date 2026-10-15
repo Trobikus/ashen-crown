@@ -9,6 +9,8 @@ function cacheDom() {
   el.hubHeroLevel = document.getElementById('hub-hero-level');
   el.hubHeroHp = document.getElementById('hub-hero-hp');
   el.hubHeroHpGhost = document.getElementById('hub-hero-hp-ghost');
+  el.hubHeroHpBar = document.getElementById('hub-hero-hp-bar');
+  el.hubHeroRegen = document.getElementById('hub-hero-regen');
   el.hubHeroHpText = document.getElementById('hub-hero-hp-text');
   el.hudLevel = document.getElementById('hud-level');
   el.hudAsh = document.getElementById('hud-ash');

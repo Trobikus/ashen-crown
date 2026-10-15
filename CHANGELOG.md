@@ -7,6 +7,11 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 ## [Unreleased]
 
 ### Hinzugefügt
+- **Schrein: Heldenporträt & Regenerations-Timer**: Oben links steht der Held
+  jetzt mit seinem Bild; die Lebenskraft-Leiste sitzt darunter. Solange das
+  Leben am Schrein kehrt, schimmert der Balken sanft grün und ein Timer
+  zählt die Sekunden bis zum vollen Leben („voll in 12 s") — die
+  Schrein-Restitution ist damit sichtbar statt abstrakt.
 - **Gegner-Sprites**: Statt namenloser Farb-Kästen kämpfen jetzt sieben
   handgesetzte SVG-Archetypen im Silhouetten-Stil (Diener, Bestie, Ritter,
   Kultist, Schatten, Koloss, Regent) — dunkle Gestalten mit glimmenden

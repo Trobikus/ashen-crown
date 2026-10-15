@@ -32,11 +32,13 @@
     <div id="hub" hidden>
       <div id="hub-hero">
         <span id="hub-hero-name">Held · Lv <strong id="hub-hero-level">1</strong></span>
-        <div class="hp-bar hub-hp-bar">
+        <div id="hub-hero-figure" aria-hidden="true"></div>
+        <div class="hp-bar hub-hp-bar" id="hub-hero-hp-bar">
           <div id="hub-hero-hp-ghost" class="hp-ghost"></div>
           <div id="hub-hero-hp" class="hp-fill hero-fill"></div>
           <span id="hub-hero-hp-text">100 / 100</span>
         </div>
+        <span id="hub-hero-regen" hidden></span>
       </div>
       <button id="hub-menu" class="btn-small">Hauptmenü</button>
       <button id="hub-options" class="btn-small">Optionen</button>

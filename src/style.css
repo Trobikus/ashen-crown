@@ -303,7 +303,8 @@ input[type='range'] {
   text-align: center;
 }
 
-/* Der Held oben links: Name, Stufe und die langsam kehrende Lebenskraft. */
+/* Der Held oben links: Porträt, Stufe und die langsam kehrende Lebenskraft —
+   der Balken sitzt unter dem Bild, damit das Kehren sichtbar bleibt. */
 #hub-hero {
   position: absolute;
   top: clamp(1rem, 2vw, 2.5rem);
@@ -326,6 +327,18 @@ input[type='range'] {
   color: #c9c2b8;
 }
 
+/* Das Porträt — dasselbe Bild wie in der Arena, am Schrein ausgeruht. */
+#hub-hero-figure {
+  align-self: center;
+  width: clamp(84px, 9vw, 118px);
+  height: clamp(118px, 13vw, 168px);
+  background-image: url('./assets/hero.png');
+  background-size: contain;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 14px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 4px rgba(0, 0, 0, 0.6));
+}
+
 .hub-hp-bar {
   position: relative;
   width: 100%;
@@ -335,6 +348,25 @@ input[type='range'] {
 
 #hub-hero-hp {
   transition: width 0.2s linear;
+}
+
+/* Regeneration: Solange die Lebenskraft kehrt, schimmert die Füllung sanft
+   grün — zusammen mit dem Timer darunter ist der Fortschritt ablesbar. */
+.hub-hp-bar.regen .hp-fill {
+  animation: hub-regen-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes hub-regen-shimmer {
+  0%, 100% { box-shadow: 0 0 6px rgba(127, 174, 122, 0.25); }
+  50% { box-shadow: 0 0 14px rgba(127, 174, 122, 0.6); }
+}
+
+#hub-hero-regen {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  font-style: italic;
+  color: #7fae7a;
+  text-align: center;
 }
 
 #hub-hero-hp-text {
