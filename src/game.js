@@ -1,6 +1,6 @@
 import { el, cacheDom } from './dom.js';
 
-import { state, settings, SAVE_KEY, SAVE_VERSION } from './state.js';
+import { state, settings, SAVE_KEY, SAVE_VERSION, inventoryCap, deathPenalty } from './state.js';
 
 import { loadSettings, saveSettings, applySettings } from './settings.js';
 
@@ -22,7 +22,7 @@ import { INTRO_PAGES, COMBAT_INTRO_PAGES, CONTINENT_LORE, epitaphOf, continentLo
 
 import { initItems, rollDrop, equipItem, unequipItem, sortInventory, equipBest, sellSelected, toggleSellMode, exitSellMode, sellButtonAction, selectAllForSale, handleInventoryClick, renderGearIfDirty, buildDepthRelic, grantItem, itemSellValue } from './items.js';
 
-import { ACHIEVEMENTS, evaluateAchievements } from './achievements.js';
+import { ACHIEVEMENTS, evaluateAchievements, ruhmAvailable, ruhmEarned, RUHM_SHOP, RUHM_RELIC_REROLL_COST } from './achievements.js';
 
 
 
@@ -443,9 +443,10 @@ function enemyAttack() {
   }
 }
 
-// Der Todeszoll: Die Asche einbehält einen Anteil der getragenen Asche.
+// Der Todeszoll: Die Asche einbehält einen Anteil der getragenen Asche —
+// der Zollerlass aus dem Ruhm-Laden senkt den Anteil (Boden 3 %).
 function takeDeathToll() {
-  const toll = Math.min(state.ash, Math.round(state.ash * DEATH_ASH_PENALTY));
+  const toll = Math.min(state.ash, Math.round(state.ash * deathPenalty()));
   state.ash -= toll;
   return toll;
 }
@@ -549,10 +550,59 @@ function renderStats() {
   }
 }
 
+// Der Ruhm-Laden: Beutelschein und Zollerlass, gestaffelt, permanent.
+function renderRuhmShop() {
+  el.ruhmShop.replaceChildren();
+  const head = document.createElement('h3');
+  head.textContent = 'Ruhm-Laden';
+  el.ruhmShop.appendChild(head);
+  const available = ruhmAvailable(state);
+  for (const [kind, def] of Object.entries(RUHM_SHOP)) {
+    const level = state.shopPurchases[kind] ?? 0;
+    const maxed = level >= def.levels.length;
+    const cost = maxed ? 0 : def.levels[level];
+    const row = document.createElement('div');
+    row.className = 'chronicle-entry';
+    const who = document.createElement('div');
+    who.className = 'chronicle-who';
+    who.textContent = `${def.name}${maxed ? ' — vollständig' : ` · Stufe ${level + 1}/${def.levels.length}`}`;
+    const text = document.createElement('div');
+    text.className = 'chronicle-text';
+    text.textContent = def.desc + (level > 0 ? ` (Aktuell: Stufe ${level})` : '');
+    const buy = document.createElement('button');
+    buy.className = 'btn-small';
+    buy.dataset.buy = kind;
+    if (maxed) {
+      buy.textContent = 'Ausgeschöpft';
+      buy.disabled = true;
+    } else {
+      buy.textContent = `Kaufen · ${cost} Ruhm`;
+      buy.disabled = available < cost;
+    }
+    row.append(who, text, buy);
+    el.ruhmShop.appendChild(row);
+  }
+}
+
+function buyRuhmUpgrade(kind) {
+  const def = RUHM_SHOP[kind];
+  const level = state.shopPurchases[kind] ?? 0;
+  if (!def || level >= def.levels.length) return;
+  const cost = def.levels[level];
+  if (ruhmAvailable(state) < cost) return;
+  state.ruhmAusgegeben += cost;
+  state.shopPurchases[kind] = level + 1;
+  toast(`${def.name} erworben — Stufe ${level + 1}.`, '#c1663a');
+  sfx.unlock();
+  save();
+  renderAchievements();
+  render();
+}
+
 // Das Bestiarium: 150 Kreaturen der fünf Kontinente plus die Namen der
 // Tiefen — erlegt zählt, unerlegt bleibt als „???" versiegelt.
 function renderBestiary() {
-  if (el.sceneBestiary.hidden) return;
+  if (!el.sceneBestiary || el.sceneBestiary.hidden) return;
   const killsOf = (name) => state.bestiary[name] ?? 0;
   const types = [['normal', 'Normal'], ['elite', 'Elite'], ['boss', 'Boss']];
   let known = 0;
@@ -596,11 +646,13 @@ function renderBestiary() {
 }
 
 // Errungenschaften: Gesperrte Einträge zeigen ihren Fortschritt, errungene
-// leuchten in Kronenfarbe.
+// leuchten in Kronenfarbe. Darunter der Ruhm-Laden — Ruhm entsteht nur
+// durch Errungenschaften und kauft permanente Erleichterungen.
 function renderAchievements() {
-  if (el.sceneAchievements.hidden) return;
+  if (!el.sceneAchievements || el.sceneAchievements.hidden) return;
   const earned = new Set(state.achievements);
-  el.achievementsSummary.textContent = `${earned.size} von ${ACHIEVEMENTS.length} errungen.`;
+  el.achievementsSummary.textContent = `${earned.size} von ${ACHIEVEMENTS.length} errungen · Ruhm: ${formatNum(ruhmAvailable(state))} verfügbar (${ruhmEarned(state)} verdient)`;
+  renderRuhmShop();
   el.achievementsList.replaceChildren();
   for (const achievement of ACHIEVEMENTS) {
     const done = earned.has(achievement.id);
@@ -631,7 +683,7 @@ function render() {
   renderHubHero();
   el.hudLevel.textContent = state.level;
   el.hudAsh.textContent = formatNum(state.ash);
-  el.inventoryCount.textContent = `${state.inventory.length} / ${INVENTORY_CAP}`;
+  el.inventoryCount.textContent = `${state.inventory.length} / ${inventoryCap()}`;
   el.statPointsRow.hidden = state.statPoints === 0;
   el.statPointsValue.textContent = state.statPoints;
   const hasPoints = state.statPoints > 0;
@@ -698,6 +750,8 @@ function render() {
   }
   renderGearIfDirty();
   renderStats();
+  renderBestiary();
+  renderAchievements();
 }
 
 // Errungenschaften prüfen: Im 3-Sekunden-Tick reicht — neu Errungenes wird
@@ -897,6 +951,11 @@ function prepareSave(data) {
   data.achievements = Array.isArray(data.achievements)
     ? data.achievements.filter((id) => typeof id === 'string' && id.length <= 40)
     : [];
+  // Ruhm-Laden: ausgegebener Ruhm und Kaufläufe geklemmt.
+  data.ruhmAusgegeben = Math.max(0, asNumber(data.ruhmAusgegeben, 0));
+  data.shopPurchases = data.shopPurchases && typeof data.shopPurchases === 'object' && !Array.isArray(data.shopPurchases) ? data.shopPurchases : {};
+  data.shopPurchases.beutelschein = Math.min(3, asNumber(data.shopPurchases.beutelschein, 0));
+  data.shopPurchases.zollerlass = Math.min(4, asNumber(data.shopPurchases.zollerlass, 0));
   data.seenContinents = Array.isArray(data.seenContinents)
     ? data.seenContinents.filter((key) => typeof key === 'string')
     : [];
@@ -1342,6 +1401,11 @@ function bindEvents() {
   el.tileAchievements.addEventListener('click', () => {
     showScreen(el.sceneAchievements);
     renderAchievements();
+  });
+  el.ruhmShop.addEventListener('click', (e) => {
+    const buy = e.target.closest('[data-buy]');
+    if (!buy || buy.disabled) return;
+    buyRuhmUpgrade(buy.dataset.buy);
   });
   bindCraftEvents(hooks);
   el.zoneList.addEventListener('click', (e) => {

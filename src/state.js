@@ -1,10 +1,10 @@
-import { GEAR_SLOTS } from './data.js';
+import { GEAR_SLOTS, INVENTORY_CAP, DEATH_ASH_PENALTY } from './data.js';
 
 const SAVE_KEY = 'ashen-crown-save';
 
 const SETTINGS_KEY = 'ashen-crown-settings';
 
-const SAVE_VERSION = 6;
+const SAVE_VERSION = 7;
 
 const DEFAULT_SETTINGS = {
   damageNumbers: true,
@@ -55,6 +55,18 @@ const state = {
   drops: { gewoehnlich: 0, magisch: 0, selten: 0, episch: 0, legendär: 0 },
   bestiary: {},
   achievements: [],
+  ruhmAusgegeben: 0,
+  shopPurchases: { beutelschein: 0, zollerlass: 0 },
 };
 
-export { SAVE_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, SAVE_VERSION, settings, state };
+// Ruhm-Käufe wirken direkt auf die Systemregeln: Der Beutelschein erweitert
+// das Inventar, der Zollerlass senkt den Todeszoll (Boden bei 3 %).
+function inventoryCap() {
+  return INVENTORY_CAP + 8 * (state.shopPurchases.beutelschein ?? 0);
+}
+
+function deathPenalty() {
+  return Math.max(0.03, DEATH_ASH_PENALTY - 0.03 * (state.shopPurchases.zollerlass ?? 0));
+}
+
+export { SAVE_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, SAVE_VERSION, settings, state, inventoryCap, deathPenalty };

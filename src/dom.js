@@ -54,6 +54,7 @@ function cacheDom() {
   el.tileAchievements = document.getElementById('tile-achievements');
   el.achievementsSummary = document.getElementById('achievements-summary');
   el.achievementsList = document.getElementById('achievements-list');
+  el.ruhmShop = document.getElementById('ruhm-shop');
   el.statsPlaytime = document.getElementById('stats-playtime');
   el.statsKills = document.getElementById('stats-kills');
   el.statsDeaths = document.getElementById('stats-deaths');

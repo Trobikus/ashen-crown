@@ -4,6 +4,25 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unreleased]
+
+### Hinzugefügt
+- **Ruhm — die Errungenschaften-Währung**: Jede Errungenschaft trägt 1–4
+  Ruhm (nach Schwierigkeit, bis zu 43 gesamt). Ruhm wird nicht separat
+  gespeichert, sondern aus den errungenen IDs abgeleitet — Ausgaben zählt
+  `ruhmAusgegeben`. Alte Spielstände sind damit rückwirkend versorgt.
+- **Ruhm-Laden** in der Errungenschaften-Szene: **Beutelschein** (+8
+  Inventarplätze pro Stufe, 3 Stufen, 3/6/9 Ruhm) und **Zollerlass**
+  (Todeszoll −3 % pro Stufe, 4 Stufen, 2/4/6/8 Ruhm — Boden bei 3 %).
+  Beides permanent; Inventar-Anzeige und Todeszoll folgen den Käufen.
+- **Tiefen-Meisterschaft neu schmieden** (Werkstatt, bei Tiefenrelikten):
+  Die zweite Meisterschaft eines Relikts lässt sich für **2 Ruhm** neu
+  würfeln — günstig und unbegrenzt, die Endgame-Jagd der Ruhm-Währung.
+
+### Geändert
+- Inventar-Obergrenze und Todeszoll sind keine Konstanten mehr, sondern
+  folgen den Ruhm-Käufen (`inventoryCap()` / `deathPenalty()`).
+
 ## [0.13.0] — 2026-10-15
 
 ### Hinzugefügt
@@ -520,6 +539,7 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Desktop-Shell via Tauri 2, Vollbild-Start.
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
+[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.13.0...HEAD
 [0.13.0]: https://github.com/Trobikus/ashen-crown/compare/v0.12.1...v0.13.0
 [0.12.1]: https://github.com/Trobikus/ashen-crown/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/Trobikus/ashen-crown/compare/v0.11.2...v0.12.0

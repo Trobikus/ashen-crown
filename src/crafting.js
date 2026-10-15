@@ -2,6 +2,8 @@ import { GEAR_SLOTS, RARITIES, LAST_ZONE_INDEX, SKILL_EFFECT_LABELS, gearSlotOf,
 
 import { state } from './state.js';
 
+import { ruhmAvailable, RUHM_RELIC_REROLL_COST } from './achievements.js';
+
 import { el } from './dom.js';
 
 
@@ -74,6 +76,21 @@ function craftRerollMastery(slotKey, hooks) {
   state.ash -= cost;
   item.mastery = rollMastery(gearSlotOf(slotKey).stat);
   disarmMastery();
+  hooks.after();
+}
+
+// Tiefen-Meisterschaft neu schmieden: kostet Ruhm statt Asche — günstig und
+// ohne Bestätigung, weil beliebig wiederholbar. Die Jagd nach dem perfekten
+// zweiten Wurf ist das Endgame-Ziel der Ruhm-Währung.
+function craftRerollRelicMastery(slotKey, hooks) {
+  const item = state.equipment[slotKey];
+  if (!item?.mastery2) return;
+  if (ruhmAvailable(state) < RUHM_RELIC_REROLL_COST) {
+    renderCrafting();
+    return;
+  }
+  state.ruhmAusgegeben += RUHM_RELIC_REROLL_COST;
+  item.mastery2 = rollMastery(gearSlotOf(slotKey).stat);
   hooks.after();
 }
 
@@ -156,6 +173,13 @@ function renderCraftDetail() {
       <button class="btn-small ${masteryArmed ? 'armed' : ''}" data-craft="mastery" ${state.ash < mCost ? 'disabled' : ''}>${masteryArmed ? 'Wirklich? Neu würfeln.' : `Neu schmieden · ${formatNum(mCost)} Asche`}</button>
     </div>`
     : '';
+  const relicMasteryAction = item.mastery2
+    ? `
+    <div class="craft-action">
+      <div class="craft-action-head">Tiefen-Meisterschaft neu schmieden<span>Würfelt die zweite Meisterschaft neu · kostet Ruhm statt Asche</span></div>
+      <button class="btn-small" data-craft="relicmastery" ${ruhmAvailable(state) < RUHM_RELIC_REROLL_COST ? 'disabled' : ''}>Neu schmieden · ${RUHM_RELIC_REROLL_COST} Ruhm</button>
+    </div>`
+    : '';
   el.craftDetail.innerHTML = `
     <div class="craft-item">
       <div class="tt-name" style="color:${rarity.color}">${item.name}${item.enhance ? ` +${item.enhance}` : ''}</div>
@@ -175,7 +199,8 @@ function renderCraftDetail() {
         ? `<button class="btn-small" data-craft="reforge" ${state.ash < rCost ? 'disabled' : ''}>Umschmieden · ${formatNum(rCost)} Asche</button>`
         : '<span class="craft-hint">Maximale Seltenheit erreicht.</span>'}
     </div>
-    ${masteryAction}`;
+    ${masteryAction}
+    ${relicMasteryAction}`;
 }
 
 export function bindCraftEvents(hooks) {
@@ -203,6 +228,8 @@ export function bindCraftEvents(hooks) {
     if (btn.dataset.craft === 'enhance') craftEnhance(selectedCraftSlot, hooks);
 
     else if (btn.dataset.craft === 'reforge') craftReforge(selectedCraftSlot, hooks);
+
+    else if (btn.dataset.craft === 'relicmastery') craftRerollRelicMastery(selectedCraftSlot, hooks);
 
     else if (btn.dataset.craft === 'mastery') {
       // Doppelklick-Bestätigung: Erster Klick bewaffnet, vier Sekunden später

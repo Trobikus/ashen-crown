@@ -4,9 +4,9 @@ import helmIcon from './assets/icons/helm.svg';
 import hoseIcon from './assets/icons/hose.svg';
 import schuheIcon from './assets/icons/schuhe.svg';
 import handIcon from './assets/icons/hand.svg';
-import { INVENTORY_CAP, GEAR_SLOTS, RARITIES, DROP_CHANCES, LIFELEECH_PCT_BY_RARITY, zoneDef, gearSlotOf, rarityOf, rollRarity, pickBase, rollItemValues, itemStats, itemStatsText, itemStatRanges, itemIlvl, itemScore, rollMastery, rollRangesVisible, setRollRanges, SKILL_EFFECT_LABELS, formatNum } from './data.js';
+import { GEAR_SLOTS, RARITIES, DROP_CHANCES, LIFELEECH_PCT_BY_RARITY, zoneDef, gearSlotOf, rarityOf, rollRarity, pickBase, rollItemValues, itemStats, itemStatsText, itemStatRanges, itemIlvl, itemScore, rollMastery, rollRangesVisible, setRollRanges, SKILL_EFFECT_LABELS, formatNum } from './data.js';
 
-import { state, settings } from './state.js';
+import { state, settings, inventoryCap } from './state.js';
 
 import { el } from './dom.js';
 
@@ -167,7 +167,7 @@ function rollDrop(enemyType) {
   const item = generateItem();
   state.drops[item.rarity] = (state.drops[item.rarity] ?? 0) + 1;
   const autoSold = RARITIES.findIndex((rarity) => rarity.key === item.rarity) < autoSellThreshold();
-  if (autoSold || state.inventory.length >= INVENTORY_CAP) {
+  if (autoSold || state.inventory.length >= inventoryCap()) {
     // Volles Inventar ist kein Verlust: Die Beute wird sofort zum
     // Verkaufspreis in Asche umgetauscht — statt sich zu verflüchtigen.
     const ash = itemSellValue(item);
@@ -211,7 +211,7 @@ function equipItem(id) {
 function unequipItem(slotKey) {
   const item = state.equipment[slotKey];
   if (!item) return;
-  if (state.inventory.length >= INVENTORY_CAP) {
+  if (state.inventory.length >= inventoryCap()) {
     toast('Inventar voll — erst Platz schaffen.');
     return;
   }
