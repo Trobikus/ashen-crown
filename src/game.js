@@ -4,7 +4,7 @@ import { state, settings, SAVE_KEY, SAVE_VERSION, inventoryCap, deathPenalty } f
 
 import { loadSettings, saveSettings, applySettings } from './settings.js';
 
-import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, INVENTORY_CAP, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, RARITIES, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, DEATH_ASH_PENALTY, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, sanitizeItem, asCount, formatNum, ZONE_ENEMIES, ZONES, DEPTH_ENEMY_NAMES, CONTINENTS } from './data.js';
+import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_CAP_MS, OFFLINE_MIN_GAP_MS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, RARITIES, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, DEATH_ASH_PENALTY, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, sanitizeItem, asCount, formatNum, ZONE_ENEMIES, ZONES, DEPTH_ENEMY_NAMES, CONTINENTS } from './data.js';
 
 import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier, heroLifeleech } from './stats.js';
 
@@ -346,7 +346,7 @@ function killEnemy() {
     let relicLine = '';
     if (state.zone >= MAIN_ZONE_COUNT && firstClear) {
       const relic = buildDepthRelic(zoneDef(state.zone).ilvl);
-      if (state.inventory.length < INVENTORY_CAP) {
+      if (state.inventory.length < inventoryCap()) {
         grantItem(relic);
         toast(`Tiefenrelikt erbeutet: ${relic.name}`, '#c1663a');
         relicLine = `<br><br>Tiefenrelikt erbeutet: <strong>${relic.name}</strong> — Legendär mit zwei Meisterschaften und gesicherter Lifeleech.`;
@@ -1134,12 +1134,17 @@ function simulateKills(seconds) {
     // Erwartungswert: ENEMY_MISS_CHANCE der Gegner-Schläge geht daneben.
     const expectedTaken = swings * taken * (1 - ENEMY_MISS_CHANCE);
     if (expectedTaken - healed >= heroHp) return 'died';
+    // Safedrop: Der erste Elite-Kill eines Gebiets garantiert auch offline.
+    const eliteSafedrop = isElite && !state.safedropZones[state.zone];
+    if (eliteSafedrop) state.safedropZones[state.zone] = 1;
     heroHp = Math.min(heroMaxHp(), heroHp - expectedTaken + healed);
     state.kills += 1;
     state.zoneKills += 1;
+    // Bestiarium: Offline-Erlegtes zählt wie im Feld unter dem Kreaturnamen.
+    state.bestiary[def.name] = (state.bestiary[def.name] ?? 0) + 1;
     state.ash += Math.round(def.ash * (1 + statBonus('ash') / 100));
     gainXp(Math.round(def.xp * enemyXpMultiplier(def.level, state.level)));
-    rollDrop(isElite ? 'elite' : 'normal');
+    rollDrop(isElite ? 'elite' : 'normal', eliteSafedrop);
   }
   return 'time';
 }

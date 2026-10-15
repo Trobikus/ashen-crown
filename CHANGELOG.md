@@ -4,6 +4,19 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unreleased]
+
+### Behoben
+- **Tiefenrelikt ehrt den Beutelschein**: Der Inventar-Check beim Relikt-Fund
+  nutzte die Grundgrenze (40) statt der echten Obergrenze — mit Beutelschein
+  wurde ein Relikt trotz freiem Platz zu Asche. Jetzt zählt `inventoryCap()`.
+- **Offline-Fortschritt zahlt Elite-Safedrops**: Der erste Elite-Kill eines
+  Gebiets garantiert offline wie online ein Stück — die Offline-Simulation
+  pflegt das Safedrop-Register jetzt mit und übergibt den Garantiewurf.
+- **Offline-Kills zählen ins Bestiarium**: Die Offline-Simulation buchte ihre
+  Erlegungen nur auf die Gesamtsumme — jetzt landen sie wie im Feld unter dem
+  Kreaturnamen.
+
 ## [0.14.0] — 2026-10-15
 
 ### Hinzugefügt
@@ -572,7 +585,7 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Desktop-Shell via Tauri 2, Vollbild-Start.
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
-[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.14.0...HEAD
 [0.14.0]: https://github.com/Trobikus/ashen-crown/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/Trobikus/ashen-crown/compare/v0.12.1...v0.13.0
 [0.12.1]: https://github.com/Trobikus/ashen-crown/compare/v0.12.0...v0.12.1
