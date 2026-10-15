@@ -14,7 +14,7 @@
 
   *Web & Desktop — ohne Framework, ohne Server, mit Speicherstand im Browser.*
 
-  **🧪 Aktuell: Closed Alpha (v0.11.0)** — Installer über die
+  **🧪 Aktuell: Closed Alpha (v0.15.0)** — Installer über die
   [Releases](releases), Updates installieren sich im Spiel von selbst.
 </div>
 
@@ -131,7 +131,7 @@ Gebiete — je tiefer die Ebene, desto besser Beute und Werkstatt.
 
 ## 🧪 Closed Alpha
 
-Ashen Crown befindet sich im geschlossenen Alpha-Stadium (aktuell **v0.11.0**):
+Ashen Crown befindet sich im geschlossenen Alpha-Stadium (aktuell **v0.15.0**):
 
 - **Mitmachen:** Installer aus den [Releases](releases) laden und installieren —
   das Spiel aktualisiert sich danach bei neuen Versionen von selbst. Ohne

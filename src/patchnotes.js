@@ -3,10 +3,22 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.14.0',
+  version: '0.15.0',
   date: '15.10.2026',
-  headline: 'Loot nach Diablo-Handwerk — und eine Werkstatt, die den Endgame-Ascheberg frisst',
+  headline: 'Ruhm wird zur Wirtschaft — und der Schrein atmet jetzt wirklich',
   sections: [
+    {
+      heading: '0.15.0 — Pfad-Bindung, Schrein-Regen & die Ruhm-Wirtschaft',
+      items: [
+        'Pfad-Bindung: Maximal zwei Fertigkeiten-Farben gleichzeitig — die übrigen versiegeln sich, Respec öffnet sie wieder.',
+        'Die Schrein-Regeneration zählt: Wer aufbricht, nimmt seine Lebenskraft mit; nach dem Tod erwachst du mit einem Viertel.',
+        'Ruhm wächst weiter: 9 neue Errungenschaften (+37 Ruhm) und 3 neue Käufe — Aschesegen, Tiefenkunde, Werkstatthandwerk.',
+        'Statpunkte neu verteilen: In der Held-Szene lassen sich alle Statpunkte erstatten (Doppelklick bestätigt).',
+        'Offline an der Boss-Wand? Der simulierte Held weicht aufs beste errungene Gebiet aus und farmt die Nacht weiter.',
+        'Gegner-Inspektor (Hover) und Todesrückblick: Du weißt endlich, warum du gestorben bist.',
+        'Fixes: Tiefenrelikt ehrt den Beutelschein, Offline zahlt Safedrops und Bestiarium, Klick aufs Boss-Gate geht sofort weiter.',
+      ],
+    },
     {
       heading: '0.14.0 — Ruhm, Safedrops & das Level-System',
       items: [
