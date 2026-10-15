@@ -40,6 +40,31 @@ document.getElementById('btn-quit').addEventListener('click', () => {
 initUpdater();
 initPatchNotes();
 
+// Glutfunken im Hauptmenü: Ein Dutzend aufsteigender Embers, Bewegung und
+// Flackern macht ausschließlich CSS (gleiche Keyframes wie die Arena).
+function spawnMenuEmbers() {
+  const holder = document.getElementById('menu-embers');
+  if (!holder) return;
+  for (let i = 0; i < 14; i += 1) {
+    const p = document.createElement('span');
+    p.className = 'arena-particle';
+    const size = 2 + Math.random() * 3;
+    p.style.left = `${(Math.random() * 100).toFixed(1)}%`;
+    p.style.top = `${(35 + Math.random() * 65).toFixed(1)}%`;
+    p.style.width = `${size.toFixed(1)}px`;
+    p.style.height = `${(size * (0.6 + Math.random() * 0.8)).toFixed(1)}px`;
+    p.style.setProperty('--p-color', Math.random() < 0.8 ? '#d98f4a' : '#d9a03f');
+    p.style.setProperty('--p-anim', 'particle-rise');
+    p.style.setProperty('--p-dur', `${(7 + Math.random() * 8).toFixed(1)}s`);
+    p.style.setProperty('--p-delay', `${(-Math.random() * 14).toFixed(1)}s`);
+    p.style.setProperty('--p-drift', `${(Math.random() * 8 - 4).toFixed(1)}vw`);
+    p.style.setProperty('--p-alpha', 0.65);
+    holder.appendChild(p);
+  }
+}
+
+spawnMenuEmbers();
+
 async function showVersion() {
   const el = document.getElementById('version-tag');
   let version = null;

@@ -4,6 +4,35 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unreleased]
+
+### Hinzugefügt
+- **Gegner-Sprites**: Statt namenloser Farb-Kästen kämpfen jetzt sieben
+  handgesetzte SVG-Archetypen im Silhouetten-Stil (Diener, Bestie, Ritter,
+  Kultist, Schatten, Koloss, Regent) — dunkle Gestalten mit glimmenden
+  Augen in der Kontinent-Farbe. Der Archetyp folgt deterministisch dem
+  Namen (Bestiarium-Konsistenz), Bosse tragen die goldene Krone, Eliten
+  einen goldenen Randschimmer, Wut lässt die Augen aufflammen. Das
+  Bestiarium zeigt dieselben Porträts je Kreatur — unerlegt als Umriss.
+- **Arena-Bühne**: Geschichteter Hintergrund aus Rückwand, Horizont,
+  Bodenfläche und Glühen hinter den Kämpfern, je Kontinent gefärbt;
+  Bodenschatten lassen Held und Gegner auf der Bühne stehen statt zu
+  schweben, dazu dezenter Tiefennebel am unteren Rand.
+- **Treffer-Effekte**: Funken-Burst am Einschlag (Krit golden, mit Ring),
+  Hieb-Bogen auf der Schwungbahn und HP-Leisten mit hellem Geist-Nachlauf,
+  der nach Treffern verzögert nachläuft. Gekoppelt an die bestehende
+  Option „Treffer-Effekte" (ehemals „Treffer-Aufblitzen").
+- **Hauptmenü**: Kronen-Emblem über einem metallisch verlaufenden Titel,
+  aufsteigende Glutfunken im Hintergrund.
+- **Szenen-Übergänge**: Jeder Szenenwechsel blendet kurz auf statt hart zu
+  schalten; Stufenaufstieg lässt den Helden kronengolden aufglimmen.
+- **UI-Schliff**: Knöpfe und Schrein-Kacheln mit sanften Hover-Glows in
+  Kronenfarbe, sichtbare Fokus-Rahmen für Tastatursteuerung.
+
+### Behoben
+- Bewegungsreduktion deckt jetzt alle neuen Effekte ab (Szenen-Übergang,
+  Funken, Hieb-Bogen, Schweben und Zittern der Sprites).
+
 ## [0.15.1] — 2026-10-15
 
 ### Hinzugefügt

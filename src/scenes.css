@@ -47,6 +47,30 @@
   border-bottom: 1px solid #1d1a15;
 }
 
+/* Bestiarium-Zeile: Porträt links (derselbe Sprite wie in der Arena),
+   Textkörper rechts. Unerlegte Kreaturen bleiben dunkle Umrisse. */
+.chronicle-entry-bestiary {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.chronicle-entry-body {
+  flex: 1;
+}
+
+.bestiary-icon {
+  flex: none;
+  width: 34px;
+  height: 46px;
+  align-self: flex-end;
+}
+
+.entry-locked .bestiary-icon {
+  opacity: 0.3;
+  filter: brightness(0.5) grayscale(0.7);
+}
+
 .chronicle-who {
   font-size: 0.72rem;
   letter-spacing: 0.15em;

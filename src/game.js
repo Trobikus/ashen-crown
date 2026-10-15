@@ -26,6 +26,8 @@ import { ACHIEVEMENTS, evaluateAchievements, ruhmAvailable, ruhmEarned, RUHM_SHO
 
 import { LEGACY_TITLES, kronenascheAvailable, kronenascheEarnedOf, kronenascheReward, legacyLevel } from './prestige.js';
 
+import { spriteSvgFor } from './sprites.js';
+
 
 
 let heroHp = state.maxHp;
@@ -112,6 +114,9 @@ function refreshArenaParticles() {
   const key = continentKeyOf(state.zone);
   if (key === particleContinent) return;
   particleContinent = key;
+  // Dieselbe Kontinent-Klasse färbt Bühne (Wand, Boden, Glühen) und Partikel.
+  el.arena.classList.remove(...CONTINENT_FIGURE_CLASSES);
+  el.arena.classList.add(`cont-${key}`);
   const cfg = ARENA_PARTICLES[key] ?? ARENA_PARTICLES.aschenlande;
   el.arenaParticles.replaceChildren();
   for (let i = 0; i < cfg.count; i += 1) {
@@ -160,6 +165,49 @@ function spawnMissFloat(fighter) {
   span.style.left = `${30 + Math.random() * 40}%`;
   fighter.appendChild(span);
   setTimeout(() => span.remove(), 900);
+}
+
+// Hieb-Bogen: Ein heller Bogen schwingt in Angriffsrichtung — der Schlag
+// bekommt eine sichtbare Bahn, nicht nur den Lunge-Schwung des Körpers.
+function spawnSlash(fighter, direction) {
+  if (!settings.hitFlash) return;
+  const span = document.createElement('span');
+  span.className = 'slash';
+  span.style.setProperty('--slash-rot', `${direction * 38}deg`);
+  span.style.setProperty('--slash-sweep', `${direction * 64}deg`);
+  fighter.appendChild(span);
+  setTimeout(() => span.remove(), 240);
+}
+
+// Funken-Burst am Trefferpunkt: kurze Partikel-Explosion aus Asche und
+// Glut; der Krit setzt einen goldenen Ring darüber. Gekoppelt an die
+// bestehende Treffer-Effekt-Option (Aufblitzen), kein neuer Schalter.
+function spawnImpact(fighter, kind = 'hit') {
+  if (!settings.hitFlash) return;
+  const burst = document.createElement('span');
+  burst.className = `impact impact-${kind}`;
+  burst.style.left = `${36 + Math.random() * 26}%`;
+  burst.style.top = `${30 + Math.random() * 22}%`;
+  const count = kind === 'crit' ? 12 : 7;
+  for (let i = 0; i < count; i += 1) {
+    const spark = document.createElement('i');
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 16 + Math.random() * (kind === 'crit' ? 40 : 26);
+    spark.style.setProperty('--spark-dx', `${Math.cos(angle) * dist}px`);
+    spark.style.setProperty('--spark-dy', `${Math.sin(angle) * dist - 8}px`);
+    spark.style.setProperty('--spark-delay', `${(Math.random() * 60).toFixed(0)}ms`);
+    burst.appendChild(spark);
+  }
+  fighter.appendChild(burst);
+  if (kind === 'crit') {
+    const ring = document.createElement('span');
+    ring.className = 'crit-ring';
+    ring.style.left = burst.style.left;
+    ring.style.top = burst.style.top;
+    fighter.appendChild(ring);
+    setTimeout(() => ring.remove(), 450);
+  }
+  setTimeout(() => burst.remove(), 560);
 }
 
 function showOverlay(text, html = false) {
@@ -241,15 +289,22 @@ function showScreen(target) {
   for (const screen of [el.menu, el.hub, el.sceneHero, el.sceneSkills, el.sceneOptions, el.sceneMap, el.sceneCrafting, el.sceneStats, el.sceneBestiary, el.sceneAchievements, el.sceneThrone, el.sceneChronik, el.sceneVictory, el.game]) {
     screen.hidden = screen !== target;
   }
+  // Sanfter Einstieg statt harter Schaltung — ein kurzes Aufblenden pro
+  // Szenenwechsel (pulseClass erzwingt per Reflow den Neustart der Animation).
+  pulseClass(target, 'scene-enter', 450);
 }
 
 const CONTINENT_FIGURE_CLASSES = ['cont-aschenlande', 'cont-frostreich', 'cont-faulmoor', 'cont-blutmark', 'cont-sternenleere', 'cont-tiefen'];
 
-function setEnemyFigure(zoneIndex, isBoss) {
+function setEnemyFigure(zoneIndex, name, enemyType) {
   for (const cls of CONTINENT_FIGURE_CLASSES) el.enemyFigure.classList.remove(cls);
   el.enemyFigure.classList.remove('enraged');
   el.enemyFigure.classList.add(`cont-${continentKeyOf(zoneIndex)}`);
-  el.enemyFigure.classList.toggle('boss', isBoss);
+  el.enemyFigure.classList.toggle('boss', enemyType === 'boss');
+  el.enemyFigure.classList.toggle('elite', enemyType === 'elite');
+  // Der Sprite folgt dem Namen (Bestiarium-Konsistenz) und der Type gibt
+  // Bossen die Krone — dieselbe Kreatur sieht überall gleich aus.
+  el.enemyFigure.innerHTML = spriteSvgFor(name, enemyType === 'boss');
 }
 
 function spawnEnemy() {
@@ -262,7 +317,7 @@ function spawnEnemy() {
   }
   const def = scaledEnemy(type);
   enemy = { type, name: def.name, level: def.level, hp: def.hp, maxHp: def.hp, damage: def.damage, attackIntervalMs: def.attackIntervalMs, enraged: false, profileLabel: def.profileLabel, hitsOnHero: 0, damageToHero: 0 };
-  setEnemyFigure(state.zone, def.boss);
+  setEnemyFigure(state.zone, def.name, type);
   el.enemyFigure.classList.remove('dying');
   pulseClass(el.enemyFigure, 'spawn', 600);
   refreshArenaParticles();
@@ -292,6 +347,7 @@ function gainXp(amount) {
     heroHp = heroMaxHp();
     sfx.levelUp();
     levelUpFloat(state.level);
+    pulseClass(el.heroFigure, 'level-flash', 750);
   }
 }
 
@@ -472,6 +528,7 @@ function killEnemy() {
 function heroAttack() {
   // Der Schwung passiert immer — auch ein Fehlschlag war ein Angriff.
   pulseClass(el.heroFigure, 'lunge');
+  spawnSlash(el.heroFighter, 1);
   // Auch der Held verfehlt manchmal — harte Gegner bleiben harte Gegner.
   if (Math.random() < HERO_MISS_CHANCE) {
     spawnMissFloat(el.enemyFighter);
@@ -491,6 +548,7 @@ function heroAttack() {
   enemy.hp -= damage;
   applyLifeleech(damage);
   flash(el.heroFigure);
+  spawnImpact(el.enemyFighter, isCrit ? 'crit' : 'hit');
   spawnDamageFloat(el.enemyFighter, damage, isCrit);
   if (enemy.hp <= 0) {
     killEnemy();
@@ -502,6 +560,7 @@ function heroAttack() {
 function enemyAttack() {
   // Der Schwung passiert immer — auch ein Fehlschlag war ein Angriff.
   pulseClass(el.enemyFigure, 'lunge');
+  spawnSlash(el.enemyFighter, -1);
   if (enemy.type === 'boss' && settings.screenshake) pulseClass(el.arena, 'shake-strong');
   // Nicht jeder Gegner-Schlag trifft — Fehlschläge entlasten den Helden.
   if (Math.random() < ENEMY_MISS_CHANCE) {
@@ -517,6 +576,7 @@ function enemyAttack() {
   enemy.damageToHero += taken;
   flash(el.enemyFigure);
   pulseClass(el.heroFigure, 'recoil');
+  spawnImpact(el.heroFighter, 'wound');
   spawnDamageFloat(el.heroFighter, taken);
   if (heroHp <= 0) {
     die();
@@ -609,10 +669,23 @@ function hubTick() {
   renderHubHero();
 }
 
+// HP-Leiste mit Geist-Nachlauf: Die helle Schicht hält kurz die alte Höhe,
+// während die Füllung schon fällt — jeder Treffer ist ablesbar, statt in
+// der Breite zu verschwinden. Bei Heilung springt der Geist ohne Verzögerung.
+function setHpBar(fill, ghost, pct) {
+  const clamped = Math.max(0, Math.min(100, pct));
+  if (ghost) {
+    const previous = parseFloat(fill.style.width);
+    ghost.classList.toggle('healing', !(previous <= clamped));
+    ghost.style.width = `${clamped}%`;
+  }
+  fill.style.width = `${clamped}%`;
+}
+
 function renderHubHero() {
   const max = heroMaxHp();
   el.hubHeroLevel.textContent = state.level;
-  el.hubHeroHp.style.width = `${Math.max(0, Math.min(100, (heroHp / max) * 100))}%`;
+  setHpBar(el.hubHeroHp, el.hubHeroHpGhost, (heroHp / max) * 100);
   el.hubHeroHpText.textContent = `${formatNum(Math.ceil(Math.max(0, heroHp)))} / ${formatNum(max)}`;
 }
 
@@ -811,11 +884,18 @@ function renderBestiary() {
   let known = 0;
   el.bestiarySummary.textContent = 'Erlege Kreaturen, um ihre Einträge zu entschleiern.';
   el.bestiaryList.replaceChildren();
-  const entry = (name, kind, zoneName) => {
+  const entry = (name, kind, zoneName, continentKey) => {
     const kills = killsOf(name);
     if (kills > 0) known += 1;
     const row = document.createElement('div');
-    row.className = 'chronicle-entry' + (kills > 0 ? '' : ' entry-locked');
+    row.className = 'chronicle-entry chronicle-entry-bestiary' + (kills > 0 ? '' : ' entry-locked');
+    // Jede Kreatur trägt ihr Porträt — derselbe Sprite wie in der Arena,
+    // ungelegt als dunkle Silhouette, wenn sie noch nie erlegt wurde.
+    const icon = document.createElement('span');
+    icon.className = `bestiary-icon cont-${continentKey}`;
+    icon.innerHTML = spriteSvgFor(name, kind === 'boss');
+    const body = document.createElement('div');
+    body.className = 'chronicle-entry-body';
     const who = document.createElement('div');
     who.className = 'chronicle-who';
     who.textContent = (kills > 0 ? '' : '??? ') + name + (kind === 'boss' ? ' — Boss' : kind === 'elite' ? ' — Elite' : '');
@@ -823,16 +903,18 @@ function renderBestiary() {
     const text = document.createElement('div');
     text.className = 'chronicle-text';
     text.textContent = kills > 0 ? `${zoneName} · ${kills} erlegt` : `${zoneName} · Noch nie erlegt.`;
-    row.append(who, text);
+    body.append(who, text);
+    row.append(icon, body);
     el.bestiaryList.appendChild(row);
   };
   for (const [ci, continent] of CONTINENTS.entries()) {
     const head = document.createElement('h3');
     head.textContent = continent.name;
     el.bestiaryList.appendChild(head);
+    const key = continentKeyOf(ci * 10);
     for (let z = ci * 10; z < ci * 10 + 10; z += 1) {
       for (const [kind] of types) {
-        entry(ZONE_ENEMIES[z][kind].name, kind, ZONES[z].name);
+        entry(ZONE_ENEMIES[z][kind].name, kind, ZONES[z].name, key);
       }
     }
   }
@@ -842,7 +924,7 @@ function renderBestiary() {
   for (const [kind, label] of types) {
     const labelMap = { normal: 'Normal', elite: 'Elite', boss: 'Boss' };
     for (const name of DEPTH_ENEMY_NAMES[kind]) {
-      entry(name, kind, `Aschentiefe · ${labelMap[kind]}`);
+      entry(name, kind, `Aschentiefe · ${labelMap[kind]}`, 'tiefen');
     }
   }
   el.bestiarySummary.textContent = `${known} von ${ZONE_ENEMIES.length * 3 + DEPTH_ENEMY_NAMES.normal.length + DEPTH_ENEMY_NAMES.elite.length + DEPTH_ENEMY_NAMES.boss.length} Kreaturen erlegt.`;
@@ -971,12 +1053,12 @@ function render() {
   el.modalHeroKills.textContent = formatNum(state.kills);
   el.heroLevel.textContent = `Lv ${state.level} · Held`;
   el.game.classList.toggle('low-hp', state.inField && !paused && heroHp / heroMaxHp() <= 0.25);
-  el.heroHp.style.width = `${Math.max(0, heroHp / heroMaxHp()) * 100}%`;
+  setHpBar(el.heroHp, el.heroHpGhost, (heroHp / heroMaxHp()) * 100);
   el.heroHpText.textContent = `${formatNum(Math.max(0, heroHp))} / ${formatNum(heroMaxHp())}`;
   if (enemy) {
     el.enemyName.textContent = enemy.name;
     el.enemyLevel.textContent = `Lv ${enemy.level} · ${enemy.type === 'boss' ? 'Boss' : enemy.type === 'elite' ? 'Elite' : 'Normal'}`;
-    el.enemyHp.style.width = `${Math.max(0, enemy.hp / enemy.maxHp) * 100}%`;
+    setHpBar(el.enemyHp, el.enemyHpGhost, (enemy.hp / enemy.maxHp) * 100);
     el.enemyHpText.textContent = `${formatNum(Math.max(0, enemy.hp))} / ${formatNum(enemy.maxHp)}`;
     renderEnemyTooltip();
   } else {

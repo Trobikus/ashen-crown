@@ -8,6 +8,7 @@ function cacheDom() {
   el.hubAsh = document.getElementById('hub-ash');
   el.hubHeroLevel = document.getElementById('hub-hero-level');
   el.hubHeroHp = document.getElementById('hub-hero-hp');
+  el.hubHeroHpGhost = document.getElementById('hub-hero-hp-ghost');
   el.hubHeroHpText = document.getElementById('hub-hero-hp-text');
   el.hudLevel = document.getElementById('hud-level');
   el.hudAsh = document.getElementById('hud-ash');
@@ -19,6 +20,7 @@ function cacheDom() {
   el.heroFigure = document.getElementById('hero-figure');
   el.heroLevel = document.getElementById('hero-level');
   el.heroHp = document.getElementById('hero-hp');
+  el.heroHpGhost = document.getElementById('hero-hp-ghost');
   el.heroFighter = document.getElementById('hero-fighter');
   el.enemyFigure = document.getElementById('enemy-figure');
   el.enemyName = document.getElementById('enemy-name');
@@ -26,6 +28,7 @@ function cacheDom() {
   el.enemyProfile = document.getElementById('enemy-profile');
   el.enemyTooltip = document.getElementById('enemy-tooltip');
   el.enemyHp = document.getElementById('enemy-hp');
+  el.enemyHpGhost = document.getElementById('enemy-hp-ghost');
   el.heroHpText = document.getElementById('hero-hp-text');
   el.enemyHpText = document.getElementById('enemy-hp-text');
   el.feedbackButton = document.getElementById('btn-feedback');

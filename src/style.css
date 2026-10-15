@@ -14,6 +14,7 @@ body {
 }
 
 #menu {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -21,12 +22,42 @@ body {
   text-align: center;
 }
 
+/* Glutfunken hinter dem Menü — JS setzt die Span, CSS bewegt sie. */
+#menu-embers {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Kronen-Emblem über dem Titel — eigene Krone als Maske, in Kronenfarbe. */
+#menu-crown {
+  width: clamp(38px, 4vw, 52px);
+  height: clamp(38px, 4vw, 52px);
+  background: linear-gradient(180deg, #e8c87a 0%, #d9a03f 45%, #8a651f 100%);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 74'%3E%3Cpath d='M6 66 L6 22 L28 42 L50 4 L72 42 L94 22 L94 66 L82 60 L70 66 L58 60 L50 68 L42 60 L30 66 L18 60 Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 74'%3E%3Cpath d='M6 66 L6 22 L28 42 L50 4 L72 42 L94 22 L94 66 L82 60 L70 66 L58 60 L50 68 L42 60 L30 66 L18 60 Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(0 0 12px rgba(217, 160, 63, 0.35));
+  animation: crown-breathe 4.5s ease-in-out infinite;
+}
+
+@keyframes crown-breathe {
+  0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 10px rgba(217, 160, 63, 0.25)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 18px rgba(217, 160, 63, 0.5)); }
+}
+
 h1 {
   font-size: 3rem;
   font-weight: normal;
   letter-spacing: 0.35em;
-  color: #8a7f6d;
   text-transform: uppercase;
+  /* Knochen-Metall: Der Titel verläuft von hell zu Asche und glimmt schwach. */
+  background: linear-gradient(180deg, #ded5c4 0%, #a89a82 55%, #6b6255 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 22px rgba(217, 160, 63, 0.14)) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.8));
 }
 
 .tagline {
@@ -52,11 +83,23 @@ button {
   letter-spacing: 0.2em;
   text-transform: uppercase;
   cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, transform 0.1s ease;
 }
 
 button:hover {
   border-color: #8a7f6d;
   color: #efe9df;
+  background: rgba(217, 160, 63, 0.05);
+  box-shadow: 0 0 14px rgba(217, 160, 63, 0.08), inset 0 0 10px rgba(217, 160, 63, 0.04);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button:focus-visible {
+  outline: 1px solid #d9a03f;
+  outline-offset: 3px;
 }
 
 #notice {
@@ -345,6 +388,18 @@ input[type='range'] {
   justify-content: center;
   gap: 0.45rem;
   padding: 1rem;
+  background: linear-gradient(180deg, rgba(217, 160, 63, 0.035), rgba(217, 160, 63, 0) 55%), #100e0c;
+  transition: border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.tile:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: #b09a6d;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), 0 0 16px rgba(217, 160, 63, 0.07);
+}
+
+.tile:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .tile-name {
@@ -486,7 +541,46 @@ input[type='range'] {
   min-height: clamp(330px, 54vh, 620px);
   padding: clamp(2.5rem, 7vh, 5rem) clamp(1rem, 5vw, 6rem);
   background: #0d0b0a;
+  /* Bühne: Rückwand mit Horizont, Bodenfläche und schwaches Glühen hinter
+     den Kämpfern — Farben je Kontinent über die cont-*-Paletten unten. */
 }
+
+#arena::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 85% 52% at 50% 58%, var(--stage-glow, rgba(217, 160, 63, 0.05)), transparent 72%),
+    linear-gradient(
+      180deg,
+      #0b0a0c 0%,
+      var(--stage-wall, #100e0c) 55%,
+      var(--stage-horizon, #1a1510) 66%,
+      var(--stage-floor, #15110d) 74%,
+      #0d0b09 100%
+    );
+}
+
+#arena::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 24%;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(8, 7, 9, 0.4));
+}
+
+/* Kontinent-Paletten der Bühne: Wand, Horizontlinie, Boden, Glühen. */
+#arena.cont-aschenlande { --stage-wall: #110d09; --stage-horizon: #241a10; --stage-floor: #191309; --stage-glow: rgba(217, 143, 74, 0.08); }
+#arena.cont-frostreich { --stage-wall: #0c1118; --stage-horizon: #1c2b3a; --stage-floor: #121c26; --stage-glow: rgba(159, 212, 239, 0.07); }
+#arena.cont-faulmoor { --stage-wall: #0d1209; --stage-horizon: #1f2c14; --stage-floor: #141d0f; --stage-glow: rgba(143, 174, 109, 0.07); }
+#arena.cont-blutmark { --stage-wall: #140b0c; --stage-horizon: #33191c; --stage-floor: #201113; --stage-glow: rgba(224, 90, 78, 0.08); }
+#arena.cont-sternenleere { --stage-wall: #0d0b16; --stage-horizon: #232044; --stage-floor: #171430; --stage-glow: rgba(159, 180, 232, 0.08); }
+#arena.cont-tiefen { --stage-wall: #0e0b10; --stage-horizon: #251d31; --stage-floor: #171221; --stage-glow: rgba(176, 154, 192, 0.07); }
 
 .fighter {
   position: relative;
@@ -509,13 +603,52 @@ input[type='range'] {
   filter: drop-shadow(0 0 14px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 4px rgba(0, 0, 0, 0.6));
 }
 
+/* Der Gegner ist eine SVG-Silhouette (src/sprites.js); die Figuren-Box
+   selbst bleibt durchsichtig und trägt nur den Bodenschatten. */
 .figure {
+  position: relative;
   width: clamp(64px, 8vw, 130px);
   height: clamp(96px, 12vw, 180px);
-  background: #1b1714;
-  border: 1px solid #3a352e;
   transition: filter 0.1s;
   animation: breathe 3.4s ease-in-out infinite;
+}
+
+/* Bodenschatten: Die Figuren stehen auf der Bühne, statt zu schweben. */
+.figure::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  transform: translateX(-50%);
+  width: 115%;
+  height: 14px;
+  z-index: -1;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.8), transparent 68%);
+}
+
+/* Sprite-Farben: Masse, Kantenlicht, Metall, Augen, Dunkelheit, Krone.
+   Gilt in der Arena (.figure) wie im Bestiarium (.bestiary-icon). */
+:is(.figure, .bestiary-icon) svg .sb { fill: var(--fig-body, #1b1714); }
+:is(.figure, .bestiary-icon) svg .sr { fill: var(--fig-rim, #3a352e); }
+:is(.figure, .bestiary-icon) svg .sx { fill: var(--fig-rim, #4a4238); }
+:is(.figure, .bestiary-icon) svg .sv { fill: var(--fig-void, #08070a); }
+:is(.figure, .bestiary-icon) svg .sc { fill: var(--fig-crown, #d9a03f); }
+
+/* Augen glimmen in der Kontinent-Farbe — der Glow hängt an currentColor. */
+:is(.figure, .bestiary-icon) svg .se {
+  fill: var(--fig-eye, #d98f4a);
+  color: var(--fig-eye, #d98f4a);
+  filter: drop-shadow(0 0 3px currentColor);
+}
+
+/* Der Schatten schwebt — kein Bodenkontakt, langsames Auf und Ab. */
+.figure.arch-schatten svg {
+  animation: wraith-hover 3.2s ease-in-out infinite;
+}
+
+@keyframes wraith-hover {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
 @keyframes breathe {
@@ -693,42 +826,43 @@ input[type='range'] {
 #enemy-figure.boss {
   width: clamp(96px, 11vw, 170px);
   height: clamp(128px, 15vw, 220px);
+  /* Boss-Aura: Die Krone leuchtet dem Kampf voraus. */
+  filter: drop-shadow(0 0 14px rgba(217, 160, 63, 0.3));
 }
 
-/* Kontinent-Färbung: jeder Gegner trägt die Tönung seiner Heimat. */
-.figure.cont-aschenlande {
-  background: #262019;
-  border-color: #3d362c;
+/* Elite-Rang: Goldener Randschimmer, dezenter als die Boss-Aura. */
+#enemy-figure.elite {
+  filter: drop-shadow(0 0 6px rgba(217, 160, 63, 0.35));
 }
 
-.figure.cont-frostreich {
-  background: #22303c;
-  border-color: #40566a;
-}
-
-.figure.cont-faulmoor {
-  background: #26301f;
-  border-color: #465c38;
-}
-
-.figure.cont-blutmark {
-  background: #381f22;
-  border-color: #6b3a3f;
-}
-
-.figure.cont-sternenleere {
-  background: #262138;
-  border-color: #474066;
-}
-
-.figure.cont-tiefen {
-  background: #201a22;
-  border-color: #3f3547;
-}
+/* Kontinent-Paletten: Jeder Gegner trägt die Tönung seiner Heimat —
+   Masse, Kantenlicht und Augenfarbe aus einer Hand. Hell genug, um vor
+   der dunklen Bühne lesbar zu bleiben. Auch im Bestiarium aktiv. */
+:is(.figure, .bestiary-icon).cont-aschenlande { --fig-body: #332a1e; --fig-rim: #55493a; --fig-eye: #ffa85c; }
+:is(.figure, .bestiary-icon).cont-frostreich { --fig-body: #27394a; --fig-rim: #54748e; --fig-eye: #aee0f8; }
+:is(.figure, .bestiary-icon).cont-faulmoor { --fig-body: #2b3a21; --fig-rim: #5a7448; --fig-eye: #b9d97e; }
+:is(.figure, .bestiary-icon).cont-blutmark { --fig-body: #3d2125; --fig-rim: #7e464c; --fig-eye: #f0685c; }
+:is(.figure, .bestiary-icon).cont-sternenleere { --fig-body: #2a2545; --fig-rim: #59517e; --fig-eye: #b0c4f5; }
+:is(.figure, .bestiary-icon).cont-tiefen { --fig-body: #291f31; --fig-rim: #4f4360; --fig-eye: #c4a8d8; }
 
 #enemy-figure.enraged {
-  border-color: #a04b3a;
   box-shadow: 0 0 16px rgba(160, 75, 58, 0.5);
+}
+
+/* Wut: Die Augen flammen auf und der Körper zittert. */
+#enemy-figure.enraged svg .se {
+  filter: drop-shadow(0 0 5px currentColor) brightness(1.4);
+}
+
+#enemy-figure.enraged svg {
+  animation: enrage-quiver 0.32s linear infinite;
+}
+
+@keyframes enrage-quiver {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(0.8px, -0.6px); }
+  50% { transform: translate(-0.8px, 0.5px); }
+  75% { transform: translate(0.5px, 0.7px); }
 }
 
 .fighter-level {
@@ -767,6 +901,8 @@ input[type='range'] {
 }
 
 .hp-fill {
+  position: relative;
+  z-index: 1;
   height: 100%;
   width: 100%;
   transition: width 0.2s;
@@ -818,6 +954,91 @@ input[type='range'] {
   }
 }
 
+/* Treffer-Effekte: Funken burst am Einschlag, goldener Ring beim Krit,
+   Hieb-Bogen auf der Bahn des Schwungs. */
+.impact {
+  position: absolute;
+  z-index: 4;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.impact i {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--spark, #d9a35c);
+  box-shadow: 0 0 4px var(--spark, #d9a35c);
+  animation: spark-burst 0.45s ease-out var(--spark-delay, 0ms) forwards;
+  opacity: 0;
+}
+
+.impact-hit { --spark: #d9a35c; }
+.impact-crit { --spark: #ffd98a; }
+.impact-wound { --spark: #c14b3a; }
+
+@keyframes spark-burst {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--spark-dx), var(--spark-dy)) scale(0.2); opacity: 0; }
+}
+
+.crit-ring {
+  position: absolute;
+  z-index: 4;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #d9a03f;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.4);
+  pointer-events: none;
+  animation: crit-ring 0.42s ease-out forwards;
+}
+
+@keyframes crit-ring {
+  0% { opacity: 0.9; transform: translate(-50%, -50%) scale(0.4); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(3.4); }
+}
+
+.slash {
+  position: absolute;
+  top: 22%;
+  left: 18%;
+  width: 64%;
+  height: 56%;
+  z-index: 4;
+  pointer-events: none;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: rgba(238, 230, 214, 0.85);
+  filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.8));
+  animation: slash-sweep 0.2s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes slash-sweep {
+  0% { opacity: 0; transform: rotate(var(--slash-rot, 30deg)) scale(0.72); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(calc(var(--slash-rot, 30deg) + var(--slash-sweep, 50deg))) scale(1.12); }
+}
+
+/* HP-Geist: Die helle Schicht unter der Füllung hält kurz die alte Höhe. */
+.hp-bar {
+  position: relative;
+}
+
+.hp-ghost {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: rgba(233, 225, 210, 0.5);
+  transition: width 0.55s ease 0.28s;
+}
+
+.hp-ghost.healing {
+  transition: width 0.15s ease;
+}
+
 #actions {
   display: flex;
   flex-direction: column;
@@ -828,10 +1049,33 @@ input[type='range'] {
 
 .tile-descend {
   border-color: #8a7f6d;
+  background: linear-gradient(180deg, rgba(217, 160, 63, 0.09), rgba(217, 160, 63, 0.01) 60%), #12100c;
 }
 
 .tile-descend:hover {
-  border-color: #c9c2b8;
+  border-color: #d9a03f;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 22px rgba(217, 160, 63, 0.16);
+}
+
+/* Szenen-Übergang: Jeder Wechsel blendet kurz auf und hebt an. */
+.scene-enter {
+  animation: scene-in 0.32s ease-out;
+}
+
+@keyframes scene-in {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Stufenaufstieg: Der Held glimmt einmal kronengolden. */
+.figure.level-flash {
+  animation: level-flash 0.75s ease-out;
+}
+
+@keyframes level-flash {
+  0% { filter: drop-shadow(0 0 0 rgba(217, 160, 63, 0)); }
+  30% { filter: drop-shadow(0 0 18px rgba(217, 160, 63, 0.55)); }
+  100% { filter: drop-shadow(0 0 0 rgba(217, 160, 63, 0)); }
 }
 
 .tile-descend .tile-name {
@@ -1118,9 +1362,22 @@ input[type='range'] {
   #arena.shake,
   #arena.shake-strong,
   .figure,
+  .figure svg,
   .arena-particle,
   .dmg-float,
-  .level-float {
+  .level-float,
+  .scene-enter,
+  .impact i,
+  .crit-ring,
+  .slash,
+  #menu-crown {
     animation: none !important;
+  }
+
+  .scene-enter,
+  .impact i,
+  .crit-ring,
+  .slash {
+    opacity: 0 !important;
   }
 }

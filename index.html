@@ -11,6 +11,8 @@
   </head>
   <body>
     <main id="menu">
+      <div id="menu-embers" aria-hidden="true"></div>
+      <div id="menu-crown" aria-hidden="true"></div>
       <h1>Ashen Crown</h1>
       <p class="tagline">Die Asche erinnert sich. Der Thron wartet.</p>
       <nav>
@@ -31,6 +33,7 @@
       <div id="hub-hero">
         <span id="hub-hero-name">Held · Lv <strong id="hub-hero-level">1</strong></span>
         <div class="hp-bar hub-hp-bar">
+          <div id="hub-hero-hp-ghost" class="hp-ghost"></div>
           <div id="hub-hero-hp" class="hp-fill hero-fill"></div>
           <span id="hub-hero-hp-text">100 / 100</span>
         </div>
@@ -212,7 +215,7 @@
             <span class="toggle"><input type="checkbox" data-setting="damageNumbers" checked><span class="toggle-slider"></span></span>
           </label>
           <label class="option-row">
-            <span class="option-label">Treffer-Aufblitzen<span class="option-desc">Kämpfer blinken kurz bei Treffern</span></span>
+            <span class="option-label">Treffer-Effekte<span class="option-desc">Aufblitzen, Funken und Hieb-Bogen bei Treffern</span></span>
             <span class="toggle"><input type="checkbox" data-setting="hitFlash" checked><span class="toggle-slider"></span></span>
           </label>
           <label class="option-row">
@@ -390,7 +393,7 @@
           <div class="figure" id="hero-figure"></div>
           <div class="fighter-level" id="hero-level">—</div>
           <div class="fighter-name">Der Erweckte</div>
-          <div class="hp-bar"><div class="hp-fill hero-fill" id="hero-hp"></div></div>
+          <div class="hp-bar"><div class="hp-ghost" id="hero-hp-ghost"></div><div class="hp-fill hero-fill" id="hero-hp"></div></div>
           <div class="hp-text" id="hero-hp-text">—</div>
         </div>
         <div class="fighter has-tooltip" id="enemy-fighter">
@@ -398,7 +401,7 @@
           <div class="fighter-level" id="enemy-level">—</div>
           <div class="fighter-name" id="enemy-name">—</div>
           <div class="fighter-profile" id="enemy-profile"></div>
-          <div class="hp-bar"><div class="hp-fill enemy-fill" id="enemy-hp"></div></div>
+          <div class="hp-bar"><div class="hp-ghost" id="enemy-hp-ghost"></div><div class="hp-fill enemy-fill" id="enemy-hp"></div></div>
           <div class="hp-text" id="enemy-hp-text">—</div>
           <div class="tooltip" id="enemy-tooltip"></div>
         </div>
