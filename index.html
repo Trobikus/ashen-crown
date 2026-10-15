@@ -64,6 +64,10 @@
           <span class="tile-name">Crafting</span>
           <span class="tile-sub">Die Werkstatt wartet</span>
         </button>
+        <button class="tile" id="tile-stats">
+          <span class="tile-name">Statistik</span>
+          <span class="tile-sub">Die Asche zählt mit</span>
+        </button>
         <button class="tile" id="tile-chronik">
           <span class="tile-name">Chronik</span>
           <span class="tile-sub">Die Asche erinnert sich</span>
@@ -199,6 +203,10 @@
             <span class="option-label">Pulsierende Fertigkeiten<span class="option-desc">Verfügbare Skillpunkte pulsieren im Baum</span></span>
             <span class="toggle"><input type="checkbox" data-setting="skillPulse" checked><span class="toggle-slider"></span></span>
           </label>
+          <label class="option-row">
+            <span class="option-label">Screenshake<span class="option-desc">Die Arena wackelt bei kritischen Treffern und Boss-Schlägen</span></span>
+            <span class="toggle"><input type="checkbox" data-setting="screenshake" checked><span class="toggle-slider"></span></span>
+          </label>
         </div>
         <div class="options-page" data-page="audio" hidden>
           <label class="option-row">
@@ -274,6 +282,28 @@
         <div id="craft-detail"></div>
       </div>
       <p class="tagline">Aus Asche wird Form. Oder Staub.</p>
+    </section>
+    <section class="scene" id="scene-stats" hidden>
+      <header class="scene-header">
+        <button class="btn-small" data-back>Zurück</button>
+      </header>
+      <h2>Statistik</h2>
+      <div class="character-layout">
+        <div class="stats-panel">
+          <dl class="stat-list">
+            <div><dt>Spielzeit</dt><dd id="stats-playtime">0 min</dd></div>
+            <div><dt>Erlegte Kreaturen</dt><dd id="stats-kills">0</dd></div>
+            <div><dt>Tode</dt><dd id="stats-deaths">0</dd></div>
+            <div><dt>Befreite Gebiete</dt><dd id="stats-cleared">0 von 50</dd></div>
+            <div><dt>Höchst errungenes Gebiet</dt><dd id="stats-depth">—</dd></div>
+            <div><dt>Asche</dt><dd id="stats-ash">0</dd></div>
+          </dl>
+        </div>
+        <div class="stats-panel">
+          <dl class="stat-list" id="stats-drops"></dl>
+        </div>
+      </div>
+      <p class="tagline">Die Asche zählt. Sie vergisst nicht.</p>
     </section>
     <section class="scene" id="scene-chronik" hidden>
       <header class="scene-header">

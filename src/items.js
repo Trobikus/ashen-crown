@@ -224,7 +224,10 @@ function unequipItem(slotKey) {
 }
 
 function itemSellValue(item) {
-  return Math.round(rarityOf(item.rarity).mult * (4 + state.level));
+  // Wert wächst mit dem Stück: Seltenheit × (Stufen-Fundament + ilvl-Anteil) —
+  // sonst verpuffen Spätspiel-Verkäufe als numeric noise (ein Tiefenstück
+  // brachte denselben Betrag wie ein Anfangsstück).
+  return Math.round(rarityOf(item.rarity).mult * (4 + state.level) * (1 + 0.25 * itemIlvl(item)));
 }
 
 function sortInventory() {

@@ -204,7 +204,7 @@ function hideOverlay() {
 
 function showScreen(target) {
   if (target !== el.sceneHero) exitSellMode();
-  for (const screen of [el.menu, el.hub, el.sceneHero, el.sceneSkills, el.sceneOptions, el.sceneMap, el.sceneCrafting, el.sceneChronik, el.sceneVictory, el.game]) {
+  for (const screen of [el.menu, el.hub, el.sceneHero, el.sceneSkills, el.sceneOptions, el.sceneMap, el.sceneCrafting, el.sceneStats, el.sceneChronik, el.sceneVictory, el.game]) {
     screen.hidden = screen !== target;
   }
 }
@@ -369,6 +369,8 @@ function killEnemy() {
 }
 
 function heroAttack() {
+  // Der Schwung passiert immer — auch ein Fehlschlag war ein Angriff.
+  pulseClass(el.heroFigure, 'lunge');
   // Auch der Held verfehlt manchmal — harte Gegner bleiben harte Gegner.
   if (Math.random() < HERO_MISS_CHANCE) {
     spawnMissFloat(el.enemyFighter);
@@ -380,11 +382,10 @@ function heroAttack() {
   if (isCrit) {
     damage = Math.round(damage * critMultiplier());
     sfx.crit();
-    pulseClass(el.arena, 'shake');
+    if (settings.screenshake) pulseClass(el.arena, 'shake');
   } else {
     sfx.hit();
   }
-  pulseClass(el.heroFigure, 'lunge');
   pulseClass(el.enemyFigure, 'recoil');
   enemy.hp -= damage;
   applyLifeleech(damage);
@@ -400,7 +401,7 @@ function heroAttack() {
 function enemyAttack() {
   // Der Schwung passiert immer — auch ein Fehlschlag war ein Angriff.
   pulseClass(el.enemyFigure, 'lunge');
-  if (enemy.type === 'boss') pulseClass(el.arena, 'shake-strong');
+  if (enemy.type === 'boss' && settings.screenshake) pulseClass(el.arena, 'shake-strong');
   // Nicht jeder Gegner-Schlag trifft — Fehlschläge entlasten den Helden.
   if (Math.random() < ENEMY_MISS_CHANCE) {
     spawnMissFloat(el.heroFighter);
@@ -504,6 +505,29 @@ function renderHubHero() {
   el.hubHeroHpText.textContent = `${formatNum(Math.ceil(Math.max(0, heroHp)))} / ${formatNum(max)}`;
 }
 
+// Die Statistik-Seite: Spielzeit, Tode, Beute je Seltenheit — die Zähler
+// aus dem Spielstand bekommen ihr Gesicht. Rendert nur, wenn sie offen ist.
+function renderStats() {
+  if (el.sceneStats.hidden) return;
+  el.statsPlaytime.textContent = formatDuration(state.playtimeMs);
+  el.statsKills.textContent = formatNum(state.kills);
+  el.statsDeaths.textContent = formatNum(state.deaths);
+  el.statsCleared.textContent = `${Math.min(state.cleared, MAIN_ZONE_COUNT)} von ${MAIN_ZONE_COUNT}`;
+  el.statsDepth.textContent = state.cleared > 0 ? zoneDef(state.cleared - 1).name : '—';
+  el.statsAsh.textContent = formatNum(state.ash);
+  el.statsDrops.replaceChildren();
+  for (const rarity of RARITIES) {
+    const row = document.createElement('div');
+    const label = document.createElement('dt');
+    label.textContent = rarity.label;
+    label.style.color = rarity.color;
+    const value = document.createElement('dd');
+    value.textContent = formatNum(state.drops[rarity.key] ?? 0);
+    row.append(label, value);
+    el.statsDrops.appendChild(row);
+  }
+}
+
 function render() {
   el.hubLevel.textContent = state.level;
   el.hubAsh.textContent = formatNum(state.ash);
@@ -576,6 +600,7 @@ function render() {
     el.enemyHpText.textContent = '—';
   }
   renderGearIfDirty();
+  renderStats();
 }
 
 function save() {
@@ -1177,6 +1202,10 @@ function bindEvents() {
   el.tileChronik.addEventListener('click', () => {
     renderChronicle();
     showScreen(el.sceneChronik);
+  });
+  el.tileStats.addEventListener('click', () => {
+    showScreen(el.sceneStats);
+    renderStats();
   });
   bindCraftEvents(hooks);
   el.zoneList.addEventListener('click', (e) => {

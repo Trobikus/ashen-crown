@@ -224,11 +224,16 @@ const sig3 = (value) => Number(value.toPrecision(3));
 // WICHTIG: Gegner-Schaden bleibt Float — früher rundete Math.round(1 × 1.34)
 // zu 1 und jeder Gegner traf das ganze Spiel lang für exakt 1 Schaden.
 // Gerundet wird erst beim Spawn (scaledEnemy) bzw. beim Zuschlagen.
+// Zahlen-Deckel für die Tiefen: 1,4^Tiefe bzw. 1,29^Tiefe überschlagen irgend-
+// wann 2^53 bzw. Infinity (Tiefe ~2.100/~2.800) — ab diesem praktisch uner-
+// reichbaren Limit wird geklemmt, damit alle Werte endlich bleiben.
+const VALUE_CEILING = 1e15;
+
 const growNormal = (stats, growth) => ({
-  hp: sig3(stats.hp * growth.hp),
-  damage: Math.max(1, sig3(stats.damage * growth.damage)),
-  ash: sig3(stats.ash * growth.ash),
-  xp: sig3(stats.xp * growth.xp),
+  hp: Math.min(VALUE_CEILING, sig3(stats.hp * growth.hp)),
+  damage: Math.max(1, Math.min(VALUE_CEILING, sig3(stats.damage * growth.damage))),
+  ash: Math.min(VALUE_CEILING, sig3(stats.ash * growth.ash)),
+  xp: Math.min(VALUE_CEILING, sig3(stats.xp * growth.xp)),
 });
 
 const enemiesOf = (normalName, eliteName, bossName, stats) => ({
@@ -332,7 +337,7 @@ function zoneDef(index) {
   const depth = i - MAIN_ZONE_COUNT + 1;
   return {
     name: `Aschentiefe ${romanize(depth)}`,
-    ilvl: Math.max(1, Math.round(ZONES[LAST_ZONE_INDEX].ilvl * ILVL_GROWTH ** depth)),
+    ilvl: Math.max(1, Math.min(VALUE_CEILING, Math.round(ZONES[LAST_ZONE_INDEX].ilvl * ILVL_GROWTH ** depth))),
     continent: 'Die Tiefen',
   };
 }
@@ -1004,6 +1009,10 @@ function sanitizeItem(item) {
   // Slots. Fremde Basen fallen dorthin zurück, der Name bleibt unberührt.
   item.base = baseOf(slot, item.base).name;
   if (typeof item.name !== 'string' || !item.name) item.name = `${item.base} ${rarity.suffix}`;
+  // Härte-Lektor: Namen sind Freitext aus (importierten) Spielständen und
+  // landen in innerHTML-Tooltips — HTML-Zeichen und Überlänge werden an der
+  // Quelle entfernt, nie erst beim Rendern.
+  item.name = item.name.replace(/[<>&"'`]/g, '').trim().slice(0, 60) || `${item.base} ${rarity.suffix}`;
   item.damage = asCount(item.damage);
   item.hp = asCount(item.hp);
   item.armor = asCount(item.armor);

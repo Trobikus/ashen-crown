@@ -1110,3 +1110,17 @@ input[type='range'] {
   font-size: 0.8rem;
   font-style: italic;
 }
+
+/* Bewegungsreduktion: Nutzer mit entsprechender Systemeinstellung bekommen
+   Krits, Boss-Schläge, Partikel und Floaties ohne Bewegung — das Wackeln
+   lässt sich zusätzlich einzeln über die Option „Screenshake" schalten. */
+@media (prefers-reduced-motion: reduce) {
+  #arena.shake,
+  #arena.shake-strong,
+  .figure,
+  .arena-particle,
+  .dmg-float,
+  .level-float {
+    animation: none !important;
+  }
+}

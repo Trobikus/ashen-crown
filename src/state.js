@@ -10,6 +10,7 @@ const DEFAULT_SETTINGS = {
   damageNumbers: true,
   hitFlash: true,
   skillPulse: true,
+  screenshake: true,
   offlineProgress: true,
   offlineSummary: true,
   displayFullscreen: false,

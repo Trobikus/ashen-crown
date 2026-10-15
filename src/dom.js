@@ -44,6 +44,15 @@ function cacheDom() {
   el.sceneChronik = document.getElementById('scene-chronik');
   el.chronicleList = document.getElementById('chronicle-list');
   el.tileChronik = document.getElementById('tile-chronik');
+  el.sceneStats = document.getElementById('scene-stats');
+  el.tileStats = document.getElementById('tile-stats');
+  el.statsPlaytime = document.getElementById('stats-playtime');
+  el.statsKills = document.getElementById('stats-kills');
+  el.statsDeaths = document.getElementById('stats-deaths');
+  el.statsCleared = document.getElementById('stats-cleared');
+  el.statsDepth = document.getElementById('stats-depth');
+  el.statsAsh = document.getElementById('stats-ash');
+  el.statsDrops = document.getElementById('stats-drops');
   el.sceneVictory = document.getElementById('scene-victory');
   el.victoryContinue = document.getElementById('btn-victory-continue');
   el.victoryKills = document.getElementById('victory-kills');

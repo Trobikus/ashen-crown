@@ -310,7 +310,8 @@ function simulate(world, { depthTarget = 0 } = {}) {
 
   // Der denkende Spieler legt das Beste an (echte itemScore-Heuristik) und
   // verkauft den Rest sofort — Inventar-Logistik modelliert der Sim nicht.
-  const sellValue = (item) => Math.round(D.rarityOf(item.rarity).mult * (4 + hero.level));
+  // Verkaufswert spiegelt src/items.js: Seltenheit × (4 + Stufe) × ilvl-Anteil.
+  const sellValue = (item) => Math.round(D.rarityOf(item.rarity).mult * (4 + hero.level) * (1 + 0.25 * D.itemIlvl(item)));
   const equip = (item) => {
     const current = hero.gear[item.slot];
     if (!current || D.itemScore(item) > D.itemScore(current)) {

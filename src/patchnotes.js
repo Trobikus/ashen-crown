@@ -3,10 +3,19 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.11.2',
+  version: '0.12.0',
   date: '15.10.2026',
   headline: 'Loot nach Diablo-Handwerk — und eine Werkstatt, die den Endgame-Ascheberg frisst',
   sections: [
+    {
+      heading: '0.12.0 — Zahlwerk & Härtung',
+      items: [
+        'Neue Statistik-Seite: Spielzeit, Tode, Beute je Seltenheit und Rekorde am Schrein.',
+        'Verkaufswerte wachsen jetzt mit dem Itemlevel — Spätspiel-Verkäufe zählen endlich.',
+        'Screenshake abschaltbar; Bewegungsreduktion aus der Systemeinstellung wird respektiert.',
+        'Härtung: Item-Namen aus importierten Saves werden bereinigt, Tiefen-Zahlen geklemmt.',
+      ],
+    },
     {
       heading: '0.11.2 — Hotfix: Der Beutel ist wieder da',
       items: [

@@ -4,6 +4,38 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.12.0] — 2026-10-15
+
+### Hinzugefügt
+- **Statistik-Seite** (neue Hub-Kachel): Spielzeit, erlegte Kreaturen, Tode,
+  befreite Gebiete, höchst errungenes Gebiet und gefundene Beute je Seltenheit
+  in Seltenheitsfarbe — die Zähler aus 0.11.2 bekommen ihr Gesicht.
+- **Screenshake-Option** (Optionen → Anzeige): Die Arena wackelt nur noch,
+  wenn sie soll; zusätzlich respektiert das Spiel `prefers-reduced-motion`
+  aus der Systemeinstellung (Krits, Boss-Schläge, Partikel und Zahlen ohne
+  Bewegung).
+- **CI spielt den Balance-Simulator**: `--verify` läuft bei jedem Push und
+  Pull-Request gegen die echte `data.js` — Kurven-Regressionen fliegen jetzt
+  sofort auf, statt erst bei der nächsten Handabstimmung.
+
+### Behoben
+- **XSS-Klemme für Item-Namen**: Namen sind Freitext aus (importierten)
+  Spielständen und landen in innerHTML-Tooltips — beim Laden werden jetzt
+  HTML-Zeichen und Überlängen an der Quelle entfernt, bevor irgendetwas
+  gerendert wird.
+- **ilvl-Deckel für die Tiefen**: Ab Aschentiefe ~2.100/~2.800 wurden
+  Gegnerwerte bzw. ilvl rechnerisch unendlich (NaN-Items, unbezwingbare
+  Zahlen) — ein Zahlen-Deckel bei 1e15 (spielpraktisch Unerreichbares)
+  klemmt jetzt sämtliches Tiefen-Wachstum.
+- **Verkaufswert wächst mit dem Stück**: Bisher brachte ein Tiefenstück
+  denselben Asche-Betrag wie ein Anfangsstück (Seltenheit × 4 + Stufe) —
+  jetzt fließt das Ilvl ein (Seltenheit × (4 + Stufe) × (1 + 0,25 × Ilvl)),
+  für Auto-Verkauf, Inventar-voll-Verkauf und manuelles Verkaufen gleicher-
+  maßen.
+- **Der Held lunget auch beim Verfehlen** — vorher stand er bei eigenen
+  Fehlschlägen reglos, während der Gegner seine Fehlschläge choreografiert
+  bekam.
+
 ## [0.11.2] — 2026-10-15
 
 ### Behoben
@@ -460,6 +492,7 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Desktop-Shell via Tauri 2, Vollbild-Start.
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
+[0.12.0]: https://github.com/Trobikus/ashen-crown/compare/v0.11.2...v0.12.0
 [0.11.2]: https://github.com/Trobikus/ashen-crown/compare/v0.11.1...v0.11.2
 [0.11.1]: https://github.com/Trobikus/ashen-crown/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/Trobikus/ashen-crown/compare/v0.10.0...v0.11.0
