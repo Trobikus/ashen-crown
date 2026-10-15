@@ -299,7 +299,9 @@ input[type='range'] {
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
-  padding: clamp(1rem, 2vw, 2.5rem);
+  /* Oben Reserve für den absoluten Helden-Block (Porträt + Leiste) —
+     sonst läuft die mittige HUD-Linie durch das Bild. */
+  padding: clamp(210px, 30vh, 280px) clamp(1rem, 2vw, 2.5rem) clamp(1rem, 2vw, 2.5rem);
   text-align: center;
 }
 
@@ -350,8 +352,22 @@ input[type='range'] {
   transition: width 0.2s linear;
 }
 
+/* Eine Zeile unter der Leiste: Lebenskraft links, Regenerations-Timer rechts. */
+.hub-hero-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+}
+
+#hub-hero-hp-text {
+  color: #c9c2b8;
+}
+
 /* Regeneration: Solange die Lebenskraft kehrt, schimmert die Füllung sanft
-   grün — zusammen mit dem Timer darunter ist der Fortschritt ablesbar. */
+   grün — zusammen mit dem Timer daneben ist der Fortschritt ablesbar. */
 .hub-hp-bar.regen .hp-fill {
   animation: hub-regen-shimmer 1.6s ease-in-out infinite;
 }
@@ -362,23 +378,9 @@ input[type='range'] {
 }
 
 #hub-hero-regen {
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
   font-style: italic;
   color: #7fae7a;
-  text-align: center;
-}
-
-#hub-hero-hp-text {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
-  color: #c9c2b8;
-  text-shadow: 0 0 3px #0b0a0c;
+  white-space: nowrap;
 }
 
 #hub h2,
