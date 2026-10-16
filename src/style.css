@@ -1030,6 +1030,42 @@ input[type='range'] {
   animation: crit-ring 0.42s ease-out forwards;
 }
 
+/* Loot-Puls: Das Fund leuchtet in Seltenheitsfarbe am Gegner auf — gleiche
+   Bausteine wie die Treffer-Effekte, Farbe kommt aus der Seltenheit. */
+.loot-pulse {
+  position: absolute;
+  z-index: 4;
+  left: 36%;
+  top: 30%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.loot-pulse i {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--loot-color, #d9a03f);
+  box-shadow: 0 0 6px var(--loot-color, #d9a03f);
+  animation: spark-burst 0.55s ease-out var(--spark-delay, 0ms) forwards;
+  opacity: 0;
+}
+
+.loot-pulse::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--loot-color, #d9a03f);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.4);
+  animation: crit-ring 0.6s ease-out forwards;
+}
+
 @keyframes crit-ring {
   0% { opacity: 0.9; transform: translate(-50%, -50%) scale(0.4); }
   100% { opacity: 0; transform: translate(-50%, -50%) scale(3.4); }
@@ -1420,6 +1456,8 @@ input[type='range'] {
   .scene-enter,
   .impact i,
   .crit-ring,
+  .loot-pulse i,
+  .loot-pulse::after,
   .slash,
   #menu-crown {
     animation: none !important;
@@ -1428,6 +1466,8 @@ input[type='range'] {
   .scene-enter,
   .impact i,
   .crit-ring,
+  .loot-pulse i,
+  .loot-pulse::after,
   .slash {
     opacity: 0 !important;
   }

@@ -147,6 +147,10 @@ export const sfx = {
     tone({ type: 'sine', from: 1568, to: 1568, dur: 0.35, gain: 0.1, delay: 0.12 });
     tone({ type: 'sine', from: 2093, to: 2093, dur: 0.3, gain: 0.08, delay: 0.24 });
   },
+  legendary: () => {
+    [784, 988, 1175, 1568].forEach((freq, i) => tone({ type: 'sine', from: freq, to: freq, dur: 0.28, gain: 0.13, delay: i * 0.13 }));
+    noiseBurst({ dur: 0.3, gain: 0.08, cutoff: 2400, delay: 0.05 });
+  },
   unlock: () => {
     tone({ type: 'sine', from: 392, to: 392, dur: 0.15, gain: 0.12 });
     tone({ type: 'sine', from: 587, to: 587, dur: 0.25, gain: 0.12, delay: 0.12 });

@@ -176,6 +176,24 @@
   font-size: 0.72rem;
 }
 
+.tt-compare-head {
+  color: #8a7f6d;
+  margin-bottom: 0.15rem;
+}
+
+/* Delta-Zeilen: Unterschied zum getragenen Stück — grün rauf, rot runter. */
+.tt-compare .delta-up {
+  color: #7fae7a;
+}
+
+.tt-compare .delta-down {
+  color: #c1655a;
+}
+
+.tt-compare .delta-equal {
+  font-style: italic;
+}
+
 #inventory-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(54px, 1fr));

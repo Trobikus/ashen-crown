@@ -4,7 +4,7 @@ import helmIcon from './assets/icons/helm.svg';
 import hoseIcon from './assets/icons/hose.svg';
 import schuheIcon from './assets/icons/schuhe.svg';
 import handIcon from './assets/icons/hand.svg';
-import { GEAR_SLOTS, RARITIES, DROP_CHANCES, LIFELEECH_PCT_BY_RARITY, zoneDef, gearSlotOf, rarityOf, rollRarity, pickBase, rollItemValues, itemStats, itemStatsText, itemStatRanges, itemIlvl, itemScore, rollMastery, rollRangesVisible, setRollRanges, SKILL_EFFECT_LABELS, formatNum } from './data.js';
+import { GEAR_SLOTS, RARITIES, DROP_CHANCES, LIFELEECH_PCT_BY_RARITY, zoneDef, gearSlotOf, rarityOf, rollRarity, pickBase, rollItemValues, itemStats, itemStatRanges, itemIlvl, itemScore, rollMastery, rollRangesVisible, setRollRanges, SKILL_EFFECT_LABELS, formatNum } from './data.js';
 
 import { state, settings, inventoryCap } from './state.js';
 
@@ -197,13 +197,41 @@ const autoSellThreshold = () => {
   }
   state.inventory.push(item);
   gearDirty = true;
-  if (item.rarity === 'episch') {
+  spawnLootPulse(rarityOf(item.rarity).color);
+  if (item.rarity === 'legendär') {
+    sfx.legendary();
+    toast(`Legendär: ${item.name}`, rarityOf('legendär').color);
+  } else if (item.rarity === 'episch') {
     sfx.epic();
     toast(`Episch: ${item.name}`, rarityOf('episch').color);
   } else if (item.rarity === 'selten') {
     sfx.rare();
     toast(`Selten: ${item.name}`, rarityOf('selten').color);
   }
+}
+
+// Loot-Puls: Das Fund leuchtet am sterbenden Gegner in seiner
+// Seltenheitsfarbe auf — der Beute-Moment passiert in der Arena, nicht nur
+// als Toast. Gleiche Funken-/Ring-Bausteine wie die Treffer-Effekte,
+// gekoppelt an dieselbe Option (hitFlash) und die Bewegungsreduktion.
+function spawnLootPulse(color) {
+  if (!settings.hitFlash) return;
+  const fighter = el.enemyFighter;
+  if (!fighter) return;
+  const pulse = document.createElement('span');
+  pulse.className = 'loot-pulse';
+  pulse.style.setProperty('--loot-color', color);
+  for (let i = 0; i < 9; i += 1) {
+    const spark = document.createElement('i');
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 18 + Math.random() * 30;
+    spark.style.setProperty('--spark-dx', `${Math.cos(angle) * dist}px`);
+    spark.style.setProperty('--spark-dy', `${Math.sin(angle) * dist - 14}px`);
+    spark.style.setProperty('--spark-delay', `${(Math.random() * 80).toFixed(0)}ms`);
+    pulse.appendChild(spark);
+  }
+  fighter.appendChild(pulse);
+  setTimeout(() => pulse.remove(), 750);
 }
 
 function equipItem(id) {
@@ -277,11 +305,48 @@ function equipBest() {
   hooks.render();
 }
 
+// Delta-Vergleich: Nur die Unterschiede zum getragenen Stück, grün/rot je
+// Zeile — der Spieler rechnet nicht mehr im Kopf, was +8 Schaden gegen
+// −12 Lebenskraft bedeutet.
+const DELTA_STATS = [
+  ['damage', 'Schaden'],
+  ['damagePct', '% Schaden'],
+  ['hp', 'Lebenskraft'],
+  ['hpPct', '% Lebenskraft'],
+  ['armor', 'Rüstung'],
+  ['armorPct', '% Rüstung'],
+  ['critChance', '% Kritchance'],
+  ['critDmg', '% Kritschaden'],
+  ['lifeleech', '% Lifeleech'],
+  ['lifeleechFlat', 'Lifeleech pro Treffer'],
+];
+
 function comparisonHtml(item) {
   const equipped = state.equipment[item.slot];
   if (!equipped || equipped.id === item.id) return '';
-  const mastery = equipped.mastery ? ` · Meisterschaft: ${SKILL_EFFECT_LABELS[equipped.mastery.stat](equipped.mastery.value)}` : '';
-  return `<div class="tt-compare">Getragen: ${equipped.name}${equipped.enhance ? ` +${equipped.enhance}` : ''} · ${itemStatsText(equipped)}${mastery}</div>`;
+  const now = itemStats(item);
+  const worn = itemStats(equipped);
+  const rows = [];
+  for (const [key, label] of DELTA_STATS) {
+    const diff = (now[key] ?? 0) - (worn[key] ?? 0);
+    if (diff === 0) continue;
+    const cls = diff > 0 ? 'delta-up' : 'delta-down';
+    rows.push(`<div class="${cls}">${diff > 0 ? '+' : '−'}${formatNum(Math.abs(diff))} ${label}</div>`);
+  }
+  // Meisterschaft: nur andeuten, wenn sie sich unterscheidet — Werte sind
+  // im Tooltip des Stücks selbst zu lesen.
+  const mNow = item.mastery ? SKILL_EFFECT_LABELS[item.mastery.stat](item.mastery.value) : null;
+  const mWorn = equipped.mastery ? SKILL_EFFECT_LABELS[equipped.mastery.stat](equipped.mastery.value) : null;
+  let mastery = '';
+  if (mNow !== mWorn) {
+    if (mNow && mWorn) mastery = `<div class="delta-up">Meisterschaft: ${mWorn} → ${mNow}</div>`;
+    else if (mNow) mastery = `<div class="delta-up">Neue Meisterschaft: ${mNow}</div>`;
+    else mastery = `<div class="delta-down">Meisterschaft entfällt: ${mWorn}</div>`;
+  }
+  const body = rows.length || mastery
+    ? rows.join('') + mastery
+    : '<div class="delta-equal">Gleiche Werte wie getragen.</div>';
+  return `<div class="tt-compare"><div class="tt-compare-head">Getragen: ${equipped.name}${equipped.enhance ? ` +${equipped.enhance}` : ''}</div>${body}</div>`;
 }
 
 function tooltipHtml(item, action, showValue = false) {

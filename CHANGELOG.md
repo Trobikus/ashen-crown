@@ -6,6 +6,21 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Hinzugefügt
+- **Delta-Vergleich im Tooltip**: Inventar-Tooltips zeigen unter „Getragen: …"
+  nur noch die Unterschiede zum angelegten Stück — grün rauf, rot runter,
+  Meisterschafts-Wechsel inklusive („+10 % Schaden → +14 %"). Kein
+  Kopfrechnen mehr zwischen zwei Stat-Texten; gleiche Werte melden sich als
+  „Gleiche Werte wie getragen."
+- **Loot-Puls**: Jedes Fund leuchtet beim Sterben des Gegners in seiner
+  Seltenheitsfarbe auf (Funken + Ring, gleiche Bausteine wie die
+  Treffer-Effekte) — der Beute-Moment passiert in der Arena, nicht nur als
+  Toast. Gekoppelt an die Option „Treffer-Effekte" und die
+  Bewegungsreduktion.
+- **Legendär bekommt seinen Moment**: Legendäre Stücke hatten bisher gar
+  kein Toast und keinen Klang (nur Selten/Episch) — jetzt eigenes
+  vierstimmiges Jingle plus oranger Toast.
+
 ## [0.16.0] — 2026-10-16
 
 ### Hinzugefügt
