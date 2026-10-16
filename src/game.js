@@ -98,6 +98,41 @@ function pulseClass(element, cls, ms = 260) {
   element.__pulseTimer = setTimeout(() => element.classList.remove(cls), ms);
 }
 
+// Differenzielle Schreibvorgänge: Identische Werte nicht erneut in den DOM
+// schreiben — der 3-Sekunden-Tick und jeder Schlag melden sonst dieselben
+// Zahlen als DOM-Mutation, obwohl sich nichts geändert hat. render() läuft
+// mehrmals pro Sekunde; die Meßlatte sind DOM-Mutationen, nicht CPU.
+function setText(node, value) {
+  if (node.textContent !== value) node.textContent = value;
+}
+
+function setWidth(node, pct) {
+  const width = `${pct}%`;
+  if (node.style.width !== width) node.style.width = width;
+}
+
+function setHidden(node, value) {
+  if (node.hidden !== value) node.hidden = value;
+}
+
+// Effekt-Knoten (Funken, Hieb, Zahlen): Über einem Deckel keine neuen mehr —
+// schützt Häufungs-Szenarien (schnelle Kritketten an zähen Gegnern), ohne
+// dass die Arena optisch kippt; sie wäre dann ohnehin unlesbar.
+const MAX_EFFEKTE_PRO_KÄMPFER = 14;
+
+function effekteVoll(fighter) {
+  return (fighter.__effektKnoten ?? 0) >= MAX_EFFEKTE_PRO_KÄMPFER;
+}
+
+function effektAnhängen(fighter, knoten, ms) {
+  fighter.appendChild(knoten);
+  fighter.__effektKnoten = (fighter.__effektKnoten ?? 0) + 1;
+  setTimeout(() => {
+    knoten.remove();
+    fighter.__effektKnoten -= 1;
+  }, ms);
+}
+
 // Treibende Partikel pro Kontinent — nur DOM-Aufbau, Bewegung macht CSS.
 const ARENA_PARTICLES = {
   aschenlande: { anim: 'particle-rise', color: '#d98f4a', count: 18, alpha: 0.75 },
@@ -138,52 +173,48 @@ function refreshArenaParticles() {
 }
 
 function spawnDamageFloat(fighter, amount, isCrit = false) {
-  if (!settings.damageNumbers) return;
+  if (!settings.damageNumbers || effekteVoll(fighter)) return;
   const span = document.createElement('span');
   span.className = isCrit ? 'dmg-float crit' : 'dmg-float';
   span.textContent = formatNum(amount);
   span.style.left = `${35 + Math.random() * 30}%`;
-  fighter.appendChild(span);
-  setTimeout(() => span.remove(), 900);
+  effektAnhängen(fighter, span, 900);
 }
 
 function spawnHealFloat(fighter, amount) {
-  if (!settings.damageNumbers) return;
+  if (!settings.damageNumbers || effekteVoll(fighter)) return;
   const span = document.createElement('span');
   span.className = 'dmg-float heal';
   span.textContent = `+${formatNum(amount)}`;
   span.style.left = `${35 + Math.random() * 30}%`;
-  fighter.appendChild(span);
-  setTimeout(() => span.remove(), 900);
+  effektAnhängen(fighter, span, 900);
 }
 
 function spawnMissFloat(fighter) {
-  if (!settings.damageNumbers) return;
+  if (!settings.damageNumbers || effekteVoll(fighter)) return;
   const span = document.createElement('span');
   span.className = 'dmg-float miss';
   span.textContent = 'Verfehlt';
   span.style.left = `${30 + Math.random() * 40}%`;
-  fighter.appendChild(span);
-  setTimeout(() => span.remove(), 900);
+  effektAnhängen(fighter, span, 900);
 }
 
 // Hieb-Bogen: Ein heller Bogen schwingt in Angriffsrichtung — der Schlag
 // bekommt eine sichtbare Bahn, nicht nur den Lunge-Schwung des Körpers.
 function spawnSlash(fighter, direction) {
-  if (!settings.hitFlash) return;
+  if (!settings.hitFlash || effekteVoll(fighter)) return;
   const span = document.createElement('span');
   span.className = 'slash';
   span.style.setProperty('--slash-rot', `${direction * 38}deg`);
   span.style.setProperty('--slash-sweep', `${direction * 64}deg`);
-  fighter.appendChild(span);
-  setTimeout(() => span.remove(), 240);
+  effektAnhängen(fighter, span, 240);
 }
 
 // Funken-Burst am Trefferpunkt: kurze Partikel-Explosion aus Asche und
 // Glut; der Krit setzt einen goldenen Ring darüber. Gekoppelt an die
 // bestehende Treffer-Effekt-Option (Aufblitzen), kein neuer Schalter.
 function spawnImpact(fighter, kind = 'hit') {
-  if (!settings.hitFlash) return;
+  if (!settings.hitFlash || effekteVoll(fighter)) return;
   const burst = document.createElement('span');
   burst.className = `impact impact-${kind}`;
   burst.style.left = `${36 + Math.random() * 26}%`;
@@ -198,16 +229,14 @@ function spawnImpact(fighter, kind = 'hit') {
     spark.style.setProperty('--spark-delay', `${(Math.random() * 60).toFixed(0)}ms`);
     burst.appendChild(spark);
   }
-  fighter.appendChild(burst);
+  effektAnhängen(fighter, burst, 560);
   if (kind === 'crit') {
     const ring = document.createElement('span');
     ring.className = 'crit-ring';
     ring.style.left = burst.style.left;
     ring.style.top = burst.style.top;
-    fighter.appendChild(ring);
-    setTimeout(() => ring.remove(), 450);
+    effektAnhängen(fighter, ring, 450);
   }
-  setTimeout(() => burst.remove(), 560);
 }
 
 function showOverlay(text, html = false) {
@@ -681,31 +710,33 @@ function hubTick() {
 // HP-Leiste mit Geist-Nachlauf: Die helle Schicht hält kurz die alte Höhe,
 // während die Füllung schon fällt — jeder Treffer ist ablesbar, statt in
 // der Breite zu verschwinden. Bei Heilung springt der Geist ohne Verzögerung.
+// Schreibungen werden geglättet: gleiche Breite = keine DOM-Mutation.
 function setHpBar(fill, ghost, pct) {
   const clamped = Math.max(0, Math.min(100, pct));
+  const width = `${clamped}%`;
   if (ghost) {
     const previous = parseFloat(fill.style.width);
     ghost.classList.toggle('healing', !(previous <= clamped));
-    ghost.style.width = `${clamped}%`;
+    if (ghost.style.width !== width) ghost.style.width = width;
   }
-  fill.style.width = `${clamped}%`;
+  if (fill.style.width !== width) fill.style.width = width;
 }
 
 function renderHubHero() {
   const max = heroMaxHp();
-  el.hubHeroLevel.textContent = state.level;
+  setText(el.hubHeroLevel, state.level);
   setHpBar(el.hubHeroHp, el.hubHeroHpGhost, (heroHp / max) * 100);
-  el.hubHeroHpText.textContent = `${formatNum(Math.ceil(Math.max(0, heroHp)))} / ${formatNum(max)}`;
+  setText(el.hubHeroHpText, `${formatNum(Math.ceil(Math.max(0, heroHp)))} / ${formatNum(max)}`);
   // Schrein-Regeneration sichtbar machen: Der Balken schimmert, während er
   // kehrt, und daneben zählt ein Timer die Sekunden bis zum vollen Leben.
   const regenerating = !state.inField && heroHp < max;
   el.hubHeroHpBar.classList.toggle('regen', regenerating);
   if (regenerating) {
     const seconds = Math.ceil((max - heroHp) / (max * HUB_REGEN_PER_SECOND));
-    el.hubHeroRegen.hidden = false;
-    el.hubHeroRegen.textContent = seconds === 1 ? 'voll in 1 s' : `voll in ${seconds} s`;
+    setHidden(el.hubHeroRegen, false);
+    setText(el.hubHeroRegen, seconds === 1 ? 'voll in 1 s' : `voll in ${seconds} s`);
   } else {
-    el.hubHeroRegen.hidden = true;
+    setHidden(el.hubHeroRegen, true);
   }
 }
 
@@ -997,9 +1028,15 @@ function renderAchievements() {
 
 // Gegner-Inspektor: Hover auf den Gegner zeigt Schaden, Tempo, Temperament
 // und die eigene Schadensminderung — „warum stirbe ich?" wird beantwortbar.
+// Das Markup baut nur bei geänderter Signatur neu — nicht bei jedem Schlag.
+let tooltipSignatur = '';
+
 function renderEnemyTooltip() {
   if (!enemy) {
-    el.enemyTooltip.innerHTML = '';
+    if (tooltipSignatur) {
+      el.enemyTooltip.innerHTML = '';
+      tooltipSignatur = '';
+    }
     return;
   }
   const armor = heroArmor();
@@ -1008,6 +1045,9 @@ function renderEnemyTooltip() {
   const temperament = enemy.enraged
     ? 'Wütend — greift schneller an'
     : enemy.type === 'boss' ? 'Standard' : (enemy.profileLabel || 'Standard');
+  const signatur = `${enemy.name}|${enemy.level}|${enemy.type}|${enemy.enraged ? 'wütend' : 'ruhig'}|${reduction.toFixed(3)}`;
+  if (signatur === tooltipSignatur) return;
+  tooltipSignatur = signatur;
   el.enemyTooltip.innerHTML = `
     <div class="tt-name">${enemy.name}</div>
     <div class="tt-rarity">${enemy.type === 'boss' ? 'Boss' : enemy.type === 'elite' ? 'Elite' : 'Normal'} · Lv ${enemy.level}</div>
@@ -1018,92 +1058,92 @@ function renderEnemyTooltip() {
 }
 
 function render() {
-  el.hubLevel.textContent = state.level;
-  el.hubAsh.textContent = formatNum(state.ash);
+  setText(el.hubLevel, state.level);
+  setText(el.hubAsh, formatNum(state.ash));
   renderHubHero();
-  el.hudLevel.textContent = state.level;
-  el.hudAsh.textContent = formatNum(state.ash);
-  el.inventoryCount.textContent = `${state.inventory.length} / ${inventoryCap()}`;
-  el.statPointsRow.hidden = state.statPoints === 0;
-  el.statPointsValue.textContent = state.statPoints;
+  setText(el.hudLevel, state.level);
+  setText(el.hudAsh, formatNum(state.ash));
+  setText(el.inventoryCount, `${state.inventory.length} / ${inventoryCap()}`);
+  setHidden(el.statPointsRow, state.statPoints === 0);
+  setText(el.statPointsValue, state.statPoints);
   const hasPoints = state.statPoints > 0;
   for (const button of el.statPlusButtons) {
-    button.hidden = !hasPoints;
+    setHidden(button, !hasPoints);
   }
   for (const button of el.spendButtons) {
     button.classList.toggle('active', Number(button.dataset.amount) === statSpendAmount);
   }
   const statCost = statRespecCost();
-  el.statRespecCost.textContent = formatNum(statCost);
+  setText(el.statRespecCost, formatNum(statCost));
   el.statRespecButton.disabled = allocatedStatPoints() <= 0 || state.ash < statCost;
-  el.statRespecButton.textContent = statRespecArmed
+  setText(el.statRespecButton, statRespecArmed
     ? 'Wirklich? Die Werte fallen.'
-    : `Punkte neu verteilen · ${formatNum(statCost)} Asche`;
-  el.skillPointsHud.textContent = state.skillPoints;
+    : `Punkte neu verteilen · ${formatNum(statCost)} Asche`);
+  setText(el.skillPointsHud, state.skillPoints);
   el.skillPointsHud.classList.toggle('has-points', state.skillPoints > 0);
   const skillsLocked = state.level < SKILL_TREE_UNLOCK_LEVEL;
   el.tileSkills.disabled = skillsLocked;
-  el.tileSkillsSub.textContent = skillsLocked
+  setText(el.tileSkillsSub, skillsLocked
     ? `Erwacht ab Stufe ${SKILL_TREE_UNLOCK_LEVEL}`
-    : state.skillPoints > 0 ? `${state.skillPoints} Punkte frei` : 'Wähle weise';
-  el.tileThrone.hidden = !state.crownWon;
-  el.tileThroneSub.textContent = state.crownWon && state.cleared >= MAIN_ZONE_COUNT
+    : state.skillPoints > 0 ? `${state.skillPoints} Punkte frei` : 'Wähle weise');
+  setHidden(el.tileThrone, !state.crownWon);
+  setText(el.tileThroneSub, state.crownWon && state.cleared >= MAIN_ZONE_COUNT
     ? `Erneut erwachen · ${formatNum(kronenascheReward(state.cleared))} Kronenasche`
-    : state.crownWon ? 'Die Krone dieses Laufs fehlt' : 'Nach der Krone';
+    : state.crownWon ? 'Die Krone dieses Laufs fehlt' : 'Nach der Krone');
   const zone = zoneDef(state.zone);
-  el.hudZone.textContent = `${zone.continent} · ${zone.name}`;
+  setText(el.hudZone, `${zone.continent} · ${zone.name}`);
   const showProgress = state.cleared <= state.zone;
-  el.hudProgress.hidden = !showProgress;
+  setHidden(el.hudProgress, !showProgress);
   if (showProgress) {
     const bossPhase = state.zoneKills >= BOSS_AFTER_KILLS;
-    el.hudProgressText.textContent = bossPhase ? 'Boss!' : `${Math.min(state.zoneKills, BOSS_AFTER_KILLS)} / ${BOSS_AFTER_KILLS}`;
+    setText(el.hudProgressText, bossPhase ? 'Boss!' : `${Math.min(state.zoneKills, BOSS_AFTER_KILLS)} / ${BOSS_AFTER_KILLS}`);
     el.hudProgressText.classList.toggle('gold', bossPhase);
-    el.hudProgressFill.style.width = `${Math.min(100, (state.zoneKills / BOSS_AFTER_KILLS) * 100)}%`;
+    setWidth(el.hudProgressFill, Math.min(100, (state.zoneKills / BOSS_AFTER_KILLS) * 100));
   }
-  el.tileMapSub.textContent = state.cleared < MAIN_ZONE_COUNT
+  setText(el.tileMapSub, state.cleared < MAIN_ZONE_COUNT
     ? `${Math.min(state.cleared + 1, MAIN_ZONE_COUNT)} von ${MAIN_ZONE_COUNT} Gebieten offen`
-    : `Tiefe ${state.cleared + 1 - MAIN_ZONE_COUNT} erreicht`;
+    : `Tiefe ${state.cleared + 1 - MAIN_ZONE_COUNT} erreicht`);
   renderZones();
   renderCrafting();
-  el.doorButton.hidden = !(state.zone + 1 <= state.cleared);
-  el.doorButton.textContent = state.zone + 1 === MAIN_ZONE_COUNT ? 'In die Tiefen hinabsteigen' : 'Durch die Tür gehen';
+  setHidden(el.doorButton, !(state.zone + 1 <= state.cleared));
+  setText(el.doorButton, state.zone + 1 === MAIN_ZONE_COUNT ? 'In die Tiefen hinabsteigen' : 'Durch die Tür gehen');
   checkOnboardingHints();
   renderSkillTree();
-  el.modalHeroLevel.textContent = state.level;
-  el.modalHeroXp.textContent = `${formatNum(state.xp)} / ${formatNum(xpNeeded(state.level))}`;
-  el.modalHeroHp.textContent = formatNum(heroMaxHp());
+  setText(el.modalHeroLevel, state.level);
+  setText(el.modalHeroXp, `${formatNum(state.xp)} / ${formatNum(xpNeeded(state.level))}`);
+  setText(el.modalHeroHp, formatNum(heroMaxHp()));
   const dmgBase = heroDamage();
-  el.modalHeroDamage.textContent = `${formatNum(Math.round(dmgBase * (1 - DAMAGE_VARIANCE)))} – ${formatNum(Math.round(dmgBase * (1 + DAMAGE_VARIANCE)))}`;
-  el.modalHeroArmor.textContent = formatNum(heroArmor());
-  el.modalHeroCrit.textContent = `${heroCritChance()} %`;
-  el.modalHeroCritDmg.textContent = `${Math.round(critMultiplier() * 100)} %`;
+  setText(el.modalHeroDamage, `${formatNum(Math.round(dmgBase * (1 - DAMAGE_VARIANCE)))} – ${formatNum(Math.round(dmgBase * (1 + DAMAGE_VARIANCE)))}`);
+  setText(el.modalHeroArmor, formatNum(heroArmor()));
+  setText(el.modalHeroCrit, `${heroCritChance()} %`);
+  setText(el.modalHeroCritDmg, `${Math.round(critMultiplier() * 100)} %`);
   const leech = heroLifeleech();
-  el.modalHeroLeech.textContent = leech.pct && leech.flat
+  setText(el.modalHeroLeech, leech.pct && leech.flat
     ? `${leech.pct} % · +${formatNum(leech.flat)}`
     : leech.pct ? `${leech.pct} %`
     : leech.flat ? `+${formatNum(leech.flat)} / Treffer`
-    : '0 %';
-  el.modalHeroSpeed.textContent = `${heroAttackSpeed().toFixed(1).replace('.', ',')} / s`;
-  el.modalHeroKills.textContent = formatNum(state.kills);
-  el.heroLevel.textContent = `Lv ${state.level} · Held`;
+    : '0 %');
+  setText(el.modalHeroSpeed, `${heroAttackSpeed().toFixed(1).replace('.', ',')} / s`);
+  setText(el.modalHeroKills, formatNum(state.kills));
+  setText(el.heroLevel, `Lv ${state.level} · Held`);
   el.game.classList.toggle('low-hp', state.inField && !paused && heroHp / heroMaxHp() <= 0.25);
   setHpBar(el.heroHp, el.heroHpGhost, (heroHp / heroMaxHp()) * 100);
-  el.heroHpText.textContent = `${formatNum(Math.max(0, heroHp))} / ${formatNum(heroMaxHp())}`;
+  setText(el.heroHpText, `${formatNum(Math.max(0, heroHp))} / ${formatNum(heroMaxHp())}`);
   // XP-Streifen: Der Stufenfortschritt läuft unter dem HP-Balken mit.
   const xpNeed = xpNeeded(state.level);
-  el.heroXpFill.style.width = `${Math.min(100, (state.xp / xpNeed) * 100)}%`;
-  el.heroXpText.textContent = `${formatNum(state.xp)} / ${formatNum(xpNeed)}`;
+  setWidth(el.heroXpFill, Math.min(100, (state.xp / xpNeed) * 100));
+  setText(el.heroXpText, `${formatNum(state.xp)} / ${formatNum(xpNeed)}`);
   if (enemy) {
-    el.enemyName.textContent = enemy.name;
-    el.enemyLevel.textContent = `Lv ${enemy.level} · ${enemy.type === 'boss' ? 'Boss' : enemy.type === 'elite' ? 'Elite' : 'Normal'}`;
+    setText(el.enemyName, enemy.name);
+    setText(el.enemyLevel, `Lv ${enemy.level} · ${enemy.type === 'boss' ? 'Boss' : enemy.type === 'elite' ? 'Elite' : 'Normal'}`);
     setHpBar(el.enemyHp, el.enemyHpGhost, (enemy.hp / enemy.maxHp) * 100);
-    el.enemyHpText.textContent = `${formatNum(Math.max(0, enemy.hp))} / ${formatNum(enemy.maxHp)}`;
+    setText(el.enemyHpText, `${formatNum(Math.max(0, enemy.hp))} / ${formatNum(enemy.maxHp)}`);
     renderEnemyTooltip();
   } else {
-    el.enemyLevel.textContent = '—';
-    el.enemyHp.style.width = '0%';
-    el.enemyHpText.textContent = '—';
-    el.enemyTooltip.innerHTML = '';
+    setText(el.enemyLevel, '—');
+    setWidth(el.enemyHp, 0);
+    setText(el.enemyHpText, '—');
+    renderEnemyTooltip();
   }
   renderGearIfDirty();
   renderStats();
@@ -1178,8 +1218,11 @@ function hintOnce(key, text, { duration = 4400, pauseCombat = false } = {}) {
   save();
 }
 
-// Zustandsbasierte Hinweise: in jedem render geprüft, fire-once.
+// Zustandsbasierte Hinweise: in jedem render geprüft, fire-once. Sobald alle
+// vier verbraucht sind, steigt render() hier ohne Inventar-/Ausrüstungs-
+// Durchläufe aus — der Normalfall ab den ersten Spielminuten.
 function checkOnboardingHints() {
+  if (state.hints['hint-levelup'] && state.hints['hint-drop'] && state.hints['hint-epic'] && state.hints['hint-leech']) return;
   if (state.level >= 2) {
     hintOnce('hint-levelup', 'Jede Stufe bringt 2 Statpunkte (Held-Screen). Ab Stufe 20 erwacht der Fertigkeitenbaum — danach kommt pro Stufe 1 Runenpunkt dazu.');
   }

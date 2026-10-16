@@ -6,6 +6,21 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Geändert
+- **Render-Pfad schreibt nur Änderungen**: render() vergleicht jetzt Texte,
+  Balkenbreiten und Sichtbarkeiten, bevor es in den DOM schreibt, der
+  Gegner-Inspektor baut sein Markup nur noch bei geänderter Signatur auf
+  (neuer Gegner, Wut, Rüstungsänderung) und die Onboarding-Prüfung steigt
+  aus, sobald alle Hinweise verbraucht sind. Gemessen im 16-s-Kampf fallen
+  die DOM-Mutationen von ~86/s auf ~35/s (−59 %) bei unverändertem
+  Kampfverlauf — Ausgangslage war bereits gesund (0 Long-Tasks,
+  Mikrosekunden je Schreibvorgang); die Änderung ist Robustheit für schwächere
+  Maschinen und längere Sitzungen.
+- **Effekt-Deckel**: Pro Kämpfer gibt es maximal 14 gleichzeitige
+  Effekt-Knoten (Funken, Hieb-Bögen, Zahlen) — Häufungsszenarien wie
+  schnelle Kritketten an zähen Gegnern stauen den DOM nicht mehr; die Arena
+  wäre ab der Schwelle ohnehin unlesbar.
+
 ## [0.16.3] — 2026-10-16
 
 ### Geändert
