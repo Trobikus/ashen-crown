@@ -367,14 +367,22 @@ input[type='range'] {
 }
 
 /* Regeneration: Solange die Lebenskraft kehrt, schimmert die Füllung sanft
-   grün — zusammen mit dem Timer daneben ist der Fortschritt ablesbar. */
-.hub-hp-bar.regen .hp-fill {
+   grün — zusammen mit dem Timer daneben ist der Fortschritt ablesbar. Der
+   Schimmer liegt als eigener Layer mit festem Schatten, die Deckkraft atmet
+   (Compositor statt Neu-Malen). */
+.hub-hp-bar.regen .hp-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: 0 0 14px rgba(127, 174, 122, 0.6);
+  opacity: 0;
   animation: hub-regen-shimmer 1.6s ease-in-out infinite;
 }
 
 @keyframes hub-regen-shimmer {
-  0%, 100% { box-shadow: 0 0 6px rgba(127, 174, 122, 0.25); }
-  50% { box-shadow: 0 0 14px rgba(127, 174, 122, 0.6); }
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
 }
 
 #hub-hero-regen {
@@ -823,20 +831,27 @@ input[type='range'] {
 /* Filmkorn (SVG-Noise, zur Laufzeit generiert) über der Arena. */
 #arena-grain {
   position: absolute;
-  inset: 0;
+  /* 40px Überstand je Seite: Die Verschiebungen der Keyframes (bis 40/35px)
+     dürfen keine Kante freilegen. */
+  inset: -40px;
   pointer-events: none;
   z-index: 3;
   opacity: 0.05;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
   animation: grain 0.6s steps(4) infinite;
+  /* Transform statt background-position: Das Kachelmuster wiederholt sich,
+     eine verschobene Ebene sieht exakt wie eine verschobene Kachelung aus —
+     aber der Schritt läuft auf dem Compositor, statt die Arenafläche ~7×/s
+     neu zu malen. */
+  will-change: transform;
 }
 
 @keyframes grain {
-  0% { background-position: 0 0; }
-  25% { background-position: -30px 20px; }
-  50% { background-position: 40px -25px; }
-  75% { background-position: -20px -30px; }
-  100% { background-position: 25px 35px; }
+  0% { transform: translate3d(0, 0, 0); }
+  25% { transform: translate3d(-30px, 20px, 0); }
+  50% { transform: translate3d(40px, -25px, 0); }
+  75% { transform: translate3d(-20px, -30px, 0); }
+  100% { transform: translate3d(25px, 35px, 0); }
 }
 
 /* Vignette + roter Puls bei niedriger Lebenskraft. */
@@ -844,13 +859,26 @@ input[type='range'] {
   box-shadow: inset 0 0 clamp(60px, 8vw, 140px) rgba(0, 0, 0, 0.6);
 }
 
-#game.low-hp #arena {
+/* Der rote Puls liegt als eigener Layer mit festem Schatten unter den
+   Kämpfern (isolation: isolate hält ihn in der Arena); animiert wird nur
+   die Deckkraft — der Compositor übernimmt, kein Neu-Malen pro Frame. */
+#arena::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  box-shadow: inset 0 0 clamp(90px, 11vw, 170px) rgba(120, 20, 20, 0.55);
+  opacity: 0;
+}
+
+#game.low-hp #arena::after {
   animation: low-hp-pulse 1.1s ease-in-out infinite;
 }
 
 @keyframes low-hp-pulse {
-  0%, 100% { box-shadow: inset 0 0 clamp(60px, 8vw, 140px) rgba(0, 0, 0, 0.6); }
-  50% { box-shadow: inset 0 0 clamp(90px, 11vw, 170px) rgba(120, 20, 20, 0.55); }
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
 }
 
 .figure.hit {

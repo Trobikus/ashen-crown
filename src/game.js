@@ -88,11 +88,14 @@ function flash(figure) {
   setTimeout(() => figure.classList.remove('hit'), 150);
 }
 
-// Kurzlebige Animations-Klasse: entfernen, Reflow erzwingen (startet die
-// Keyframes neu), wieder anheften, nach ms abräumen.
+// Kurzlebige Animations-Klasse: entfernen, wieder anheften, nach ms abräumen.
+// Der Reflow-Neustart (offsetWidth) ist nur fällig, wenn die Keyframes noch
+// liefen — der Normalfall (Klasse längst abgelaufen) startet die Animation
+// durch das erneute Anheften von allein, ohne erzwungenes Layout.
 function pulseClass(element, cls, ms = 260) {
+  const liefNoch = element.classList.contains(cls);
   element.classList.remove(cls);
-  void element.offsetWidth;
+  if (liefNoch) void element.offsetWidth;
   element.classList.add(cls);
   clearTimeout(element.__pulseTimer);
   element.__pulseTimer = setTimeout(() => element.classList.remove(cls), ms);
@@ -1289,7 +1292,14 @@ function migrateSave(data) {
   return data;
 }
 
+// Zeitstempel der letzten geglückten Rotation im laufenden Prozess — der
+// Warm-Pfad steigt damit aus, ganz ohne localStorage-Read und JSON.parse.
+let lastBackupRotatedAt = 0;
+
 function rotateBackups(force = false) {
+  // save() läuft mit jedem 3-Sekunden-Tick und jedem Kill; die beiden
+  // Voll-Parses des Spielstands fielen sonst in jedem Aufruf an.
+  if (!force && Date.now() - lastBackupRotatedAt < BACKUP_MIN_GAP_MS) return;
   const current = parseSave(localStorage.getItem(SAVE_KEY));
   if (!current) return;
   const newest = parseSave(localStorage.getItem(BACKUP_KEYS[0]));
@@ -1298,6 +1308,7 @@ function rotateBackups(force = false) {
     localStorage.setItem(BACKUP_KEYS[2], localStorage.getItem(BACKUP_KEYS[1]) ?? '');
     localStorage.setItem(BACKUP_KEYS[1], localStorage.getItem(BACKUP_KEYS[0]) ?? '');
     localStorage.setItem(BACKUP_KEYS[0], JSON.stringify(current));
+    lastBackupRotatedAt = Date.now();
   } catch {
     // Backups sind der zweite Schutzring — ihr Scheitern darf das Speichern
     // des Hauptstands nicht mitreißen (die Quota gilt für beide).

@@ -7,6 +7,31 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 ## [Unreleased]
 
 ### Geändert
+- **Daueranimationen ohne Neu-Malen**: Das Arena-Filmkorn verschiebt seine
+  Ebene per Transform (Compositor) statt die Kachelung per background-position
+  zu rücken — vorher wurde die gesamte Arenafläche ~7×/s neu gemalt. Der
+  Low-HP-Puls und der Schrein-Regen-Schimmer liegen als eigene Schicht mit
+  festem Schatten und atmen nur über die Deckkraft — vorher kostete der
+  box-shadow-Wechsel ein Neu-Malen pro Frame (60/s), solange der Zustand
+  aktiv war. Das Aussehen bleibt unverändert (Peak-Fotos im Feld und am
+  Schrein verglichen).
+- **Angriffsanimationen ohne erzwungenes Layout**: Der Neustart-Klick für
+  Hieb, Rückstoß und Co. liest den Reflow (offsetWidth) nur noch, wenn die
+  Keyframes tatsächlich noch liefen — der Normalfall (Klasse längst
+  abgelaufen) startet die Animation durch das erneute Anheften von allein.
+  Nachweis: Die Lunge-Animation startet bei jedem Schlag frisch
+  (currentTime 0), vier Schläge in 9 s beobachtet.
+- **Backup-Rotation mit Warm-Pfad**: Der Rotations-Check steigt aus, solange
+  die letzte Rotation frisch ist — vorher ließ jeder save() (3-Sekunden-Tick
+  plus jeder Kill) den kompletten Spielstand zweimal aus dem Speicher lesen
+  und parsen. Nachweis: Künstlich gealtertes Backup rotiert beim nächsten
+  save() genau einmal und bleibt danach im 10-Minuten-Rhythmus ruhig, der
+  Hauptstand schreibt unverändert weiter.
+- **Messstand (59-s-Kampf, 26 Kills, identisches Szenario vor/nachher)**:
+  DOM-Mutationen ~40/s (strukturgleich), 0 Long-Tasks, maximale
+  Timer-Verzögerung 16–17 ms, Heap flach (~10 MB) — der JS-Pfad war durch
+  die vorige Runde bereits gesund; diese Runde entfernt die restliche
+  Paint-/Layout-Last für schwächere Maschinen und den Desktop-Webview.
 - **Render-Pfad schreibt nur Änderungen**: render() vergleicht jetzt Texte,
   Balkenbreiten und Sichtbarkeiten, bevor es in den DOM schreibt, der
   Gegner-Inspektor baut sein Markup nur noch bei geänderter Signatur auf
