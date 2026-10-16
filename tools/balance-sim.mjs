@@ -12,12 +12,19 @@
 //   node tools/balance-sim.mjs --verify   → gegen die echte src/data.js spielen
 //   node tools/balance-sim.mjs --depths   → Tiefen (Zone 51+) mitprüfen
 //   node tools/balance-sim.mjs --sweep    → Kurvensuche über hp/dmg-Wachstum
+//   node tools/balance-sim.mjs --prestige → Run 2 der Prestige-Balance messen
+//     (gepaart über 120 Seeds, ~20 s; --seeds N ändert die Anzahl,
+//      --gate prüft den Zielkorridor aus docs/prestige-optionen.md)
 //
 // Determinismus: Math.random wird auf den Seeded-RNG (mulberry32) umgebogen,
 // damit auch die echten data.js-Würfe (Loot, Lifeleech-Chance) Runs mit
 // gleichem Seed vergleichbar machen (--seed N, Default 1234).
 
 const D = await import('../src/data.js');
+
+// Prestige-Konstanten (Kronenasche-Fundament, Titel-Satz) ebenfalls echt —
+// Tuning in src/prestige.js schlägt damit automatisch im Sim durch.
+const P = await import('../src/prestige.js');
 
 // ——— Welten ———
 
@@ -126,8 +133,8 @@ const SEED = (() => {
 
 let rng = mulberry32(SEED);
 
-function seedRandom() {
-  rng = mulberry32(SEED);
+function seedRandom(seed = SEED) {
+  rng = mulberry32(seed);
   Math.random = rng; // data.js würfelt über Math.random — umlenken, nicht kopieren
 }
 
@@ -179,16 +186,23 @@ const skillProfile = (level) => {
 // Werkstatt-Kette: Umschmieden bleibt der planbare Weg zur besseren Waffe.
 const REFORGE_BASES = [600, 3000, 12000, 50000];
 
-function simulate(world, { depthTarget = 0 } = {}) {
-  seedRandom(); // jeder Run deterministisch, Runs vergleichbar
+function simulate(world, { depthTarget = 0, kronenascheEarned = 0, legacy = {}, seed = SEED } = {}) {
+  seedRandom(seed); // jeder Run deterministisch, Runs vergleichbar
   const totalZones = world.zones.length;
+  // Prestige-Vermächtnis (Run 2+): „Zweiter Atem" stärkt den Helden-Grundwert
+  // (vor Gear und Prozenten — genau wie legacyBaseMult in src/stats.js),
+  // „Alter Pfad" erwacht mit freien Statpunkten (Sim: 1:1 Schaden/Leben wie
+  // pro Stufe), „Der Vorbereitete" mit Start-Asche.
+  const legacyLevelOf = (title) => legacy[title] ?? 0;
+  const baseMult = 1 + P.LEGACY_TITLES['zweiter-atem'].perLevel * legacyLevelOf('zweiter-atem');
+  const startPts = 2 * legacyLevelOf('alter-pfad');
   const hero = {
-    level: 1, xp: 0, maxHpBase: 35, damageBase: 2, armorBase: 0,
-    hp: 35, ash: 0,
+    level: 1, xp: 0, maxHpBase: 35 * baseMult, damageBase: 2 * baseMult, armorBase: 0,
+    hp: 35 * baseMult, ash: 25 * legacyLevelOf('der-vorbereitete'),
     gear: Object.fromEntries(SLOT_KEYS.map((k) => [k, null])),
   };
 
-  const statPts = { damage: 0, hp: 0, armor: 0, crit: 0 };
+  const statPts = { damage: startPts / 2, hp: startPts / 2, armor: 0, crit: 0 };
   let statPoints = 0;
 
   const gearStats = () => {
@@ -243,6 +257,14 @@ function simulate(world, { depthTarget = 0 } = {}) {
     };
   };
 
+  // Kronenasche-Fundament + Vermächtnis-Titel — spiegeln die Faktoren aus
+  // src/state.js (ashGainFactor/xpLegacyFactor ohne den Ruhm-Laden, den der
+  // Sim für keinen Lauf modelt und der beide Läufe gleich stärkt).
+  const ashFactor = () => 1 + P.KRONENASCHE_BASE_FACTOR * kronenascheEarned
+    + P.LEGACY_TITLES.beutelspaehler.perLevel * legacyLevelOf('beutelspaehler');
+  const xpFactor = () => 1 + P.KRONENASCHE_BASE_FACTOR * kronenascheEarned
+    + P.LEGACY_TITLES.aschengeist.perLevel * legacyLevelOf('aschengeist');
+
   const craftIlvl = () => world.zones[Math.min(cleared, D.MAIN_ZONE_COUNT - 1)].ilvl;
 
   let cleared = 0;
@@ -283,7 +305,7 @@ function simulate(world, { depthTarget = 0 } = {}) {
   };
 
   const gainXp = (raw) => {
-    const amount = Math.round(raw * (1 + bonuses().xp / 100));
+    const amount = Math.round(raw * (1 + bonuses().xp / 100) * xpFactor());
     hero.xp += amount;
     // Schnellsprung (Summe der Levelbedarfe ≈ 3·L³ bei 9L²+13L), damit
     // Riesensprünge nicht millionenfach iterieren; danach fein per While.
@@ -325,7 +347,11 @@ function simulate(world, { depthTarget = 0 } = {}) {
   };
 
   const onDrop = (type, ilvl, guaranteed = false) => {
-    if (rng() >= (guaranteed ? 1 : (D.DROP_CHANCES[type] ?? 0))) return;
+    // „Tiefenwissen": absolute %-Punkte auf die Elite-/Boss-Fundchance
+    // (spiegelt rollDrop in src/items.js; Normale profitieren nicht).
+    const chance = Math.min(1, (D.DROP_CHANCES[type] ?? 0)
+      + (type === 'normal' ? 0 : P.LEGACY_TITLES.tiefenwissen.perLevel * legacyLevelOf('tiefenwissen')));
+    if (rng() >= (guaranteed ? 1 : chance)) return;
     const slotKey = SLOT_KEYS[Math.floor(rng() * SLOT_KEYS.length)];
     equip(makeItem(slotKey, ilvl));
   };
@@ -431,7 +457,7 @@ function simulate(world, { depthTarget = 0 } = {}) {
     hero.hp = Math.min(heroMaxHp(), hero.hp - dmgTaken + healed);
     kills += 1;
     zoneKills += 1;
-    hero.ash += Math.round(def.ash * (1 + bonuses().ash / 100));
+    hero.ash += Math.round(def.ash * (1 + bonuses().ash / 100) * ashFactor());
     // Gegner unter dem Helden-Niveau tragen weniger bis keine Erfahrung bei —
     // Stufen steigen 3 pro Gebiet: Normal 3N−2, Elite +2, Boss +4.
     const enemyLevel = zone * 3 + 1 + (type === 'boss' ? 4 : type === 'elite' ? 2 : 0);
@@ -552,6 +578,8 @@ const verbose = args.includes('-v') || args.includes('--verbose');
 const verify = args.includes('--verify');
 const depths = args.includes('--depths');
 const sweep = args.includes('--sweep');
+const prestige = args.includes('--prestige');
+const gate = args.includes('--gate');
 
 const PRESET_SHAPE = {
   baseNormal: { hp: 10, damage: 1, ash: 4, xp: 10 },
@@ -560,7 +588,115 @@ const PRESET_SHAPE = {
   ilvlBase: 2, ilvlGrowth: 1.29,
 };
 
-if (sweep) {
+if (prestige) {
+  // ——— Prestige-Modus: Run 2 gegen den Zielkorridor (docs/prestige-optionen.md) ———
+  // Run 1 = Basiskampagne bis zur Krone. Der Tiefen-Push vor dem Prestige zahlt
+  // Kronenasche (kronenascheReward), die Run 2 ins Vermächtnis investiert.
+  //
+  // WICHTIG — Seed-Chaos: Ein Einzel-Run ist ein Würfelspiel (die Baseline
+  // schwankt je Seed um ein Vielfaches, weil Wände früher oder später brechen).
+  // Der Modus misst deshalb gepaart über mehrere Seeds: gleicher Seed für
+  // Baseline und Szenario (denselbe Beute-Losstraße), berichtet wird das
+  // geometrische Mittel der Quotienten. Nur Aussagen über das geo-⌀ sind
+  // belastbar — Einzel-Seed-Zeiten sind Rauschen.
+  const CORRIDOR = { min: 0.6, max: 0.75 };
+  const SEED_COUNT = (() => {
+    const flag = args.indexOf('--seeds');
+    return flag > -1 ? Math.max(1, Number(args[flag + 1]) || 1) : 120;
+  })();
+  const seeds = Array.from({ length: SEED_COUNT }, (_, i) => SEED + i);
+
+  const world = worldFromRealData(0);
+
+  // Kaufpolitik des denkenden Spielers: Runde für Runde den günstigsten
+  // nächsten Titel in Werte-Ordnung kaufen (Ertrag vor Bequemlichkeit) —
+  // erste Stufen aller Titel sind billig und mischen, teure Stufen kommen spät.
+  const BUY_ORDER = ['aschengeist', 'zweiter-atem', 'beutelspaehler', 'alter-pfad', 'der-vorbereitete', 'tiefenwissen'];
+  const buyLegacy = (budget) => {
+    const bought = {};
+    let open = true;
+    while (open && budget > 0) {
+      open = false;
+      for (const title of BUY_ORDER) {
+        const level = bought[title] ?? 0;
+        if (level >= P.LEGACY_MAX_LEVEL) continue;
+        const cost = P.LEGACY_TITLES[title].levels[level];
+        if (cost <= budget) {
+          bought[title] = level + 1;
+          budget -= cost;
+          open = true;
+        }
+      }
+    }
+    return bought;
+  };
+  const boughtLabel = (b) => Object.keys(P.LEGACY_TITLES)
+    .filter((t) => b[t])
+    .map((t) => `${P.LEGACY_TITLES[t].name.split(' ')[0]} ${b[t]}`)
+    .join(', ') || 'kein Titel';
+
+  // Tiefen-Pushs von Run 1 (Krone allein bis Krone + Tiefe 20) — danach der
+  // Sättigungsfall: Vermächtnis über mehrere Läufe gefüllt (24 bzw. alle 36).
+  const SCENARIOS = [
+    ['Krone', P.kronenascheReward(D.MAIN_ZONE_COUNT)],
+    ['Krone + Tiefe 5', P.kronenascheReward(D.MAIN_ZONE_COUNT + 5)],
+    ['Krone + Tiefe 10', P.kronenascheReward(D.MAIN_ZONE_COUNT + 10)],
+    ['Krone + Tiefe 20', P.kronenascheReward(D.MAIN_ZONE_COUNT + 20)],
+    ['Sättigung (24 erhalten)', 24],
+    ['Vermächtnis voll (36 erhalten)', 36],
+  ];
+
+  const geoMean = (values) => Math.exp(values.reduce((s, v) => s + Math.log(v), 0) / values.length);
+  const median = (values) => {
+    const sorted = [...values].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  };
+
+  const rows = SCENARIOS.map(([label, earned]) => ({
+    label, earned, bought: buyLegacy(earned), pcts: [], hours: 0, deaths: 0, zone1: 0,
+  }));
+  const baseHours = [];
+  for (const seed of seeds) {
+    const base = simulate(world, { depthTarget: 0, seed });
+    baseHours.push(base.totals.hours);
+    for (const row of rows) {
+      const run = simulate(world, { depthTarget: 0, seed, kronenascheEarned: row.earned, legacy: row.bought });
+      row.pcts.push(run.totals.hours / base.totals.hours);
+      row.hours += run.totals.hours;
+      row.deaths += run.totals.deaths;
+      row.zone1 = run.report[0].killTimeNormal;
+    }
+  }
+
+  const meanBase = baseHours.reduce((s, v) => s + v, 0) / baseHours.length;
+  console.log(`\n=== Run 2 — Zielkorridor ${Math.round(CORRIDOR.min * 100)}–${Math.round(CORRIDOR.max * 100)} % · ${seeds.length} Seeds (${seeds[0]}–${seeds[seeds.length - 1]}) gepaart — geo-⌀ und Median der Quotienten ===`);
+  console.log(`Basiskampagne über Seeds: ⌀ ${meanBase.toFixed(1)} h (Spanne ${Math.min(...baseHours).toFixed(1)}–${Math.max(...baseHours).toFixed(1)} h)`);
+  console.log('Szenario                  | Ashe | Vermächtnis                          | Run 2   |   geo-⌀ % |  Median % | Tode | Zone 1 | Korridor');
+  for (const row of rows) {
+    const pct = geoMean(row.pcts);
+    const med = median(row.pcts);
+    const inCorridor = med >= CORRIDOR.min && med <= CORRIDOR.max;
+    console.log(
+      `${row.label.padEnd(24)} | ${String(row.earned).padStart(2)}   | ${boughtLabel(row.bought).padEnd(36)} | ${(row.hours / seeds.length).toFixed(1).padStart(5)} h | ${(pct * 100).toFixed(0).padStart(6)} % | ${(med * 100).toFixed(0).padStart(6)} % | ${String(Math.round(row.deaths / seeds.length)).padStart(3)}  | ${row.zone1.toFixed(1).padStart(5)}s | ${inCorridor ? '✓' : '✗'}`
+    );
+    row.pct = pct;
+    row.med = med;
+    row.inCorridor = inCorridor;
+  }
+  if (gate) {
+    // CI-Gate: Der kanonische Lauf des Papiers (Krone + Tiefe 5) muss im
+    // Median im Korridor liegen — der Median ist gegenüber Ausreißer-Läufen
+    // (Wände, die zufällig brechen oder nicht) robust.
+    const canonical = rows[1];
+    if (!canonical.inCorridor) {
+      console.error(`✗ Gate verfehlt: Run 2 „${canonical.label}“ liegt im Median bei ${(canonical.med * 100).toFixed(0)} % — außerhalb ${Math.round(CORRIDOR.min * 100)}–${Math.round(CORRIDOR.max * 100)} %.`);
+      process.exitCode = 1;
+    } else {
+      console.log(`✓ Gate bestanden: Run 2 „${canonical.label}“ im Median bei ${(canonical.med * 100).toFixed(0)} %.`);
+    }
+  }
+} else if (sweep) {
   console.log('hp  | dmg  | Zeit  | maxKill | Tod | Überfarm | Level');
   for (let hp = 1.34; hp <= 1.52 + 1e-9; hp += 0.03) {
     for (let dmg = 1.22; dmg <= 1.34 + 1e-9; dmg += 0.04) {

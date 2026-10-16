@@ -7,6 +7,15 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 ## [Unreleased]
 
 ### Hinzugefügt
+- **Balance-Sim: Prestige-Modus** (`tools/balance-sim.mjs --prestige`): Misst
+  Run 2 gegen die Basiskampagne — Kronenasche-Szenarien (Krone bis
+  Krone + Tiefe 20, plus gefülltes Vermächtnis), gepaart über 120 Seeds,
+  weil ein Einzel-Seed reines Rauschen ist (Baseline-Spanne 8–95 h). Läuft
+  berichtend in der CI; `--gate` prüft den Zielkorridor aus dem
+  Prestige-Papier. **Befund:** Der 60–75-%-Korridor für Run 2 ist mit den
+  gebauten Stellschrauben unerreichbar (frühe Runs ~90–100 %, volles
+  Vermächtnis ~72–81 %) — die Entscheidung steht in
+  `docs/prestige-optionen.md` §9 offen.
 - **Schrein: Heldenporträt & Regenerations-Timer**: Oben links steht der Held
   jetzt mit seinem Bild; die Lebenskraft-Leiste sitzt darunter. Solange das
   Leben am Schrein kehrt, schimmert der Balken sanft grün und ein Timer

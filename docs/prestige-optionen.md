@@ -146,3 +146,42 @@ Freigabe.
    aggressiver (~50 %, Risiko: Zone 1–10 fühlen sich leer an)?
 4. **Reset-Feinheit:** Kontinent-Annalen beim zweiten Lauf erneut zeigen
    (Empfehlung: ja, sie sind Teil des Wiedererkens) oder stumm bleiben?
+
+## 9. Sim-Befund (2026-10-16, erste `--prestige`-Messung)
+
+`tools/balance-sim.mjs --prestige` misst Run 2 gepaart über 120 Seeds gegen
+die Basiskampagne. Methodik-Notiz: Ein Einzel-Seed ist Rauschen — die
+Baseline schwankt je Seed zwischen ~8 und ~95 h, weil Wände zufällig brechen
+oder nicht. Belastbar sind nur Median/geo-⌀ über viele Seeds; das
+Rausch-Fundament liegt bei ±5–10 %-Punkten.
+
+| Szenario (Run-1-Push) | Kronenasche | Run 2, Median über Seeds |
+| --- | --- | --- |
+| Krone | 1 | ~92–99 % |
+| Krone + Tiefe 5 (kanonisch) | 2 | ~93–102 % |
+| Krone + Tiefe 20 | 5 | ~87–93 % |
+| Vermächtnis voll (36) | 36 | ~72–81 % |
+
+**Befund:** Der Zielkorridor 60–75 % für Run 2 ist mit den gebauten
+Stellschrauben unerreichbar. Frühe Runs (1–5 Kronenasche) landen bei
+~90–100 % der Basiskampagne; selbst das voll ausgebaute Vermächtnis nur bei
+~72–81 %. Ein Extrem-Test (Fundament 5×, Titel-Werte 3×) bewegte frühe Runs
+weiterhin nicht unter ~80 %, füllte aber immerhin den Sättigungsfall
+(62–73 %) — und ließe das +x-%-Fundament ungebremst mit der lebenslangen
+Kronenasche wachsen (Treadmill-Risiko).
+
+**Entscheidungsoptionen:**
+
+1. **Korridor als Sättigungsziel verstehen** — Run 3+ mit gefülltem
+   Vermächtnis soll im 60–75-%-Band liegen, Run 2 darf bei ~85–95 % bleiben.
+   Mit moderatem Tuning (Fundament ~3 %, Titel leicht angehoben) erreichbar,
+   ohne Zone 1 zu kippen. Geringster Aufwand.
+2. **Früh-Skip-Mechanik nachrüsten** — Start-in-Zone-X-/Start-Gear-Titel
+   (bewusst zurückgehalten, siehe §4): die einzige realistische Route, Run 2
+   selbst in den Korridor zu bringen. Neuer Titel-Satz = Balance-Risiko.
+3. **Korridor senken** (z. B. 75–90 % für Run 2) und das Prestige als
+   langsamen Komfort definieren statt als Speedup-Sprung.
+
+Bis zur Entscheidung läuft der CI-Step `--prestige` berichtend (ohne
+`--gate`); das Gate prüft den Median-Korridor, sobald der Zielkanon
+festgelegt ist.

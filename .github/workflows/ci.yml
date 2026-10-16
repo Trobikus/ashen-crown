@@ -30,6 +30,13 @@ jobs:
       - name: Balance-Verifikation (Sim gegen echte data.js)
         run: node tools/balance-sim.mjs --verify
 
+      - name: Prestige-Balance (Run 2 gegen die Basiskampagne)
+        # Berichtend statt als Gate: Der Zielkorridor (60–75 %) ist mit den
+        # gebauten Stellschrauben messbar unerreichbar — die Entscheidung
+        # (Korridor neu fassen vs. Früh-Skip-Mechanik) ist offen, siehe
+        # docs/prestige-optionen.md §9. --gate prüft, sobald festgelegt.
+        run: node tools/balance-sim.mjs --prestige
+
   rust:
     name: Check (Tauri/Rust)
     runs-on: windows-latest
