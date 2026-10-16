@@ -5,7 +5,7 @@
   kämpfst dich Gebiet für Gebiet durch **fünf Kontinente** — und formst dabei einen
   Helden, der ganz nach deinem Willen geformt ist.
 
-  [![Version](https://img.shields.io/badge/Alpha-v0.16.2-C14B3A)](releases)
+  [![Version](https://img.shields.io/badge/Alpha-v0.16.3-C14B3A)](releases)
   [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev)
   [![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)](https://tauri.app)
   [![pnpm](https://img.shields.io/badge/pnpm-Paketmanager-F69220?logo=pnpm&logoColor=white)](https://pnpm.io)
@@ -15,7 +15,7 @@
 
   *Web & Desktop — ohne Framework, ohne Server, mit Speicherstand im Browser.*
 
-  **🧪 Aktuell: Closed Alpha (v0.16.2)** — Installer über die
+  **🧪 Aktuell: Closed Alpha (v0.16.3)** — Installer über die
   [Releases](releases), Updates installieren sich im Spiel von selbst.
 </div>
 
@@ -177,7 +177,7 @@ Gebiete — je tiefer die Ebene, desto besser Beute und Werkstatt.
 
 ## 🧪 Closed Alpha
 
-Ashen Crown befindet sich im geschlossenen Alpha-Stadium (aktuell **v0.16.2**):
+Ashen Crown befindet sich im geschlossenen Alpha-Stadium (aktuell **v0.16.3**):
 
 - **Mitmachen:** Installer aus den [Releases](releases) laden und installieren —
   das Spiel aktualisiert sich danach bei neuen Versionen von selbst. Ohne

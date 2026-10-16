@@ -6,6 +6,8 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [0.16.3] — 2026-10-16
+
 ### Geändert
 - **Kontinent-Fortschritt unter dem Namen**: Im Gebiete-Screen sitzt der
   Balken jetzt unterhalb des Kontinent-Namens, das Minimum links und das
@@ -799,7 +801,8 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Desktop-Shell via Tauri 2, Vollbild-Start.
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
-[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.16.2...HEAD
+[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.16.3...HEAD
+[0.16.3]: https://github.com/Trobikus/ashen-crown/compare/v0.16.2...v0.16.3
 [0.16.2]: https://github.com/Trobikus/ashen-crown/compare/v0.16.1...v0.16.2
 [0.16.1]: https://github.com/Trobikus/ashen-crown/compare/v0.16.0...v0.16.1
 [0.16.0]: https://github.com/Trobikus/ashen-crown/compare/v0.15.1...v0.16.0

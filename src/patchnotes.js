@@ -3,10 +3,20 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.16.2',
+  version: '0.16.3',
   date: '16.10.2026',
-  headline: 'Fortschritt, den man sieht — Balken im HUD und am Thron',
+  headline: 'Momente & Klang — Eliten, Musik und die Krone',
   sections: [
+    {
+      heading: '0.16.3 — Momente, Klang & Layout',
+      items: [
+        'Elite-Moment: Eliten blitzen beim Auftritt gold auf und melden sich mit einem kurzen Sting.',
+        'Musik atmet: Am Schrein ruhig, im Feld dichter — weiche Übergänge bei Abstieg und Rückkehr.',
+        'Sieg & Prestige: Der Krone-Titel senkt sich glühend auf den Sieg-Screen; beim „Erneut erwachen" atmet der Hub kronengolden.',
+        'Layout: Kontinent-Fortschritt sitzt unter dem Namen (0 links, 10 rechts), der Helden-HP-Balken ist doppelt so dick mit Wert darin, der EP-Balken gleich darunter.',
+        'Fix: Das Intro-Overlay verdeckt den Schrein jetzt sicher — der Lebenskraft-Balken leuchtete vorher durch.',
+      ],
+    },
     {
       heading: '0.16.2 — Orientierung & Fortschritt',
       items: [
