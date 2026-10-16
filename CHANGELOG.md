@@ -4,7 +4,7 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
-## [Unreleased]
+## [0.17.0] — 2026-10-17
 
 ### Geändert
 - **Daueranimationen ohne Neu-Malen**: Das Arena-Filmkorn verschiebt seine

@@ -3,10 +3,19 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.16.3',
-  date: '16.10.2026',
-  headline: 'Momente & Klang — Eliten, Musik und die Krone',
+  version: '0.17.0',
+  date: '17.10.2026',
+  headline: 'Flüssiger durch die Asche — Performance unter der Haube',
   sections: [
+    {
+      heading: '0.17.0 — Flüssiger durch die Asche',
+      items: [
+        'Daueranimationen auf dem Grafik-Compositor: Filmkorn, Low-HP-Puls und Schrein-Schimmer malen die Arena nicht mehr pro Frame neu — spürbar auf schwächeren Maschinen und im Desktop-Fenster.',
+        'Angriffsanimationen starten ohne erzwungenes Layout neu — Hieb, Rückstoß und Funken kosten im Kampf kaum noch etwas.',
+        'Spielstand-Sicherung leichter: Die Backup-Rotation liest den Spielstand nicht mehr bei jedem Speichern komplett neu (3-Sekunden-Takt plus jeder Kill).',
+        'Render-Pfad schreibt nur Änderungen: Im Kampf sinken die DOM-Operationen um gut die Hälfte; der Gegner-Inspektor baut sein Markup nur noch bei geänderter Signatur, Effekt-Knoten sind auf 14 pro Kämpfer gedeckelt.',
+      ],
+    },
     {
       heading: '0.16.3 — Momente, Klang & Layout',
       items: [
