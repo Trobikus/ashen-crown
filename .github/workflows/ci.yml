@@ -30,12 +30,12 @@ jobs:
       - name: Balance-Verifikation (Sim gegen echte data.js)
         run: node tools/balance-sim.mjs --verify
 
-      - name: Prestige-Balance (Run 2 gegen die Basiskampagne)
-        # Berichtend statt als Gate: Der Zielkorridor (60–75 %) ist mit den
-        # gebauten Stellschrauben messbar unerreichbar — die Entscheidung
-        # (Korridor neu fassen vs. Früh-Skip-Mechanik) ist offen, siehe
-        # docs/prestige-optionen.md §9. --gate prüft, sobald festgelegt.
-        run: node tools/balance-sim.mjs --prestige
+      - name: Prestige-Balance (gefülltes Vermächtnis im Zielkorridor)
+        # Entscheidung 2026-10-16 „Korridor als Sättigungsziel“: Lauf 3+ mit
+        # vollem Vermächtnis muss im Median in 60–75 % der Basiskampagne
+        # liegen, frühe Läufe bleiben bewusst ~90 % (siehe
+        # docs/prestige-optionen.md §9).
+        run: node tools/balance-sim.mjs --prestige --gate
 
   rust:
     name: Check (Tauri/Rust)

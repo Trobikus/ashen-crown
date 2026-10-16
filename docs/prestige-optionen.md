@@ -182,6 +182,25 @@ Kronenasche wachsen (Treadmill-Risiko).
 3. **Korridor senken** (z. B. 75–90 % für Run 2) und das Prestige als
    langsamen Komfort definieren statt als Speedup-Sprung.
 
-Bis zur Entscheidung läuft der CI-Step `--prestige` berichtend (ohne
-`--gate`); das Gate prüft den Median-Korridor, sobald der Zielkanon
-festgelegt ist.
+Bis zur Entscheidung lief der CI-Step `--prestige` berichtend (ohne
+`--gate`).
+
+**Entscheidung (2026-10-16): Option 1 — Korridor als Sättigungsziel.**
+Umgesetzt wurde das Minimum an Hebeln, das das Band hält:
+
+- `KRONENASCHE_BASE_FACTOR` 0.02 → **0.03** (Empfehlungswert; messbar
+  laufzeitneutral — Einkommen ist gesättigt, belohnt aber den Ertrag).
+- `tiefenwissen` 0.03 → **0.10 je Stufe** (der eine wirksame Hebel: Wände
+  brechen an Beute, nicht an Einkommen; frühe Läufe kaufen den Titel erst
+  ab ~6 Kronenasche und bleiben dadurch unberührt).
+- Alle anderen Titel-Werte bleiben auf dem v0.15.1-Stand — Anhebungen von
+  Zweiter Atem/Alter Pfad zeigten keine messbare Korridor-Wirkung und wurden
+  zurückgenommen (Minimal-Änderung).
+
+Messung nach Tuning (je 400 gepaarte Seeds, zwei Seed-Bereiche): gefülltes
+Vermächtnis **66–71 %** (Median 70–71 %) — mittig im Band mit Puffer gegen
+das ±5–10-%-Punkte-Rauschen; frühe Läufe 88–98 %; Zone-1-Killzeit im vollen
+Vermächtnis 3,4 s (nicht trivial). Die Kopien in `game.js` (Prestige-Reset)
+und `items.js` (Drop-Chance) lesen die Werte jetzt aus `LEGACY_TITLES`
+statt sie zu duplizieren. Das CI-Gate (`--prestige --gate`) prüft das
+Sättigungs-Szenario gegen den Median-Korridor und ist hart geschaltet.

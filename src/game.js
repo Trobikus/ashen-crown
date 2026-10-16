@@ -858,15 +858,16 @@ function attemptPrestige() {
   const reward = kronenascheReward(state.cleared);
   state.kronenascheEarned += reward;
   state.prestigeRuns += 1;
-  // Der Lauf verfällt — alles Run-Bezogene kehrt zum Erwachen zurück.
-  state.ash = 25 * legacyLevel(state, 'der-vorbereitete');
+  // Der Lauf verfällt — alles Run-Bezogene kehrt zum Erwachen zurück. Die
+  // Start-Werte kommen aus den Titel-Definitionen (perLevel), nie aus Kopien.
+  state.ash = LEGACY_TITLES['der-vorbereitete'].perLevel * legacyLevel(state, 'der-vorbereitete');
   state.xp = 0;
   state.level = 1;
   state.maxHp = 35;
   state.damage = 2;
   state.armorBase = 0;
   state.critBonus = 0;
-  state.statPoints = 2 * legacyLevel(state, 'alter-pfad');
+  state.statPoints = LEGACY_TITLES['alter-pfad'].perLevel * legacyLevel(state, 'alter-pfad');
   state.skillPoints = 0;
   state.skills = ['start'];
   state.inventory = [];

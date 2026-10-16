@@ -14,7 +14,8 @@
 //   node tools/balance-sim.mjs --sweep    → Kurvensuche über hp/dmg-Wachstum
 //   node tools/balance-sim.mjs --prestige → Run 2 der Prestige-Balance messen
 //     (gepaart über 120 Seeds, ~20 s; --seeds N ändert die Anzahl,
-//      --gate prüft den Zielkorridor aus docs/prestige-optionen.md)
+//      --gate prüft das Sättigungs-Szenario — gefülltes Vermächtnis —
+//      gegen den Zielkorridor 60–75 %, Entscheidung 2026-10-16)
 //
 // Determinismus: Math.random wird auf den Seeded-RNG (mulberry32) umgebogen,
 // damit auch die echten data.js-Würfe (Loot, Lifeleech-Chance) Runs mit
@@ -685,15 +686,17 @@ if (prestige) {
     row.inCorridor = inCorridor;
   }
   if (gate) {
-    // CI-Gate: Der kanonische Lauf des Papiers (Krone + Tiefe 5) muss im
-    // Median im Korridor liegen — der Median ist gegenüber Ausreißer-Läufen
+    // CI-Gate (Entscheidung 2026-10-16 „Korridor als Sättigungsziel“): Das
+    // VOLL gefüllte Vermächtnis (36 Kronenasche, Lauf 3+) muss im Median im
+    // Korridor liegen — frühe Läufe bleiben bewusst darüber (~90 %), Zone 1
+    // darf nie trivial werden. Der Median ist gegenüber Ausreißer-Läufen
     // (Wände, die zufällig brechen oder nicht) robust.
-    const canonical = rows[1];
+    const canonical = rows[rows.length - 1];
     if (!canonical.inCorridor) {
-      console.error(`✗ Gate verfehlt: Run 2 „${canonical.label}“ liegt im Median bei ${(canonical.med * 100).toFixed(0)} % — außerhalb ${Math.round(CORRIDOR.min * 100)}–${Math.round(CORRIDOR.max * 100)} %.`);
+      console.error(`✗ Gate verfehlt: ${canonical.label} liegt im Median bei ${(canonical.med * 100).toFixed(0)} % — außerhalb ${Math.round(CORRIDOR.min * 100)}–${Math.round(CORRIDOR.max * 100)} %.`);
       process.exitCode = 1;
     } else {
-      console.log(`✓ Gate bestanden: Run 2 „${canonical.label}“ im Median bei ${(canonical.med * 100).toFixed(0)} %.`);
+      console.log(`✓ Gate bestanden: ${canonical.label} im Median bei ${(canonical.med * 100).toFixed(0)} %.`);
     }
   }
 } else if (sweep) {

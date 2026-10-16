@@ -89,15 +89,15 @@ const ps = { kronenascheEarned: 3, kronenascheAusgegeben: 1, legacy: { beutelspa
 assert(P.kronenascheAvailable(ps) === 2, `verfügbare Kronenasche 3−1=2 (${P.kronenascheAvailable(ps)})`);
 assert(P.legacyLevel(ps, 'beutelspaehler') === 2 && P.legacyLevel(ps, 'unbekannt') === 0, `legacyLevel liest bekannte Titel, unbekannte = 0`);
 assert(P.legacyLevel(ps, 'zweiter-atem') === 3, `Zweiter Atem liest Stufe 3`);
-assert(Math.abs(P.ashLegacyFactor(ps) - 1.16) < 1e-9, `Asche-Faktor: 1 + 0,02×3 + 0,05×2 = 1,16 (${P.ashLegacyFactor(ps)})`);
-assert(Math.abs(P.xpLegacyFactor(ps) - 1.06) < 1e-9, `XP-Faktor ohne Aschengeist = 1,06 (${P.xpLegacyFactor(ps)})`);
+assert(Math.abs(P.ashLegacyFactor(ps) - 1.19) < 1e-9, `Asche-Faktor: 1 + 0,03×3 + 0,05×2 = 1,19 (${P.ashLegacyFactor(ps)})`);
+assert(Math.abs(P.xpLegacyFactor(ps) - 1.09) < 1e-9, `XP-Faktor ohne Aschengeist = 1,09 (${P.xpLegacyFactor(ps)})`);
 const pfresh = {};
 assert(P.legacyLevel(pfresh, 'aschengeist') === 0 && P.kronenascheAvailable(pfresh) === 0, 'frischer Spielstand: alles bei null');
 
 // ——— state.js: XP-Faktor folgt dem Vermächtnis ———
 S.state.kronenascheEarned = 5;
 S.state.legacy = { aschengeist: 2 };
-assert(Math.abs(S.xpGainFactor() - 1.2) < 1e-9, `xpGainFactor: 1 + 0,02×5 + 0,05×2 = 1,2 (${S.xpGainFactor()})`);
+assert(Math.abs(S.xpGainFactor() - 1.25) < 1e-9, `xpGainFactor: 1 + 0,03×5 + 0,05×2 = 1,25 (${S.xpGainFactor()})`);
 S.state.kronenascheEarned = 0;
 S.state.legacy = {};
 

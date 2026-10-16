@@ -6,16 +6,30 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Geändert
+- **Prestige-Balance: „Korridor als Sättigungsziel“ umgesetzt** (Entscheidung
+  gegen [docs/prestige-optionen.md](docs/prestige-optionen.md) §9): Der
+  60–75-%-Zeitkorridor gilt jetzt für Lauf 3+ mit **voll gefülltem
+  Vermächtnis** statt für Run 2 — frühe Läufe bleiben bewusst bei ~90 % der
+  Basiskampagne, Zone 1 wird nie trivial. Um das Band messbar zu halten,
+  wurden genau zwei Werte angehoben: **Tiefenwissen** zählt jetzt
+  **+10 % Elite-/Boss-Fundchance je Stufe** (vorher +3 % — der Wirksamkeits-
+  hebel, weil Wände an Beute brechen) und jede erworbene **Kronenasche**
+  segnet künftig **+3 % Asche & Erfahrung** (vorher +2 %, laufzeitneutral).
+  Alle anderen Titel-Werte sind unverändert. Sim-kalibriert: gefülltes
+  Vermächtnis ≈ 66–71 % der Basiskampagne (je 400 gepaarte Seeds, zwei
+  Seed-Bereiche); das CI-Gate `--prestige --gate` bewacht das Band ab jetzt
+  hart.
+
 ### Hinzugefügt
 - **Balance-Sim: Prestige-Modus** (`tools/balance-sim.mjs --prestige`): Misst
   Run 2 gegen die Basiskampagne — Kronenasche-Szenarien (Krone bis
   Krone + Tiefe 20, plus gefülltes Vermächtnis), gepaart über 120 Seeds,
-  weil ein Einzel-Seed reines Rauschen ist (Baseline-Spanne 8–95 h). Läuft
-  berichtend in der CI; `--gate` prüft den Zielkorridor aus dem
-  Prestige-Papier. **Befund:** Der 60–75-%-Korridor für Run 2 ist mit den
-  gebauten Stellschrauben unerreichbar (frühe Runs ~90–100 %, volles
-  Vermächtnis ~72–81 %) — die Entscheidung steht in
-  `docs/prestige-optionen.md` §9 offen.
+  weil ein Einzel-Seed reines Rauschen ist (Baseline-Spanne 8–95 h).
+  **Methodik-Befund:** Erst Multi-Seed-Messung macht Prestige-Effekte
+  überhaupt sichtbar; Vorläufer-Befund vor dem Tuning: der 60–75-%-Korridor
+  für frühe Run-2-Budgets (1–5 Kronenasche) ist mit %-Hebeln unerreichbar
+  (~90–100 % gemessen) — daraus folgte die Sättigungs-Entscheidung oben.
 - **Schrein: Heldenporträt & Regenerations-Timer**: Oben links steht der Held
   jetzt mit seinem Bild; die Lebenskraft-Leiste sitzt darunter. Solange das
   Leben am Schrein kehrt, schimmert der Balken sanft grün und ein Timer
