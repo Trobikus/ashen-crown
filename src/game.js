@@ -457,8 +457,11 @@ function killEnemy() {
   pulseClass(el.enemyFigure, 'dying', 500);
   state.kills += 1;
   state.zoneKills += 1;
-  // Bestiarium: Jede erlegte Kreatur zählt unter ihrem Namen.
+  // Bestiarium: Jede erlegte Kreatur zählt unter ihrem Namen; der Erstkill
+  // einer Art wird gefeiert — sonst füllt sich das Bestiarium unsichtbar.
+  const firstOfKind = !state.bestiary[def.name];
   state.bestiary[def.name] = (state.bestiary[def.name] ?? 0) + 1;
+  if (firstOfKind) toast(`Neue Kreatur erlegt: ${def.name}`, '#c1663a');
   // Safedrop: Der erste Elite-Kill eines Gebiets garantiert ein Stück.
   const eliteSafedrop = enemy.type === 'elite' && !state.safedropZones[state.zone];
   if (eliteSafedrop) state.safedropZones[state.zone] = 1;
@@ -1067,6 +1070,10 @@ function render() {
   el.game.classList.toggle('low-hp', state.inField && !paused && heroHp / heroMaxHp() <= 0.25);
   setHpBar(el.heroHp, el.heroHpGhost, (heroHp / heroMaxHp()) * 100);
   el.heroHpText.textContent = `${formatNum(Math.max(0, heroHp))} / ${formatNum(heroMaxHp())}`;
+  // XP-Streifen: Der Stufenfortschritt läuft unter dem HP-Balken mit.
+  const xpNeed = xpNeeded(state.level);
+  el.heroXpFill.style.width = `${Math.min(100, (state.xp / xpNeed) * 100)}%`;
+  el.heroXpBar.title = `EP ${formatNum(state.xp)} / ${formatNum(xpNeed)}`;
   if (enemy) {
     el.enemyName.textContent = enemy.name;
     el.enemyLevel.textContent = `Lv ${enemy.level} · ${enemy.type === 'boss' ? 'Boss' : enemy.type === 'elite' ? 'Elite' : 'Normal'}`;
@@ -1098,12 +1105,26 @@ function checkAchievements() {
   save();
 }
 
+// Blockierter Speicher (Web-Build, Privatmodus, Quota): Ein Wurf darf das
+// Spiel nicht töten — gedrosselte Warnung statt Exception.
+let lastStorageWarning = 0;
+
+function warnStorageBroken() {
+  if (Date.now() - lastStorageWarning < 30000) return;
+  lastStorageWarning = Date.now();
+  toast('Spielstand konnte nicht gespeichert werden — der Speicher blockiert Schreibzugriffe.', '#c1663a');
+}
+
 function save() {
   if (saveSuppressed) return;
   state.lastSeen = Date.now();
   state.hp = Math.max(0, Math.round(heroHp));
   rotateBackups();
-  localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+  } catch {
+    warnStorageBroken();
+  }
 }
 
 const asNumber = (value, fallback) => (typeof value === 'number' && Number.isFinite(value) ? value : fallback);
@@ -1211,9 +1232,14 @@ function rotateBackups(force = false) {
   if (!current) return;
   const newest = parseSave(localStorage.getItem(BACKUP_KEYS[0]));
   if (!force && newest && Date.now() - (newest.lastSeen ?? 0) < BACKUP_MIN_GAP_MS) return;
-  localStorage.setItem(BACKUP_KEYS[2], localStorage.getItem(BACKUP_KEYS[1]) ?? '');
-  localStorage.setItem(BACKUP_KEYS[1], localStorage.getItem(BACKUP_KEYS[0]) ?? '');
-  localStorage.setItem(BACKUP_KEYS[0], JSON.stringify(current));
+  try {
+    localStorage.setItem(BACKUP_KEYS[2], localStorage.getItem(BACKUP_KEYS[1]) ?? '');
+    localStorage.setItem(BACKUP_KEYS[1], localStorage.getItem(BACKUP_KEYS[0]) ?? '');
+    localStorage.setItem(BACKUP_KEYS[0], JSON.stringify(current));
+  } catch {
+    // Backups sind der zweite Schutzring — ihr Scheitern darf das Speichern
+    // des Hauptstands nicht mitreißen (die Quota gilt für beide).
+  }
 }
 
 // Härtung: bereinigt ALLES auf dem rohen Spielstand-Objekt, bevor etwas davon
@@ -1750,7 +1776,11 @@ function bindEvents() {
   el.tileSkills.addEventListener('click', () => {
     if (state.level < SKILL_TREE_UNLOCK_LEVEL) return;
     showScreen(el.sceneSkills);
-    hintOnce('hint-skills', 'Benachbarte Runen schalten andere frei — klicke verfügbare an. Maximal zwei Pfade erwachen gleichzeitig; „Runen neu schneiden" bricht alles zurück und erstattet die Punkte.');
+    // Sofort rendern — der Guard in renderSkillTree überspringt die Szene,
+    // solange sie verborgen ist; ohne diesen Aufruf bliebe sie bis zum
+    // nächsten 3-Sekunden-Tick im alten Zustand.
+    renderSkillTree();
+    hintOnce('hint-skills', 'Benachbarte Runen schalten andere frei — klicke verfügbare an. Maximal zwei Pfade erwachen gleichzeitig; „Runen neu schneiden“ bricht alles zurück und erstattet die Punkte.');
   });
   el.tileMap.addEventListener('click', () => {
     resetZoneView();
@@ -1831,6 +1861,13 @@ function bindEvents() {
   bindSkillTreeEvents(hooks);
   for (const slotEl of el.gearSlots) {
     slotEl.addEventListener('click', () => unequipItem(slotEl.dataset.slot));
+    // Tastaturbedienung (Tab + Enter/Leer) für die Slot-Divs — der Tooltip
+    // erscheint über :focus-visible, das Ablegen wie per Klick.
+    slotEl.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      unequipItem(slotEl.dataset.slot);
+    });
   }
   document.querySelectorAll('[data-back]').forEach((btn) => {
     btn.addEventListener('click', () => showScreen(el.hub));

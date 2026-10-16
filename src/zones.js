@@ -48,6 +48,7 @@ function buildDepthPanel() {
   const prev = document.createElement('button');
   prev.className = 'zone-pager';
   prev.dataset.dir = '-1';
+  prev.setAttribute('aria-label', 'Vorheriger Kontinent');
   prev.textContent = '‹';
   const name = document.createElement('div');
   name.className = 'zone-continent';
@@ -55,6 +56,7 @@ function buildDepthPanel() {
   const next = document.createElement('button');
   next.className = 'zone-pager';
   next.dataset.dir = '1';
+  next.setAttribute('aria-label', 'Nächster Kontinent');
   next.textContent = '›';
   head.append(prev, name, next);
   panel.appendChild(head);
@@ -90,6 +92,7 @@ export function buildZoneList() {
     const prev = document.createElement('button');
     prev.className = 'zone-pager';
     prev.dataset.dir = '-1';
+    prev.setAttribute('aria-label', 'Vorheriger Kontinent');
     prev.textContent = '‹';
     const name = document.createElement('div');
     name.className = 'zone-continent';
@@ -97,6 +100,7 @@ export function buildZoneList() {
     const next = document.createElement('button');
     next.className = 'zone-pager';
     next.dataset.dir = '1';
+    next.setAttribute('aria-label', 'Nächster Kontinent');
     next.textContent = '›';
     head.append(prev, name, next);
     panel.appendChild(head);
@@ -118,6 +122,10 @@ export function buildZoneList() {
 }
 
 export function renderZones() {
+  // Guard: Nur die Karte zeigt Zonen-Zeilen — sonst durchläuft render() die
+  // ~66 Zeilen (Toggle + Status-Text) bei jedem Schlag für nichts. Das Öffnen
+  // der Karte rendert explizit (tile-Map-Klick), der Pager ebenso.
+  if (el.sceneMap.hidden) return;
   const view = activeView();
   for (const panel of el.zoneList.querySelectorAll('.zone-continent-panel')) {
     const ci = Number(panel.dataset.continent);

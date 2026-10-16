@@ -119,22 +119,22 @@
             </div>
             <div class="has-tooltip">
               <dt>Lebenskraft</dt><dd id="hero-modal-hp">20</dd>
-              <button class="stat-plus" data-stat="hp" hidden>+</button>
+              <button class="stat-plus" data-stat="hp" hidden aria-label="Lebenskraft erhöhen">+</button>
               <div class="tooltip">Dein gesamtes Leben. Fällt es auf null, erwachst du am Schrein. Ein Punkt: +5.</div>
             </div>
             <div class="has-tooltip">
               <dt>Schaden</dt><dd id="hero-modal-damage">2</dd>
-              <button class="stat-plus" data-stat="damage" hidden>+</button>
+              <button class="stat-plus" data-stat="damage" hidden aria-label="Schaden erhöhen">+</button>
               <div class="tooltip">Dein Schaden pro Schlag rollt in dieser Spanne — aus Stufe, Statpunkten, Ausrüstung und Runen. Ein Punkt: +1 auf beide Enden.</div>
             </div>
             <div class="has-tooltip">
               <dt>Rüstung</dt><dd id="hero-modal-armor">0</dd>
-              <button class="stat-plus" data-stat="armor" hidden>+</button>
+              <button class="stat-plus" data-stat="armor" hidden aria-label="Rüstung erhöhen">+</button>
               <div class="tooltip">Wandelt Rüstung in Schadensminderung um — der Schutz wächst mit der Rüstung, aber schwindende Zuwächse: starke Gegner durchdringen mehr. Und egal wie viel Rüstung du stapelst: Mehr als die Hälfte des Schadens kommt immer durch. Mindestens 1 Schaden trifft sowieso. Ein Punkt: +1.</div>
             </div>
             <div class="has-tooltip">
               <dt>Kritische Chance</dt><dd id="hero-modal-crit">5 %</dd>
-              <button class="stat-plus" data-stat="crit" hidden>+</button>
+              <button class="stat-plus" data-stat="crit" hidden aria-label="Kritchance erhöhen">+</button>
               <div class="tooltip">Chance, einen Schlag für doppelten Schaden zu treffen. Ein Punkt: +1 %.</div>
             </div>
             <div class="has-tooltip">
@@ -161,13 +161,13 @@
         </div>
         <div class="gear-panel">
           <div class="gear-slots">
-            <div class="gear-slot has-tooltip" data-slot="waffe"><span class="slot-name">Waffe</span><span class="slot-value">—</span><div class="tooltip"></div></div>
-            <div class="gear-slot has-tooltip" data-slot="brust"><span class="slot-name">Brust</span><span class="slot-value">—</span><div class="tooltip"></div></div>
-            <div class="gear-slot has-tooltip" data-slot="helm"><span class="slot-name">Helm</span><span class="slot-value">—</span><div class="tooltip"></div></div>
-            <div class="gear-slot has-tooltip" data-slot="hose"><span class="slot-name">Hose</span><span class="slot-value">—</span><div class="tooltip"></div></div>
-            <div class="gear-slot has-tooltip" data-slot="schuhe"><span class="slot-name">Schuhe</span><span class="slot-value">—</span><div class="tooltip"></div></div>
-            <div class="gear-slot has-tooltip" data-slot="hand-links"><span class="slot-name">Handschuh Links</span><span class="slot-value">—</span><div class="tooltip"></div></div>
-            <div class="gear-slot has-tooltip" data-slot="hand-rechts"><span class="slot-name">Handschuh Rechts</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="waffe" tabindex="0" role="button" aria-label="Waffe ablegen"><span class="slot-name">Waffe</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="brust" tabindex="0" role="button" aria-label="Brust ablegen"><span class="slot-name">Brust</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="helm" tabindex="0" role="button" aria-label="Helm ablegen"><span class="slot-name">Helm</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="hose" tabindex="0" role="button" aria-label="Hose ablegen"><span class="slot-name">Hose</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="schuhe" tabindex="0" role="button" aria-label="Schuhe ablegen"><span class="slot-name">Schuhe</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="hand-links" tabindex="0" role="button" aria-label="Handschuh Links ablegen"><span class="slot-name">Handschuh Links</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="hand-rechts" tabindex="0" role="button" aria-label="Handschuh Rechts ablegen"><span class="slot-name">Handschuh Rechts</span><span class="slot-value">—</span><div class="tooltip"></div></div>
           </div>
           <div class="inventory-bar">
             <span class="inventory-label">Inventar <span class="inventory-count" id="inventory-count">0 / 40</span></span>
@@ -399,8 +399,9 @@
           <div class="fighter-name">Der Erweckte</div>
           <div class="hp-bar"><div class="hp-ghost" id="hero-hp-ghost"></div><div class="hp-fill hero-fill" id="hero-hp"></div></div>
           <div class="hp-text" id="hero-hp-text">—</div>
+          <div class="xp-bar" id="hero-xp-bar"><div class="xp-fill" id="hero-xp-fill"></div></div>
         </div>
-        <div class="fighter has-tooltip" id="enemy-fighter">
+        <div class="fighter has-tooltip" id="enemy-fighter" tabindex="0">
           <div class="figure" id="enemy-figure"></div>
           <div class="fighter-level" id="enemy-level">—</div>
           <div class="fighter-name" id="enemy-name">—</div>
@@ -415,7 +416,7 @@
       <div id="actions">
         <button id="btn-door" hidden>Durch die Tür gehen</button>
       </div>
-      <div id="toasts"></div>
+      <div id="toasts" aria-live="polite"></div>
     </div>
     <div id="overlay"><p id="overlay-text"></p></div>
     <div id="patchnotes" hidden>

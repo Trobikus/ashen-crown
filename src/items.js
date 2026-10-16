@@ -347,6 +347,7 @@ function renderInventory() {
     if (selectedForSale.has(item.id)) cell.classList.add('selected');
     cell.dataset.id = item.id;
     cell.style.borderColor = rarity.color;
+    cell.setAttribute('aria-label', `${item.name} — ${rarity.label}`);
     cell.innerHTML = `
       <span class="slot-icon inv-icon" style="--icon: url('${iconOf(item.slot)}'); color:${rarity.color}"></span>
       <div class="tooltip">${tooltipHtml(item, sellMode ? 'Auswählen' : 'Anlegen', true)}</div>`;

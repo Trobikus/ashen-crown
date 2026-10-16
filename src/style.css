@@ -1326,8 +1326,25 @@ input[type='range'] {
   font-size: 0.85rem;
 }
 
-.has-tooltip:hover .tooltip {
+.has-tooltip:hover .tooltip,
+.has-tooltip:focus-visible .tooltip {
   display: block;
+}
+
+/* XP-Streifen: dünner Kronen-Faden unter dem Helden-HP-Balken — der
+   Stufenfortschritt ist im Kampf nebenbei lesbar, statt nur im Held-Modal. */
+.xp-bar {
+  width: clamp(130px, 18vw, 280px);
+  height: 3px;
+  margin-top: 3px;
+  border: 1px solid rgba(217, 160, 63, 0.3);
+  background: rgba(217, 160, 63, 0.1);
+}
+
+.xp-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #a87c2c, #d9a03f);
 }
 
 .tooltip {

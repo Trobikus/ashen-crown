@@ -6,22 +6,26 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
-### Geändert
-- **Prestige-Balance: „Korridor als Sättigungsziel“ umgesetzt** (Entscheidung
-  gegen [docs/prestige-optionen.md](docs/prestige-optionen.md) §9): Der
-  60–75-%-Zeitkorridor gilt jetzt für Lauf 3+ mit **voll gefülltem
-  Vermächtnis** statt für Run 2 — frühe Läufe bleiben bewusst bei ~90 % der
-  Basiskampagne, Zone 1 wird nie trivial. Um das Band messbar zu halten,
-  wurden genau zwei Werte angehoben: **Tiefenwissen** zählt jetzt
-  **+10 % Elite-/Boss-Fundchance je Stufe** (vorher +3 % — der Wirksamkeits-
-  hebel, weil Wände an Beute brechen) und jede erworbene **Kronenasche**
-  segnet künftig **+3 % Asche & Erfahrung** (vorher +2 %, laufzeitneutral).
-  Alle anderen Titel-Werte sind unverändert. Sim-kalibriert: gefülltes
-  Vermächtnis ≈ 66–71 % der Basiskampagne (je 400 gepaarte Seeds, zwei
-  Seed-Bereiche); das CI-Gate `--prestige --gate` bewacht das Band ab jetzt
-  hart.
-
 ### Hinzugefügt
+- **XP-Streifen im Kampf**: Unter der Helden-Lebenskraft-Leiste läuft jetzt
+  ein dünner Kronen-Faden mit dem Stufenfortschritt (Maus-Hover zeigt die
+  exakten EP) — Level-Motivation wird nebenbei lesbar statt erst im
+  Held-Modal.
+- **Erstkill-Feier im Bestiarium-Loop**: Die erste Erlegung einer Kreaturart
+  blendet „Neue Kreatur erlegt: …" ein — das Bestiarium füllt sich nicht
+  mehr unsichtbar.
+- **Tastatur-Zugang für Tooltips**: Inventar-Zellen, Ausrüstungs-Slots, der
+  Gegner-Inspektor und der Fertigkeitenbaum reagieren jetzt auf Tastatur —
+  Fokus zeigt den Tooltip (Getragene-Vergleich inklusive), Enter/Leer legt ab
+  bzw. skillt. Im Skilltree sind nur wirklich freischaltbare Knoten
+  Tab-Stops, damit die Reihenfolge kurz bleibt. Dazu zugängliche Namen für
+  Icon-Knöpfe (Zonen-Pager, Stat-Plus, Inventar-Zellen) und ein
+  `aria-live`-Toasts-Layer.
+- **Save-Härtung**: Ein blockierter Speicher (Privatmodus, Quota — Web-Build)
+  wirft das Spiel nicht mehr um: Hauptstand und Backup-Kette fangen
+  Schreibfehler, eine gedrosselte Warnung (max. alle 30 s) meldet den Zustand.
+  Messung: Ein save() kostet ~0,03 ms — bewusst kein Debounce, das nur
+  Datenverlustrisiko kaufen würde.
 - **Balance-Sim: Prestige-Modus** (`tools/balance-sim.mjs --prestige`): Misst
   Run 2 gegen die Basiskampagne — Kronenasche-Szenarien (Krone bis
   Krone + Tiefe 20, plus gefülltes Vermächtnis), gepaart über 120 Seeds,
@@ -56,6 +60,21 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
   schalten; Stufenaufstieg lässt den Helden kronengolden aufglimmen.
 - **UI-Schliff**: Knöpfe und Schrein-Kacheln mit sanften Hover-Glows in
   Kronenfarbe, sichtbare Fokus-Rahmen für Tastatursteuerung.
+
+### Geändert
+- **Prestige-Balance: „Korridor als Sättigungsziel“ umgesetzt** (Entscheidung
+  gegen [docs/prestige-optionen.md](docs/prestige-optionen.md) §9): Der
+  60–75-%-Zeitkorridor gilt jetzt für Lauf 3+ mit **voll gefülltem
+  Vermächtnis** statt für Run 2 — frühe Läufe bleiben bewusst bei ~90 % der
+  Basiskampagne, Zone 1 wird nie trivial. Um das Band messbar zu halten,
+  wurden genau zwei Werte angehoben: **Tiefenwissen** zählt jetzt
+  **+10 % Elite-/Boss-Fundchance je Stufe** (vorher +3 % — der Wirksamkeits-
+  hebel, weil Wände an Beute brechen) und jede erworbene **Kronenasche**
+  segnet künftig **+3 % Asche & Erfahrung** (vorher +2 %, laufzeitneutral).
+  Alle anderen Titel-Werte sind unverändert. Sim-kalibriert: gefülltes
+  Vermächtnis ≈ 66–71 % der Basiskampagne (je 400 gepaarte Seeds, zwei
+  Seed-Bereiche); das CI-Gate `--prestige --gate` bewacht das Band ab jetzt
+  hart.
 
 ### Behoben
 - Bewegungsreduktion deckt jetzt alle neuen Effekte ab (Szenen-Übergang,

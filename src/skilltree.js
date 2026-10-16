@@ -79,6 +79,8 @@ function buildSkillTree() {
     const group = document.createElementNS(ns, 'g');
     group.classList.add('skill-node', `branch-${node.branch}`, `type-${node.type}`);
     group.dataset.id = node.id;
+    group.setAttribute('aria-label', node.name || 'Rune');
+    group.setAttribute('role', 'button');
     const circle = document.createElementNS(ns, 'circle');
     circle.setAttribute('cx', x);
     circle.setAttribute('cy', y);
@@ -90,6 +92,10 @@ function buildSkillTree() {
 }
 
 function renderSkillTree() {
+  // Guard wie bei den anderen Szenen: Der Baum hat ~150 Knoten + ~200 Kanten —
+  // die Class-Toggles laufen sonst bei JEDEM render() (auch bei jedem Schlag)
+  // für eine verborgene Szene. Beim Öffnen rendert der Tile-Klick explizit.
+  if (el.sceneSkills.hidden) return;
   for (const group of el.skillTree.querySelectorAll('.skill-node')) {
     const id = group.dataset.id;
     const allocated = state.skills.includes(id);
@@ -98,6 +104,9 @@ function renderSkillTree() {
     group.classList.toggle('available', canSkill && state.skillPoints > 0);
     group.classList.toggle('locked', !allocated && !canSkill);
     group.classList.toggle('branch-locked', !allocated && branchLocked(SKILL_NODES_BY_ID[id]?.branch));
+    // Tastatur: Nur wirklich freischaltbare Knoten sind Tab-Stops — so bleibt
+    // die Tab-Reihenfolge kurz; Fokus zeigt den Tooltip, Enter/Leer skillt.
+    group.setAttribute('tabindex', canSkill && state.skillPoints > 0 ? '0' : '-1');
   }
   for (const line of el.skillTree.querySelectorAll('.skill-edge')) {
     line.classList.toggle('active', state.skills.includes(line.dataset.from) && state.skills.includes(line.dataset.to));
@@ -221,6 +230,20 @@ export function bindSkillTreeEvents(hooks) {
 
   });
 
+  // Tooltip-Aufbau + Positionierung — geteilt zwischen Maus (Cursor-Anker)
+  // und Tastatur (Knoten-Anker über getBoundingClientRect, pan/zoom-fest).
+  const showSkillTooltip = (group, anchor) => {
+    const tooltip = el.skillTooltip;
+    tooltip.innerHTML = skillTooltipHtml(SKILL_NODES_BY_ID[group.dataset.id]);
+    tooltip.hidden = false;
+    const wrapRect = el.skillTreeWrap.getBoundingClientRect();
+    const left = Math.min(anchor.left - wrapRect.left + (anchor.width ?? 0) / 2 + 14, wrapRect.width - tooltip.offsetWidth - 4);
+    const top = Math.min(anchor.top - wrapRect.top + 14, wrapRect.height - tooltip.offsetHeight - 4);
+    tooltip.style.left = `${Math.max(0, left)}px`;
+    tooltip.style.top = `${Math.max(0, top)}px`;
+  };
+  const nodeAnchor = (group) => group.querySelector('circle').getBoundingClientRect();
+
   el.skillTree.addEventListener('mousemove', (e) => {
 
     if (skillDrag) {
@@ -233,30 +256,33 @@ export function bindSkillTreeEvents(hooks) {
 
     const group = e.target.closest('.skill-node');
 
-    const tooltip = el.skillTooltip;
-
     if (!group) {
 
-      tooltip.hidden = true;
+      el.skillTooltip.hidden = true;
 
       return;
 
     }
 
-    tooltip.innerHTML = skillTooltipHtml(SKILL_NODES_BY_ID[group.dataset.id]);
+    showSkillTooltip(group, { left: e.clientX, top: e.clientY, width: 0 });
 
-    tooltip.hidden = false;
+  });
 
-    const wrapRect = el.skillTreeWrap.getBoundingClientRect();
+  el.skillTree.addEventListener('focusin', (e) => {
+    const group = e.target.closest('.skill-node');
+    if (group) showSkillTooltip(group, nodeAnchor(group));
+  });
 
-    const left = Math.min(e.clientX - wrapRect.left + 14, wrapRect.width - tooltip.offsetWidth - 4);
+  el.skillTree.addEventListener('focusout', () => {
+    el.skillTooltip.hidden = true;
+  });
 
-    const top = Math.min(e.clientY - wrapRect.top + 14, wrapRect.height - tooltip.offsetHeight - 4);
-
-    tooltip.style.left = `${Math.max(0, left)}px`;
-
-    tooltip.style.top = `${Math.max(0, top)}px`;
-
+  el.skillTree.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const group = e.target.closest('.skill-node');
+    if (!group) return;
+    e.preventDefault();
+    attemptAllocate(group.dataset.id, hooks);
   });
 
   el.skillTree.addEventListener('mouseleave', () => {
