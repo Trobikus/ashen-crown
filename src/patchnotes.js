@@ -3,10 +3,19 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.16.1',
+  version: '0.16.2',
   date: '16.10.2026',
-  headline: 'Loot mit Augenmaß — Deltas im Tooltip, Farbpuls in der Arena',
+  headline: 'Fortschritt, den man sieht — Balken im HUD und am Thron',
   sections: [
+    {
+      heading: '0.16.2 — Orientierung & Fortschritt',
+      items: [
+        'Siege-Balken: Im Kampf-HUD läuft neben der Zahl ein goldener Faden — in der Boss-Phase voll und golden.',
+        'Gebiete-Kopf: Jeder Kontinent zählt seine offenen Gebiete („3 / 10" mit Balken), die Tiefen nennen die erreichte Tiefe.',
+        'Prestige-Vorschau: Der Thron zeigt „Verfällt / Bleibt" in zwei klaren Spalten mit Belohnungs-Zeile.',
+        'Vermächtnis-Akzent: Die Vermächtnis-Zeilen tragen Kronengold — klar getrennt vom Ruhm-Laden.',
+      ],
+    },
     {
       heading: '0.16.1 — Loot & Vergleich',
       items: [
