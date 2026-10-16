@@ -3,10 +3,23 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.15.1',
-  date: '15.10.2026',
-  headline: 'Die Krone formt dich neu — Prestige ist da',
+  version: '0.16.0',
+  date: '16.10.2026',
+  headline: 'Der Feinschliff — Level sichtbar, Loot lesbar, Tastatur willkommen',
   sections: [
+    {
+      heading: '0.16.0 — Feinschliff: XP-Streifen, Erstkill-Feier & Tastatur',
+      items: [
+        'XP-Streifen: Unter deiner Lebenskraft läuft jetzt ein goldener Faden mit dem Stufenfortschritt — Hover zeigt die exakten EP.',
+        'Erstkill-Feier: Die erste Erlegung einer Kreaturart blendet „Neue Kreatur erlegt“ ein — das Bestiarium füllt sich nicht mehr heimlich.',
+        'Tastatur: Tooltips öffnen sich per Fokus (Tab), Enter/Leer legt Ausrüstung ab oder skillt Runen — im Baum sind nur freischaltbare Knoten Tab-Stops.',
+        'Prestige-Balance: Tiefenwissen zahlt jetzt +10 % Elite-/Boss-Fundchance je Stufe; jede erworbene Kronenasche segnet +3 % Asche & Erfahrung.',
+        'Save-Härtung: Ein blockierter Speicher (Privatmodus, Quota) wirft das Spiel nicht mehr um — Warnung statt Absturz.',
+        'Grafik-Polish: Sieben handgesetzte Gegner-Sprites mit Arena-Bühne je Kontinent, Funken/Hieb/HP-Geist bei Treffern, Kronen-Menü.',
+        'Schrein: Heldenporträt mit Lebenskraft-Leiste und Regenerations-Timer („voll in 12 s“).',
+        'Fixes: „Alles auswählen“ im Verkaufsmodus greift sofort; sinnlose Render-Arbeit im Kampf entfernt.',
+      ],
+    },
     {
       heading: '0.15.1 — Prestige: Erneut erwachen',
       items: [

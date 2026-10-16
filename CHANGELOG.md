@@ -6,6 +6,8 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [0.16.0] — 2026-10-16
+
 ### Hinzugefügt
 - **XP-Streifen im Kampf**: Unter der Helden-Lebenskraft-Leiste läuft jetzt
   ein dünner Kronen-Faden mit dem Stufenfortschritt (Maus-Hover zeigt die
@@ -734,7 +736,8 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Desktop-Shell via Tauri 2, Vollbild-Start.
 - Ausrüstungs-Icons als maskierte SVGs (game-icons.net, CC BY 3.0).
 
-[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.15.1...HEAD
+[Unreleased]: https://github.com/Trobikus/ashen-crown/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/Trobikus/ashen-crown/compare/v0.15.1...v0.16.0
 [0.15.1]: https://github.com/Trobikus/ashen-crown/compare/v0.15.0...v0.15.1
 [0.15.0]: https://github.com/Trobikus/ashen-crown/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/Trobikus/ashen-crown/compare/v0.13.0...v0.14.0
