@@ -86,7 +86,13 @@ function noiseBurst({ dur = 0.2, gain = 0.2, cutoff = 1000, delay = 0 }) {
 }
 
 // Dunkler Drone (zwei verstimmte Dreiecke + langsamer Filter-Lauf) als Musik.
+// Die dritte Schicht (Sägezahn-Quinte) bleibt zu, bis das Feld sie öffnet —
+// der Schrein klingt ruhig, der Kampf dichter (setCombatIntensity).
 let musicNodes = null;
+
+let musicFilter = null;
+
+let musicLayer = null;
 
 function startMusic() {
   if (musicNodes) return;
@@ -115,7 +121,27 @@ function startMusic() {
   a.start();
   b.start();
   lfo.start();
+  // Feld-Schicht: Quinte über dem Drone, startet stumm.
+  const c = ctx.createOscillator();
+  c.type = 'sawtooth';
+  c.frequency.value = 82.41;
+  const cGain = ctx.createGain();
+  cGain.gain.value = 0;
+  c.connect(cGain);
+  cGain.connect(filter);
+  c.start();
   musicNodes = { a, b, lfo };
+  musicFilter = filter;
+  musicLayer = { osc: c, gain: cGain };
+}
+
+// Intensität: Das Feld öffnet Filter und Feld-Schicht, der Schrein schließt
+// sie — weiche Rampen, damit die Musik atmet statt schaltet.
+function setCombatIntensity(on) {
+  if (!ctx || !musicLayer) return;
+  const t = ctx.currentTime;
+  musicLayer.gain.gain.setTargetAtTime(on ? 0.35 : 0, t, on ? 1.2 : 0.8);
+  musicFilter.frequency.setTargetAtTime(on ? 300 : 220, t, 1.5);
 }
 
 export const sfx = {
@@ -196,3 +222,5 @@ export function setBossFight(on) {
     drumsTimer = null;
   }
 }
+
+export { setCombatIntensity };

@@ -6,6 +6,19 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Hinzugefügt
+- **Elite-Moment**: Eliten blitzen beim Auftritt einmal gold auf und melden
+  sich mit einem kurzen zweistimmigen Sting — ein Ereignis, kein
+  Normalgegner.
+- **Musik atmet mit**: Ein Intensitäts-Layer für die Drone-Musik — am Schrein
+  ruhig (Filter zu, Feld-Schicht aus), im Feld dichter (Quinte + offener
+  Filter, weiche Rampen). Verdrahtet an Abstieg, Schrein-Rückkehr, Sieg und
+  Prestige; die Boss-Trommeln liegen obendrauf wie bisher.
+- **Sieg-Moment**: Der Titel „Die Aschenkrone" senkt sich einmal glühend auf
+  den Sieg-Screen.
+- **Prestige-Moment**: Beim „Erneut erwachen" atmet der Hub einmal
+  kronengolden, während der neue Lauf beginnt.
+
 ## [0.16.2] — 2026-10-16
 
 ### Hinzugefügt

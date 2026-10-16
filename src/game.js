@@ -12,7 +12,7 @@ import { buildSkillTree, renderSkillTree, bindSkillTreeEvents, applySkillView } 
 
 import { buildZoneList, renderZones, resetZoneView, switchZoneView } from './zones.js';
 
-import { sfx, setLowHp, setBossFight } from './audio.js';
+import { sfx, setLowHp, setBossFight, setCombatIntensity } from './audio.js';
 
 import { toast, levelUpFloat } from './feedback.js';
 
@@ -320,6 +320,12 @@ function spawnEnemy() {
   setEnemyFigure(state.zone, def.name, type);
   el.enemyFigure.classList.remove('dying');
   pulseClass(el.enemyFigure, 'spawn', 600);
+  // Elite-Moment: Der goldene Rand blitzt einmal auf, ein kurzer Sting
+  // meldet den Auftritt — Eliten sind ein Ereignis, kein Normalgegner.
+  if (type === 'elite') {
+    pulseClass(el.enemyFigure, 'elite-flash', 900);
+    sfx.rare();
+  }
   refreshArenaParticles();
   el.enemyName.textContent = def.name;
   const typeLabel = type === 'boss' ? 'Boss' : type === 'elite' ? 'Elite' : 'Normal';
@@ -891,9 +897,13 @@ function attemptPrestige() {
   state.seenContinents = [];
   state.inField = false;
   heroHp = heroMaxHp();
+  setCombatIntensity(false);
   sfx.victory();
   save();
   showScreen(el.hub);
+  // Asche-Wiedergeburt: Der Hub atmet einmal kronengolden, während der
+  // neue Lauf beginnt.
+  pulseClass(el.hub, 'ash-rebirth', 1800);
   render();
   showDismissibleOverlay(`Du erwachst erneut — der Lauf zahlt <strong>${reward} Kronenasche</strong>. Die Asche erinnert sich an alles andere.`, 5500, true);
 }
@@ -1610,6 +1620,7 @@ function descend() {
   showScreen(el.game);
   render();
   beginCombat();
+  setCombatIntensity(true);
   if (state.kills === 0) playCombatIntro();
 }
 
@@ -1647,6 +1658,7 @@ function showVictory() {
   state.inField = false;
   setLowHp(false);
   setBossFight(false);
+  setCombatIntensity(false);
   sfx.victory();
   if (tickTimer) {
     clearInterval(tickTimer);
@@ -1656,6 +1668,8 @@ function showVictory() {
   el.victoryLevel.textContent = formatNum(state.level);
   el.victoryAsh.textContent = formatNum(state.ash);
   showScreen(el.sceneVictory);
+  // Kronen-Settle: Der Titel senkt sich einmal glühend auf den Sieg-Screen.
+  pulseClass(el.sceneVictory.querySelector('h2'), 'crown-settle', 1600);
 }
 
 function returnToHub() {
@@ -1681,6 +1695,7 @@ function returnToHub() {
   // Die Lebenskraft bleibt, wie das Feld sie hinterließ — der Schrein im
   // Hub regeneriert sie stetig (hubTick), und der Abstieg nimmt sie mit.
   enemy = null;
+  setCombatIntensity(false);
   save();
   showScreen(el.hub);
   render();

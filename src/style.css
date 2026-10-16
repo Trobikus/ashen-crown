@@ -1013,6 +1013,16 @@ input[type='range'] {
 .impact-crit { --spark: #ffd98a; }
 .impact-wound { --spark: #c14b3a; }
 
+/* Elite-Moment: Der goldene Rand blitzt beim Auftritt einmal hell auf. */
+.figure.elite-flash svg {
+  animation: elite-flash 0.9s ease-out;
+}
+
+@keyframes elite-flash {
+  0% { filter: drop-shadow(0 0 14px #ffd98a) brightness(2.2); }
+  100% { filter: drop-shadow(0 0 0 rgba(255, 217, 138, 0)) brightness(1); }
+}
+
 @keyframes spark-burst {
   0% { transform: translate(0, 0) scale(1); opacity: 1; }
   100% { transform: translate(var(--spark-dx), var(--spark-dy)) scale(0.2); opacity: 0; }
@@ -1478,6 +1488,9 @@ input[type='range'] {
   .loot-pulse i,
   .loot-pulse::after,
   .slash,
+  .figure.elite-flash svg,
+  .crown-settle,
+  #hub.ash-rebirth,
   #menu-crown {
     animation: none !important;
   }
