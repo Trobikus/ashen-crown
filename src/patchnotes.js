@@ -3,10 +3,18 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.16.0',
+  version: '0.16.1',
   date: '16.10.2026',
-  headline: 'Der Feinschliff — Level sichtbar, Loot lesbar, Tastatur willkommen',
+  headline: 'Loot mit Augenmaß — Deltas im Tooltip, Farbpuls in der Arena',
   sections: [
+    {
+      heading: '0.16.1 — Loot & Vergleich',
+      items: [
+        'Delta-Vergleich: Inventar-Tooltips zeigen unter „Getragen: …" nur die Unterschiede zum angelegten Stück — grün rauf, rot runter, Meisterschafts-Wechsel inklusive.',
+        'Loot-Puls: Jedes Fund leuchtet beim Sterben des Gegners in seiner Seltenheitsfarbe auf — der Beute-Moment passiert in der Arena.',
+        'Legendär: Legendäre Stücke hatten bisher gar keinen Toast und keinen Klang — jetzt eigenes Jingle plus oranger Meldestreifen.',
+      ],
+    },
     {
       heading: '0.16.0 — Feinschliff: XP-Streifen, Erstkill-Feier & Tastatur',
       items: [
