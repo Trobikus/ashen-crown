@@ -47,6 +47,17 @@
   border-bottom: 1px solid #1d1a15;
 }
 
+/* Vermächtnis-Zeilen: Kronen-Akzent — der Thron-Laden spricht eine andere
+   Währung als der Ruhm-Laden, das soll man den Zeilen ansehen. */
+.chronicle-entry-legacy {
+  border-left: 3px solid #d9a03f;
+  padding-left: 0.7rem;
+}
+
+.chronicle-entry-legacy .chronicle-who {
+  color: #d9a03f;
+}
+
 /* Bestiarium-Zeile: Porträt links (derselbe Sprite wie in der Arena),
    Textkörper rechts. Unerlegte Kreaturen bleiben dunkle Umrisse. */
 .chronicle-entry-bestiary {
@@ -254,6 +265,38 @@
   gap: 0.6rem;
   padding-bottom: 0.4rem;
   border-bottom: 1px solid #3a352e;
+}
+
+.zone-head-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+/* Kontinent-Fortschritt: offene Gebiete von zehn, goldener Faden wie im HUD. */
+.zone-continent-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: #8a7f6d;
+}
+
+.zone-progress-bar {
+  display: inline-block;
+  width: 72px;
+  height: 4px;
+  border: 1px solid #3a352e;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.zone-progress-fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #a87c2c, #d9a03f);
 }
 
 .zone-continent {
@@ -851,6 +894,40 @@
 #prestige-preview {
   color: #9a9184;
   font-size: 0.85rem;
+}
+
+/* Prestige-Vorschau: Belohnungs-Zeile + Zwei-Spalten „Verfällt / Bleibt“. */
+.prestige-reward {
+  color: #c9c2b8;
+  font-size: 0.95rem;
+  margin-bottom: 0.7rem;
+}
+
+.prestige-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  text-align: left;
+}
+
+.prestige-col h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #c1655a;
+}
+
+.prestige-col-kept h4 {
+  color: #7fae7a;
+}
+
+.prestige-col ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: #9a9184;
+  font-size: 0.8rem;
+  line-height: 1.65;
 }
 
 .victory-actions {

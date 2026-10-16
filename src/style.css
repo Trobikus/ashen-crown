@@ -1383,6 +1383,25 @@ input[type='range'] {
   background: linear-gradient(90deg, #a87c2c, #d9a03f);
 }
 
+/* Siege-Balken: Gebietsfortschritt neben der Zahl im Kampf-HUD — derselbe
+   goldene Faden wie der XP-Streifen, damit beide Zahnräder gleich lesen. */
+.hud-progress-bar {
+  display: inline-block;
+  width: 84px;
+  height: 4px;
+  margin-left: 0.6rem;
+  border: 1px solid #3a352e;
+  background: rgba(0, 0, 0, 0.35);
+  vertical-align: 2px;
+}
+
+#hud-progress-fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #a87c2c, #d9a03f);
+}
+
 .tooltip {
   display: none;
   position: absolute;

@@ -6,6 +6,21 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Hinzugefügt
+- **Fortschritt als Balken statt Zahl**: Im Kampf-HUD läuft neben der
+  Siege-Zahl ein goldener Faden, der den Gebietsfortschritt zeigt (in der
+  Boss-Phase voll und golden, nach der Tür sauber zurückgesetzt). Der
+  Gebiete-Screen zählt im Kontinent-Kopf die offenen Gebiete („3 / 10“ mit
+  Balken, auf die Zonen-Zahl geklemmt) und nennt für die Tiefen die
+  erreichte Tiefe.
+- **Prestige-Vorschau als Zwei-Spalten**: Der Thron zeigt jetzt
+  „Verfällt / Bleibt“ in rot/grün mit allen Punkten und einer
+  Belohnungs-Zeile — der größte Moment des Spiels ist klar abgebildet statt
+  Fließtext.
+- **Vermächtnis mit Kronen-Akzent**: Die Vermächtnis-Zeilen tragen einen
+  goldenen Rand und Kronengold-Titel — man sieht den Zeilen an, dass sie
+  eine andere Währung sprechen als der Ruhm-Laden.
+
 ## [0.16.1] — 2026-10-16
 
 ### Hinzugefügt

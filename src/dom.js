@@ -17,6 +17,7 @@ function cacheDom() {
   el.hudZone = document.getElementById('hud-zone');
   el.hudProgress = document.getElementById('hud-progress');
   el.hudProgressText = document.getElementById('hud-progress-text');
+  el.hudProgressFill = document.getElementById('hud-progress-fill');
   el.tileMapSub = document.getElementById('tile-map-sub');
   el.zoneList = document.getElementById('zone-list');
   el.heroFigure = document.getElementById('hero-figure');

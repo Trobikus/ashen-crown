@@ -789,8 +789,10 @@ function renderThrone() {
     const level = legacyLevel(state, title);
     const maxed = level >= def.levels.length;
     const cost = maxed ? 0 : def.levels[level];
+    // Kronen-Akzent: Der Thron-Laden spricht eine andere Währung als der
+    // Ruhm-Laden — das soll man den Zeilen ansehen.
     const row = document.createElement('div');
-    row.className = 'chronicle-entry';
+    row.className = 'chronicle-entry chronicle-entry-legacy';
     const who = document.createElement('div');
     who.className = 'chronicle-who';
     who.textContent = `${def.name}${maxed ? ' — vollständig' : ` · Stufe ${level + 1}/${def.levels.length}`}`;
@@ -812,8 +814,14 @@ function renderThrone() {
   }
   const ready = state.cleared >= MAIN_ZONE_COUNT;
   const reward = kronenascheReward(state.cleared);
+  // Vorschau als Zwei-Spalten: Was verfällt, was bleibt — der größte Moment
+  // des Spiels verdient eine klare Abbildung statt Fließtext.
   el.prestigePreview.innerHTML = ready
-    ? `Der Lauf zahlt <strong>${reward} Kronenasche</strong>. Verfällt: Zone, Held, Asche, Ausrüstung, Runen. Bleibt: Ruhm, Bestiarium, Chronik, Vermächtnis.`
+    ? `<div class="prestige-reward">Der Lauf zahlt <strong>${reward} Kronenasche</strong>.</div>
+      <div class="prestige-columns">
+        <div class="prestige-col"><h4>Verfällt</h4><ul><li>Zone &amp; Gebiete</li><li>Held — Stufe, EP, Punkte</li><li>Asche</li><li>Ausrüstung &amp; Inventar</li><li>Runen &amp; Pfad-Bindung</li></ul></div>
+        <div class="prestige-col prestige-col-kept"><h4>Bleibt</h4><ul><li>Ruhm — Errungenschaften &amp; Laden</li><li>Kronenasche &amp; Vermächtnis</li><li>Bestiarium</li><li>Chronik &amp; Statistik</li></ul></div>
+      </div>`
     : 'Der Thron verlangt die Krone dieses Laufs — hebe sie zuerst erneut.';
   el.prestigeButton.disabled = !ready;
   el.prestigeButton.classList.toggle('armed', prestigeArmed);
@@ -1040,6 +1048,7 @@ function render() {
     const bossPhase = state.zoneKills >= BOSS_AFTER_KILLS;
     el.hudProgressText.textContent = bossPhase ? 'Boss!' : `${Math.min(state.zoneKills, BOSS_AFTER_KILLS)} / ${BOSS_AFTER_KILLS}`;
     el.hudProgressText.classList.toggle('gold', bossPhase);
+    el.hudProgressFill.style.width = `${Math.min(100, (state.zoneKills / BOSS_AFTER_KILLS) * 100)}%`;
   }
   el.tileMapSub.textContent = state.cleared < MAIN_ZONE_COUNT
     ? `${Math.min(state.cleared + 1, MAIN_ZONE_COUNT)} von ${MAIN_ZONE_COUNT} Gebieten offen`

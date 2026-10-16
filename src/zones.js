@@ -39,10 +39,9 @@ export function switchZoneView(delta) {
 // Vorschau, solange das Hauptspiel läuft.
 const visibleDepthCount = () => Math.max(1, state.cleared + 1 - MAIN_ZONE_COUNT + 1);
 
-function buildDepthPanel() {
-  const panel = document.createElement('div');
-  panel.className = 'zone-continent-panel';
-  panel.dataset.continent = CONTINENTS.length;
+// Kopf einer Gebiete-Seite: Pager links, Name mittig, Fortschritt + Pager
+// rechts. Der Fortschritt füllt sich erst in renderZones.
+function buildHead(nameText) {
   const head = document.createElement('div');
   head.className = 'zone-continent-head';
   const prev = document.createElement('button');
@@ -52,13 +51,27 @@ function buildDepthPanel() {
   prev.textContent = '‹';
   const name = document.createElement('div');
   name.className = 'zone-continent';
-  name.textContent = 'Die Tiefen';
+  name.textContent = nameText;
+  const progress = document.createElement('span');
+  progress.className = 'zone-continent-progress';
+  progress.innerHTML = '<span class="zone-progress-text"></span><span class="zone-progress-bar"><span class="zone-progress-fill"></span></span>';
   const next = document.createElement('button');
   next.className = 'zone-pager';
   next.dataset.dir = '1';
   next.setAttribute('aria-label', 'Nächster Kontinent');
   next.textContent = '›';
-  head.append(prev, name, next);
+  const right = document.createElement('div');
+  right.className = 'zone-head-right';
+  right.append(progress, next);
+  head.append(prev, name, right);
+  return { head, progress };
+}
+
+function buildDepthPanel() {
+  const panel = document.createElement('div');
+  panel.className = 'zone-continent-panel';
+  panel.dataset.continent = CONTINENTS.length;
+  const { head } = buildHead('Die Tiefen');
   panel.appendChild(head);
   const group = document.createElement('div');
   group.className = 'zone-group';
@@ -87,22 +100,7 @@ export function buildZoneList() {
     const panel = document.createElement('div');
     panel.className = 'zone-continent-panel';
     panel.dataset.continent = ci;
-    const head = document.createElement('div');
-    head.className = 'zone-continent-head';
-    const prev = document.createElement('button');
-    prev.className = 'zone-pager';
-    prev.dataset.dir = '-1';
-    prev.setAttribute('aria-label', 'Vorheriger Kontinent');
-    prev.textContent = '‹';
-    const name = document.createElement('div');
-    name.className = 'zone-continent';
-    name.textContent = continent.name;
-    const next = document.createElement('button');
-    next.className = 'zone-pager';
-    next.dataset.dir = '1';
-    next.setAttribute('aria-label', 'Nächster Kontinent');
-    next.textContent = '›';
-    head.append(prev, name, next);
+    const { head } = buildHead(continent.name);
     panel.appendChild(head);
     const group = document.createElement('div');
     group.className = 'zone-group';
@@ -132,7 +130,14 @@ export function renderZones() {
     panel.hidden = ci !== view;
     panel.querySelector('.zone-pager[data-dir="-1"]').disabled = ci === 0;
     panel.querySelector('.zone-pager[data-dir="1"]').disabled = ci === PANEL_COUNT - 1;
+    const progressText = panel.querySelector('.zone-progress-text');
+    const progressBar = panel.querySelector('.zone-progress-bar');
+    const progressFill = panel.querySelector('.zone-progress-fill');
     if (ci === CONTINENTS.length) {
+      // Kopf-Fortschritt der Tiefen: die erreichte Tiefe statt eines Balkens.
+      const depth = Math.max(0, state.cleared - MAIN_ZONE_COUNT);
+      progressText.textContent = depth > 0 ? `Tiefe ${depth}` : '';
+      progressBar.hidden = true;
       syncDepthRows();
       for (const row of panel.querySelectorAll('.zone-row')) {
         const index = Number(row.dataset.zone);
@@ -140,11 +145,18 @@ export function renderZones() {
         row.disabled = !open;
         row.classList.toggle('current', index === state.zone);
         row.classList.toggle('locked', !open);
-        row.querySelector('.zone-status').textContent = index === state.zone ? 'Aufenthalt' : open ? 'Eröffnet' : 'Versiegelt';
-      }
-      continue;
+      row.querySelector('.zone-status').textContent = index === state.zone ? 'Aufenthalt' : open ? 'Eröffnet' : 'Versiegelt';
     }
-    for (const row of panel.querySelectorAll('.zone-row')) {
+    continue;
+  }
+  // Kopf-Fortschritt eines Kontinents: offene Gebiete, geklemmt auf die
+  // Zonen-Zahl des Kontinents (cleared zählt global weiter).
+  const zoneCount = CONTINENTS[ci].zones.length;
+  const openCount = Math.max(0, Math.min(state.cleared - ci * 10, zoneCount));
+  progressText.textContent = `${openCount} / ${zoneCount}`;
+  progressBar.hidden = false;
+  progressFill.style.width = `${(openCount / zoneCount) * 100}%`;
+  for (const row of panel.querySelectorAll('.zone-row')) {
       const index = Number(row.dataset.zone);
       const open = index <= Math.min(state.cleared, LAST_ZONE_INDEX);
       row.disabled = !open;
