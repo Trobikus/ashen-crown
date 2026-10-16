@@ -39,8 +39,9 @@ export function switchZoneView(delta) {
 // Vorschau, solange das Hauptspiel läuft.
 const visibleDepthCount = () => Math.max(1, state.cleared + 1 - MAIN_ZONE_COUNT + 1);
 
-// Kopf einer Gebiete-Seite: Pager links, Name mittig, Fortschritt + Pager
-// rechts. Der Fortschritt füllt sich erst in renderZones.
+// Kopf einer Gebiete-Seite: Pager links, Name mit Fortschritt darunter
+// (Minimum links, Balken, Maximum rechts), Pager rechts. Der Fortschritt
+// füllt sich erst in renderZones.
 function buildHead(nameText) {
   const head = document.createElement('div');
   head.className = 'zone-continent-head';
@@ -49,12 +50,15 @@ function buildHead(nameText) {
   prev.dataset.dir = '-1';
   prev.setAttribute('aria-label', 'Vorheriger Kontinent');
   prev.textContent = '‹';
+  const nameCol = document.createElement('div');
+  nameCol.className = 'zone-name-col';
   const name = document.createElement('div');
   name.className = 'zone-continent';
   name.textContent = nameText;
   const progress = document.createElement('span');
   progress.className = 'zone-continent-progress';
-  progress.innerHTML = '<span class="zone-progress-text"></span><span class="zone-progress-bar"><span class="zone-progress-fill"></span></span>';
+  progress.innerHTML = '<span class="zone-progress-min"></span><span class="zone-progress-bar"><span class="zone-progress-fill"></span></span><span class="zone-progress-max"></span><span class="zone-progress-text"></span>';
+  nameCol.append(name, progress);
   const next = document.createElement('button');
   next.className = 'zone-pager';
   next.dataset.dir = '1';
@@ -62,8 +66,8 @@ function buildHead(nameText) {
   next.textContent = '›';
   const right = document.createElement('div');
   right.className = 'zone-head-right';
-  right.append(progress, next);
-  head.append(prev, name, right);
+  right.append(next);
+  head.append(prev, nameCol, right);
   return { head, progress };
 }
 
@@ -133,11 +137,15 @@ export function renderZones() {
     const progressText = panel.querySelector('.zone-progress-text');
     const progressBar = panel.querySelector('.zone-progress-bar');
     const progressFill = panel.querySelector('.zone-progress-fill');
+    const progressMin = panel.querySelector('.zone-progress-min');
+    const progressMax = panel.querySelector('.zone-progress-max');
     if (ci === CONTINENTS.length) {
-      // Kopf-Fortschritt der Tiefen: die erreichte Tiefe statt eines Balkens.
+      // Kopf-Fortschritt der Tiefen: die erreichte Tiefe statt des Balkens.
       const depth = Math.max(0, state.cleared - MAIN_ZONE_COUNT);
       progressText.textContent = depth > 0 ? `Tiefe ${depth}` : '';
+      progressMin.hidden = true;
       progressBar.hidden = true;
+      progressMax.hidden = true;
       syncDepthRows();
       for (const row of panel.querySelectorAll('.zone-row')) {
         const index = Number(row.dataset.zone);
@@ -153,8 +161,12 @@ export function renderZones() {
   // Zonen-Zahl des Kontinents (cleared zählt global weiter).
   const zoneCount = CONTINENTS[ci].zones.length;
   const openCount = Math.max(0, Math.min(state.cleared - ci * 10, zoneCount));
-  progressText.textContent = `${openCount} / ${zoneCount}`;
+  progressText.textContent = '';
+  progressMin.hidden = false;
   progressBar.hidden = false;
+  progressMax.hidden = false;
+  progressMin.textContent = openCount;
+  progressMax.textContent = zoneCount;
   progressFill.style.width = `${(openCount / zoneCount) * 100}%`;
   for (const row of panel.querySelectorAll('.zone-row')) {
       const index = Number(row.dataset.zone);

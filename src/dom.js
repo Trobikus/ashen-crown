@@ -35,6 +35,7 @@ function cacheDom() {
   el.heroHpText = document.getElementById('hero-hp-text');
   el.heroXpBar = document.getElementById('hero-xp-bar');
   el.heroXpFill = document.getElementById('hero-xp-fill');
+  el.heroXpText = document.getElementById('hero-xp-text');
   el.enemyHpText = document.getElementById('enemy-hp-text');
   el.feedbackButton = document.getElementById('btn-feedback');
   el.enemyFighter = document.getElementById('enemy-fighter');

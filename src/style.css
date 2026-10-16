@@ -1165,6 +1165,10 @@ input[type='range'] {
 #overlay {
   position: fixed;
   inset: 0;
+  /* Explizit über allem (Hub, Kacheln, Tooltips, Toasts darunter): Ohne
+     eigenen z-index entschied die Renderreihenfolge des Webviews — der
+     Schrein-Balken leuchtete sonst durch das Intro-Overlay. */
+  z-index: 50;
   background: #0b0a0c;
   display: grid;
   place-items: center;
@@ -1377,11 +1381,12 @@ input[type='range'] {
   display: block;
 }
 
-/* XP-Streifen: dünner Kronen-Faden unter dem Helden-HP-Balken — der
-   Stufenfortschritt ist im Kampf nebenbei lesbar, statt nur im Held-Modal. */
+/* XP-Streifen: Gleiche Dicke wie der Helden-HP-Balken, direkt darunter —
+   der Stufenfortschritt ist im Kampf nebenbei lesbar, der Wert mittig darin. */
 .xp-bar {
+  position: relative;
   width: clamp(130px, 18vw, 280px);
-  height: 3px;
+  height: 16px;
   margin-top: 3px;
   border: 1px solid rgba(217, 160, 63, 0.3);
   background: rgba(217, 160, 63, 0.1);
@@ -1391,6 +1396,25 @@ input[type='range'] {
   height: 100%;
   width: 0%;
   background: linear-gradient(90deg, #a87c2c, #d9a03f);
+}
+
+/* Helden-HP-Balken: doppelt so dick wie der Gegner-Balken (8 px), Wert
+   zentriert darin — dieselbe Lesbarkeit wie der EP-Stand darunter. */
+#hero-fighter .hp-bar {
+  height: 16px;
+}
+
+.bar-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: #e8e2d8;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  z-index: 2;
 }
 
 /* Siege-Balken: Gebietsfortschritt neben der Zahl im Kampf-HUD — derselbe

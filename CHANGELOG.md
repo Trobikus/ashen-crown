@@ -6,6 +6,22 @@ Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Geändert
+- **Kontinent-Fortschritt unter dem Namen**: Im Gebiete-Screen sitzt der
+  Balken jetzt unterhalb des Kontinent-Namens, das Minimum links und das
+  Maximum rechts neben dem Balken („0 ▬▬▬ 10") — die Tiefen nennen weiter
+  die erreichte Tiefe.
+- **Helden-Balken im Kampf**: Der Lebenskraft-Balken ist doppelt so dick wie
+  der Gegner-Balken, der Wert steht zentriert darin; der EP-Balken hat die
+  identische Dicke, sitzt direkt darunter und zeigt den EP-Stand ebenfalls
+  mittig im Balken.
+
+### Behoben
+- **Intro verdeckt den Schrein jetzt sicher**: Das Intro-Overlay hat einen
+  eigenen Stapel-Kontext (z-index) — vorher entschied die Renderreihenfolge
+  des Webviews, und der Lebenskraft-Balken des Schreins leuchtete durch die
+  vier Intro-Seiten.
+
 ### Hinzugefügt
 - **Elite-Moment**: Eliten blitzen beim Auftritt einmal gold auf und melden
   sich mit einem kurzen zweistimmigen Sting — ein Ereignis, kein

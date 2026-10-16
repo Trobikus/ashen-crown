@@ -1092,7 +1092,7 @@ function render() {
   // XP-Streifen: Der Stufenfortschritt läuft unter dem HP-Balken mit.
   const xpNeed = xpNeeded(state.level);
   el.heroXpFill.style.width = `${Math.min(100, (state.xp / xpNeed) * 100)}%`;
-  el.heroXpBar.title = `EP ${formatNum(state.xp)} / ${formatNum(xpNeed)}`;
+  el.heroXpText.textContent = `${formatNum(state.xp)} / ${formatNum(xpNeed)}`;
   if (enemy) {
     el.enemyName.textContent = enemy.name;
     el.enemyLevel.textContent = `Lv ${enemy.level} · ${enemy.type === 'boss' ? 'Boss' : enemy.type === 'elite' ? 'Elite' : 'Normal'}`;
