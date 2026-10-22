@@ -2,8 +2,8 @@
 // Kampf mit denselben Formeln wie das Live-Gefecht — Krit, Tempo, Gegner-
 // profile, erlittener Schaden und Lifeleech. Stoppt am Boss (Bosse verlangen
 // deine Anwesenheit) oder beim Tod. Rückgabe: 'time' | 'boss' | 'died'.
-import { state, settings, offlineCapMs, ashGainFactor } from './state.js';
-import { ATTACK_INTERVAL_MS, ENEMY_RESPAWN_S, OFFLINE_MIN_GAP_MS, ELITE_EVERY_KILLS, HERO_MISS_CHANCE, ENEMY_MISS_CHANCE, ARMOR_RESISTANCE, DEATH_REVIVE_SHARE, BOSS_AFTER_KILLS, enemyXpMultiplier, zoneDef, formatNum, formatDuration } from './data.js';
+import { state, settings, offlineCapMs, ashGainFactor, deathReviveShare } from './state.js';
+import { ATTACK_INTERVAL_MS, ENEMY_RESPAWN_S, OFFLINE_MIN_GAP_MS, ELITE_EVERY_KILLS, HERO_MISS_CHANCE, ENEMY_MISS_CHANCE, ARMOR_RESISTANCE, BOSS_AFTER_KILLS, enemyXpMultiplier, zoneDef, formatNum, formatDuration } from './data.js';
 import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier, heroLifeleech } from './stats.js';
 import { rollDrop } from './items.js';
 import { save } from './saveio.js';
@@ -91,7 +91,7 @@ function applyOfflineProgress() {
   if (result === 'died') {
     state.deaths += 1;
     const toll = use('takeDeathToll')();
-    heroHpService.set(Math.round(heroMaxHp() * DEATH_REVIVE_SHARE));
+    heroHpService.set(Math.round(heroMaxHp() * deathReviveShare()));
     summary += ` — gefallen. Die Asche nahm ${formatNum(toll)} Asche.`;
   } else if (result === 'boss') {
     summary += '. Ein Boss versperrt den Weg.';

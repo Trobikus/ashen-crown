@@ -47,7 +47,7 @@ import { applyOfflineProgress, consumeOfflineSummary } from './offline.js';
 
 import { renderThrone, buyLegacy, attemptPrestige } from './throne.js';
 
-import { renderStats, renderBestiary, renderAchievements, buyRuhmUpgrade } from './records.js';
+import { renderStats, renderBestiary, renderAchievements, renderRuhmShop, buyRuhmUpgrade } from './records.js';
 
 import { provide } from './bus.js';
 

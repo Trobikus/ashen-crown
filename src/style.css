@@ -571,10 +571,15 @@ input[type='range'] {
 }
 
 .scene-header {
-  position: absolute;
+  /* Der Zurück-Weg klebt am Bildschirmrand: Lange Listen (Bestiarium,
+     Annalen, Chronik) rollen ihn nicht mehr nach oben weg. Da immer nur
+     eine Szene sichtbar ist, kann nichts doppelt erscheinen; der Schatten
+     hält den Knopf über durchscrollendem Text lesbar. */
+  position: fixed;
   top: clamp(1rem, 2vw, 2.5rem);
   left: clamp(1rem, 2vw, 2.5rem);
-  z-index: 10;
+  z-index: 30;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.9));
 }
 
 .stat-list {

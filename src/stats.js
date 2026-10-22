@@ -1,5 +1,5 @@
 import { GEAR_SLOTS, enemyDef, BASE_CRIT_CHANCE, CRIT_MULTIPLIER, BASE_ATTACK_SPEED, ARMOR_RESISTANCE, ATTACK_INTERVAL_MS, CRIT_CHANCE_CAP, itemStats, profileOf, enemyLevelOf } from './data.js';
-import { state } from './state.js';
+import { state, heroHpFactor, critDmgBonusPct } from './state.js';
 import { skillBonus } from './skilltree.js';
 import { legacyFactor } from './prestige.js';
 
@@ -64,7 +64,7 @@ export function heroMaxHp() {
       pct += stats.hpPct;
     }
   }
-  return Math.round((maxHp + statBonus('hp')) * (1 + (statBonus('hpPct') + pct) / 100));
+  return Math.round((maxHp + statBonus('hp')) * (1 + (statBonus('hpPct') + pct) / 100) * heroHpFactor());
 }
 
 export function heroArmor() {
@@ -100,7 +100,7 @@ export function critMultiplier() {
     const item = state.equipment[slot.key];
     if (item) critDmg += itemStats(item).critDmg;
   }
-  return CRIT_MULTIPLIER + critDmg / 100;
+  return CRIT_MULTIPLIER + critDmg / 100 + critDmgBonusPct() / 100;
 }
 
 // Lifeleech existiert nur als Waffen-Affix ab Episch — Prozent des Schadens
