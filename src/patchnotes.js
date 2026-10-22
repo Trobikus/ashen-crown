@@ -3,10 +3,17 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.18.3',
-  date: '22.10.2026',
-  headline: 'Hotfix — Der Kampf kehrt zurück',
+  version: '0.18.4',
+  date: '23.10.2026',
+  headline: 'Hotfix — Die Auto-Tür öffnet wieder',
   sections: [
+    {
+      heading: '0.18.4 — Hotfix: Die Auto-Tür öffnet wieder',
+      items: [
+        'Fix: Nach einem besiegten Boss sprang die Auto-Tür nicht mehr — der Kampf blieb beim toten Boss hängen. Zonenwechsel, Heilung und der nächste Gegner laufen wieder wie gehabt (manueller Overlay-Klick ebenfalls).',
+        'Der Fehler kam mit der 0.18.x-Aufbauphase und betraf alle Bosse seit 0.18.2 — wir bitten um Entschuldigung für die blockierenden Läufe.',
+      ],
+    },
     {
       heading: '0.18.3 — Hotfix: Der Kampf kehrt zurück',
       items: [

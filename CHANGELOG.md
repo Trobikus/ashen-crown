@@ -4,6 +4,22 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.18.4] — 2026-10-23
+
+### Behoben
+- **Auto-Tür nach Boss-Kills** (kritisch): `autoDoorAdvance` — Zonenwechsel,
+  Volleilung und der nächste Gegner nach einem besiegten Boss — ging beim
+  game.js-Refactor verloren (zwei Aufrufstellen, keine Definition). Jeder
+  Boss-Kill warf 2,2 s später einen `ReferenceError` im Tür-Timer: Der
+  Zonenwechsel unterblieb, das „bezwungen"-Overlay fror ein, und das Spiel
+  verharrte beim 0-HP-Boss ohne Weiterkommen — Auto-Tür wie manueller
+  Overlay-Klick gleichermaßen. Die Funktion ist wiederhergestellt.
+  Nachweis: Neuer Boss-Smoke mit vier Szenarien (erster Boss + Auto-Tür →
+  Zone 1 mit weiterlaufendem Kampf, Kronen-Sieg, Krone erneut →
+  Aschentiefen-Eintritt, Loop-Erkennung ohne Kill-Lawine) — vorher
+  `Uncaught: autoDoorAdvance is not defined` bei jedem Boss-Kill in jedem
+  Szenario, danach alle Szenarien grün.
+
 ## [0.18.3] — 2026-10-22
 
 ### Behoben
