@@ -297,24 +297,31 @@ input[type='range'] {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /* Der Inhalt beginnt unmittelbar unter der Helden-Reserve — die HUD-Linie
+     schließt den Block oben bündig ab, statt je nach Fensterhöhe in der
+     Mitte zu schweben und ungenutzten Streifen zu hinterlassen. */
+  justify-content: flex-start;
   gap: 1.5rem;
-  /* Oben Reserve für den absoluten Helden-Block (Porträt + Leiste) —
-     sonst läuft die mittige HUD-Linie durch das Bild. */
-  padding: clamp(210px, 30vh, 280px) clamp(1rem, 2vw, 2.5rem) clamp(1rem, 2vw, 2.5rem);
+  /* Oben Reserve für den absoluten Helden-Block (Porträt + Leiste + Zeit-
+     zeile) — sonst läuft die mittige HUD-Linie durch das Bild. */
+  --hub-hero-reserve: clamp(250px, 34vh, 340px);
+  padding: var(--hub-hero-reserve) clamp(1rem, 2vw, 2.5rem) clamp(1rem, 2vw, 2.5rem);
   text-align: center;
 }
 
-/* Der Held oben links: Porträt, Stufe und die langsam kehrende Lebenskraft —
-   der Balken sitzt unter dem Bild, damit das Kehren sichtbar bleibt. */
+/* Der Held oben links: Das Porträt füllt die gesamte Reserve-Höhe zwischen
+   seinem Namen und der Lebenskraft-Leiste — der Balken liegt am unteren Rand
+   des Blocks, die Figur „steht" auf ihm, und die Zeile darunter zählt das
+   Kehren. Er ist die Statusanzeige des Laufs und darf Raum einnehmen. */
 #hub-hero {
   position: absolute;
   top: clamp(1rem, 2vw, 2.5rem);
   left: clamp(1rem, 2vw, 2.5rem);
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  width: min(240px, 42vw);
+  gap: 0.55rem;
+  width: min(260px, 44vw);
+  height: calc(var(--hub-hero-reserve) - clamp(1rem, 2vw, 2.5rem));
   text-align: left;
 }
 
@@ -329,11 +336,13 @@ input[type='range'] {
   color: #c9c2b8;
 }
 
-/* Das Porträt — dasselbe Bild wie in der Arena, am Schrein ausgeruht. */
+/* Das Porträt — dasselbe Bild wie in der Arena, am Schrein ausgeruht. Es
+   streckt sich über die freie Höhe zwischen Name und Leiste; unten
+   ausgerichtet steht die Figur unmittelbar auf dem Balken. */
 #hub-hero-figure {
-  align-self: center;
-  width: clamp(84px, 9vw, 118px);
-  height: clamp(118px, 13vw, 168px);
+  flex: 1 1 auto;
+  min-height: 0;
+  align-self: stretch;
   background-image: url('./assets/hero.png');
   background-size: contain;
   background-position: center bottom;
@@ -344,7 +353,7 @@ input[type='range'] {
 .hub-hp-bar {
   position: relative;
   width: 100%;
-  height: 18px;
+  height: 22px;
   background: #1a1712;
 }
 
@@ -352,13 +361,15 @@ input[type='range'] {
   transition: width 0.2s linear;
 }
 
-/* Eine Zeile unter der Leiste: Lebenskraft links, Regenerations-Timer rechts. */
+/* Eine Zeile unter der Leiste: Lebenskraft links, Regenerations-Timer
+   rechts — in Ruhe gelassen, damit das „voll in X s" mitliest. */
 .hub-hero-row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   gap: 0.75rem;
-  font-size: 0.72rem;
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
   letter-spacing: 0.1em;
 }
 
@@ -460,6 +471,56 @@ input[type='range'] {
   font-style: italic;
   color: #5f584e;
   text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Die Annalen: Sammel-Ansichten in einer eigenen, ruhigeren Reihe unter den
+   Kacheln — eine zweite Stimme statt gleichlauter Fläche. */
+#hub-annals {
+  width: 100%;
+  padding: 0 clamp(0.5rem, 2vw, 2rem);
+  margin-top: clamp(0.4rem, 1vw, 0.8rem);
+}
+
+.annals-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: #5f584e;
+  margin: 0 0 0.45rem 0.2rem;
+}
+
+.annals-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.5rem, 1vw, 0.8rem);
+}
+
+.annal {
+  flex: 1 1 180px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.55rem 0.9rem;
+  background: rgba(217, 160, 63, 0.02);
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.annal:hover {
+  border-color: #b09a6d;
+  color: #efe9df;
+}
+
+.annal-name {
+  font-size: 0.82rem;
+  letter-spacing: 0.2em;
+}
+
+.annal-sub {
+  font-size: 0.68rem;
+  font-style: italic;
+  color: #5f584e;
   letter-spacing: normal;
 }
 

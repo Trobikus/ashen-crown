@@ -55,7 +55,6 @@ function cacheDom() {
   el.chronicleList = document.getElementById('chronicle-list');
   el.tileChronik = document.getElementById('tile-chronik');
   el.sceneStats = document.getElementById('scene-stats');
-  el.tileStats = document.getElementById('tile-stats');
   el.sceneBestiary = document.getElementById('scene-bestiary');
   el.tileBestiary = document.getElementById('tile-bestiary');
   el.bestiarySummary = document.getElementById('bestiary-summary');

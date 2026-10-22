@@ -442,6 +442,12 @@
   margin-top: 0.8rem;
 }
 
+/* Die Statistik trägt ihre zwei Listen-Panels in den Options-Reiter —
+   dafür bekommt sie mehr Breite als die Formular-Seiten. */
+#scene-stats.options-page {
+  width: clamp(340px, 52vw, 760px);
+}
+
 .option-row {
   display: flex;
   justify-content: space-between;

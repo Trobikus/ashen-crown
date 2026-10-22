@@ -55,7 +55,7 @@
           <span class="tile-name">Held</span>
           <span class="tile-sub">Der Erweckte</span>
         </button>
-        <button class="tile" id="tile-skills">
+        <button class="tile" id="tile-skills" hidden>
           <span class="tile-name">Fertigkeiten</span>
           <span class="tile-sub" id="tile-skills-sub">Wähle weise</span>
         </button>
@@ -67,30 +67,31 @@
           <span class="tile-name">Gebiete</span>
           <span class="tile-sub" id="tile-map-sub">1 von 50 Gebieten offen</span>
         </button>
-        <button class="tile" id="tile-crafting">
+        <button class="tile" id="tile-crafting" hidden>
           <span class="tile-name">Crafting</span>
           <span class="tile-sub">Die Werkstatt wartet</span>
-        </button>
-        <button class="tile" id="tile-stats">
-          <span class="tile-name">Statistik</span>
-          <span class="tile-sub">Die Asche zählt mit</span>
-        </button>
-        <button class="tile" id="tile-bestiary">
-          <span class="tile-name">Bestiarium</span>
-          <span class="tile-sub">150 Kreaturen warten</span>
-        </button>
-        <button class="tile" id="tile-achievements">
-          <span class="tile-name">Errungenschaften</span>
-          <span class="tile-sub">Ruhm wird gezählt</span>
         </button>
         <button class="tile" id="tile-throne" hidden>
           <span class="tile-name">Der Thron</span>
           <span class="tile-sub" id="tile-throne-sub">Nach der Krone</span>
         </button>
-        <button class="tile" id="tile-chronik">
-          <span class="tile-name">Chronik</span>
-          <span class="tile-sub">Die Asche erinnert sich</span>
-        </button>
+      </div>
+      <div id="hub-annals">
+        <p class="annals-label">Die Annalen</p>
+        <div class="annals-row">
+          <button class="annal" id="tile-bestiary">
+            <span class="annal-name">Bestiarium</span>
+            <span class="annal-sub">150 Kreaturen warten</span>
+          </button>
+          <button class="annal" id="tile-achievements">
+            <span class="annal-name">Errungenschaften</span>
+            <span class="annal-sub">Ruhm wird gezählt</span>
+          </button>
+          <button class="annal" id="tile-chronik">
+            <span class="annal-name">Chronik</span>
+            <span class="annal-sub">Die Asche erinnert sich</span>
+          </button>
+        </div>
       </div>
     </div>
     <section class="scene" id="scene-hero" hidden>
@@ -207,6 +208,7 @@
         <button class="options-tab active" data-tab="display">Anzeige</button>
         <button class="options-tab" data-tab="game">Spiel</button>
         <button class="options-tab" data-tab="audio">Audio</button>
+        <button class="options-tab" data-tab="stats">Statistik</button>
       </nav>
       <div id="options-panel">
         <div class="options-page" data-page="display">
@@ -283,6 +285,24 @@
             <button class="btn-small btn-danger" id="btn-reset-save">Zurücksetzen</button>
           </div>
         </div>
+        <div class="options-page" data-page="stats" id="scene-stats" hidden>
+          <div class="character-layout">
+            <div class="stats-panel">
+              <dl class="stat-list">
+                <div><dt>Spielzeit</dt><dd id="stats-playtime">0 min</dd></div>
+                <div><dt>Erlegte Kreaturen</dt><dd id="stats-kills">0</dd></div>
+                <div><dt>Tode</dt><dd id="stats-deaths">0</dd></div>
+                <div><dt>Befreite Gebiete</dt><dd id="stats-cleared">0 von 50</dd></div>
+                <div><dt>Höchst errungenes Gebiet</dt><dd id="stats-depth">—</dd></div>
+                <div><dt>Asche</dt><dd id="stats-ash">0</dd></div>
+              </dl>
+            </div>
+            <div class="stats-panel">
+              <dl class="stat-list" id="stats-drops"></dl>
+            </div>
+          </div>
+          <p class="tagline">Die Asche zählt. Sie vergisst nicht.</p>
+        </div>
       </div>
       <p class="tagline">Wer die Asche formt, formt sich selbst.</p>
     </section>
@@ -305,28 +325,6 @@
         <div id="craft-detail"></div>
       </div>
       <p class="tagline">Aus Asche wird Form. Oder Staub.</p>
-    </section>
-    <section class="scene" id="scene-stats" hidden>
-      <header class="scene-header">
-        <button class="btn-small" data-back>Zurück</button>
-      </header>
-      <h2>Statistik</h2>
-      <div class="character-layout">
-        <div class="stats-panel">
-          <dl class="stat-list">
-            <div><dt>Spielzeit</dt><dd id="stats-playtime">0 min</dd></div>
-            <div><dt>Erlegte Kreaturen</dt><dd id="stats-kills">0</dd></div>
-            <div><dt>Tode</dt><dd id="stats-deaths">0</dd></div>
-            <div><dt>Befreite Gebiete</dt><dd id="stats-cleared">0 von 50</dd></div>
-            <div><dt>Höchst errungenes Gebiet</dt><dd id="stats-depth">—</dd></div>
-            <div><dt>Asche</dt><dd id="stats-ash">0</dd></div>
-          </dl>
-        </div>
-        <div class="stats-panel">
-          <dl class="stat-list" id="stats-drops"></dl>
-        </div>
-      </div>
-      <p class="tagline">Die Asche zählt. Sie vergisst nicht.</p>
     </section>
     <section class="scene" id="scene-bestiary" hidden>
       <header class="scene-header">

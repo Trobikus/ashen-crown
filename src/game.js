@@ -1,10 +1,19 @@
+// Der App-Kern: Kampf (Held & Gegner, Tod, Wut, Ticks), Held-Fortschritt
+// (EP, Statpunkte, Respec), der zentrale Render-Pfad, der Ablauf der Szenen
+// (Hub, Abstieg, Sieg) und die Verkabelung der Eingaben.
+//
+// Fach-Module leben daneben: domfx (DOM-Effekte), overlay (Botschaften),
+// saveio (Speichern/Laden), offline (Offline-Fortschritt), throne (Prestige),
+// records (Bestiarium/Errungenschaften/Statistik). Ihre Rückwärts-Abhängig-
+// keiten zu diesem Kern laufen über den Bus (bus.js) — game.js meldet dort
+// Rendern, Szenenwechsel, Lebenskraft und Kampfhelfer als Dienste an.
 import { el, cacheDom } from './dom.js';
 
-import { state, settings, SAVE_KEY, SAVE_VERSION, inventoryCap, deathPenalty, ashGainFactor, xpGainFactor, offlineCapMs } from './state.js';
+import { state, settings, inventoryCap, deathPenalty, ashGainFactor, xpGainFactor } from './state.js';
 
 import { loadSettings, saveSettings, applySettings } from './settings.js';
 
-import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, ENEMY_RESPAWN_S, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, OFFLINE_MIN_GAP_MS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, GEAR_SLOTS, RARITIES, SKILL_NODES_BY_ID, ARMOR_RESISTANCE, DEATH_ASH_PENALTY, DEATH_REVIVE_SHARE, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, sanitizeItem, asCount, formatNum, ZONE_ENEMIES, ZONES, DEPTH_ENEMY_NAMES, CONTINENTS } from './data.js';
+import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, GEAR_SLOTS, ARMOR_RESISTANCE, DEATH_REVIVE_SHARE, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, formatNum } from './data.js';
 
 import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier, heroLifeleech } from './stats.js';
 
@@ -20,13 +29,27 @@ import { buildCraftSlots, renderCrafting, bindCraftEvents } from './crafting.js'
 
 import { INTRO_PAGES, COMBAT_INTRO_PAGES, CONTINENT_LORE, epitaphOf, continentLoreKeyOf, renderChronicle } from './lore.js';
 
-import { initItems, rollDrop, equipItem, unequipItem, sortInventory, equipBest, sellSelected, toggleSellMode, exitSellMode, sellButtonAction, selectAllForSale, handleInventoryClick, renderGearIfDirty, buildDepthRelic, grantItem, itemSellValue } from './items.js';
+import { initItems, rollDrop, unequipItem, sortInventory, equipBest, exitSellMode, sellButtonAction, selectAllForSale, handleInventoryClick, renderGearIfDirty, buildDepthRelic, grantItem, itemSellValue } from './items.js';
 
-import { ACHIEVEMENTS, evaluateAchievements, ruhmAvailable, ruhmEarned, RUHM_SHOP, RUHM_RELIC_REROLL_COST } from './achievements.js';
+import { ACHIEVEMENTS, evaluateAchievements } from './achievements.js';
 
-import { LEGACY_TITLES, kronenascheAvailable, kronenascheEarnedOf, kronenascheReward, legacyLevel } from './prestige.js';
+import { kronenascheReward } from './prestige.js';
 
 import { spriteSvgFor } from './sprites.js';
+
+import { flash, pulseClass, setText, setWidth, setHidden, setHpBar, spawnDamageFloat, spawnHealFloat, spawnMissFloat, spawnSlash, spawnImpact, flashButton, refreshArenaParticles, CONTINENT_FIGURE_CLASSES } from './domfx.js';
+
+import { showOverlay, hideOverlay, showDismissibleOverlay, dismissOverlay, cancelScene, clearSceneTimer, scheduleScene } from './overlay.js';
+
+import { save, purgeSaves, loadSave, consumeSaveNotice, exportSave, importSave } from './saveio.js';
+
+import { applyOfflineProgress, consumeOfflineSummary } from './offline.js';
+
+import { renderThrone, buyLegacy, attemptPrestige } from './throne.js';
+
+import { renderStats, renderBestiary, renderAchievements, buyRuhmUpgrade } from './records.js';
+
+import { provide } from './bus.js';
 
 
 
@@ -42,19 +65,11 @@ let heroAttackProgress = 0;
 
 let enemyAttackProgress = 0;
 
-let sceneTimer = null;
-
 let autoDoorTimer = null;
-
-let overlayDismissible = false;
 
 let hasSave = false;
 
 let visited = false;
-
-let offlineSummary = null;
-
-let offlineDiversion = null;
 
 let statSpendAmount = 1;
 
@@ -64,269 +79,42 @@ let resetArmed = false;
 
 let resetTimer = null;
 
-// True zwischen „Spielstand zurücksetzen" und dem Reload: in diesem Fenster
-// darf kein save() den alten Zustand zurück ins localStorage schreiben.
-let saveSuppressed = false;
-
 let lastPlayTick = null;
-
-let importArmed = false;
-
-let importTimer = null;
-
-let saveNotice = null;
 
 let hooks = { after: () => {}, clampHp: () => {}, save: () => {}, render: () => {} };
 
-const BACKUP_KEYS = ['ashen-crown-save.bak1', 'ashen-crown-save.bak2', 'ashen-crown-save.bak3'];
+// Die Bus-Anmeldung: Kern-Dienste für die Fach-Module. Funktionsdeklarationen
+// sind gehoistet — die Closures dürfen sich auf weiter unten stehende
+// Funktionen beziehen, denn gelesen wird erst zur Laufzeit.
+provide('heroHp', { get: () => heroHp, set: (value) => { heroHp = value; } });
 
-const BACKUP_MIN_GAP_MS = 10 * 60 * 1000;
+provide('gainXp', gainXp);
 
-function flash(figure) {
-  if (!settings.hitFlash) return;
-  figure.classList.add('hit');
-  setTimeout(() => figure.classList.remove('hit'), 150);
-}
+provide('takeDeathToll', takeDeathToll);
 
-// Kurzlebige Animations-Klasse: entfernen, wieder anheften, nach ms abräumen.
-// Der Reflow-Neustart (offsetWidth) ist nur fällig, wenn die Keyframes noch
-// liefen — der Normalfall (Klasse längst abgelaufen) startet die Animation
-// durch das erneute Anheften von allein, ohne erzwungenes Layout.
-function pulseClass(element, cls, ms = 260) {
-  const liefNoch = element.classList.contains(cls);
-  element.classList.remove(cls);
-  if (liefNoch) void element.offsetWidth;
-  element.classList.add(cls);
-  clearTimeout(element.__pulseTimer);
-  element.__pulseTimer = setTimeout(() => element.classList.remove(cls), ms);
-}
+provide('showScreen', showScreen);
 
-// Differenzielle Schreibvorgänge: Identische Werte nicht erneut in den DOM
-// schreiben — der 3-Sekunden-Tick und jeder Schlag melden sonst dieselben
-// Zahlen als DOM-Mutation, obwohl sich nichts geändert hat. render() läuft
-// mehrmals pro Sekunde; die Meßlatte sind DOM-Mutationen, nicht CPU.
-function setText(node, value) {
-  if (node.textContent !== value) node.textContent = value;
-}
+provide('render', render);
 
-function setWidth(node, pct) {
-  const width = `${pct}%`;
-  if (node.style.width !== width) node.style.width = width;
-}
-
-function setHidden(node, value) {
-  if (node.hidden !== value) node.hidden = value;
-}
-
-// Effekt-Knoten (Funken, Hieb, Zahlen): Über einem Deckel keine neuen mehr —
-// schützt Häufungs-Szenarien (schnelle Kritketten an zähen Gegnern), ohne
-// dass die Arena optisch kippt; sie wäre dann ohnehin unlesbar.
-const MAX_EFFEKTE_PRO_KÄMPFER = 14;
-
-function effekteVoll(fighter) {
-  return (fighter.__effektKnoten ?? 0) >= MAX_EFFEKTE_PRO_KÄMPFER;
-}
-
-function effektAnhängen(fighter, knoten, ms) {
-  fighter.appendChild(knoten);
-  fighter.__effektKnoten = (fighter.__effektKnoten ?? 0) + 1;
-  setTimeout(() => {
-    knoten.remove();
-    fighter.__effektKnoten -= 1;
-  }, ms);
-}
-
-// Treibende Partikel pro Kontinent — nur DOM-Aufbau, Bewegung macht CSS.
-const ARENA_PARTICLES = {
-  aschenlande: { anim: 'particle-rise', color: '#d98f4a', count: 18, alpha: 0.75 },
-  frostreich: { anim: 'particle-fall', color: '#cfe3ef', count: 26, alpha: 0.8 },
-  faulmoor: { anim: 'particle-drift', color: '#8fae6d', count: 20, alpha: 0.5 },
-  blutmark: { anim: 'particle-fall', color: '#a03a3a', count: 18, alpha: 0.6 },
-  sternenleere: { anim: 'particle-rise', color: '#9fb4e8', count: 24, alpha: 0.7 },
-  tiefen: { anim: 'particle-fall', color: '#6f6862', count: 22, alpha: 0.5 },
-};
-
-let particleContinent = null;
-
-function refreshArenaParticles() {
-  const key = continentKeyOf(state.zone);
-  if (key === particleContinent) return;
-  particleContinent = key;
-  // Dieselbe Kontinent-Klasse färbt Bühne (Wand, Boden, Glühen) und Partikel.
-  el.arena.classList.remove(...CONTINENT_FIGURE_CLASSES);
-  el.arena.classList.add(`cont-${key}`);
-  const cfg = ARENA_PARTICLES[key] ?? ARENA_PARTICLES.aschenlande;
-  el.arenaParticles.replaceChildren();
-  for (let i = 0; i < cfg.count; i += 1) {
-    const p = document.createElement('span');
-    p.className = 'arena-particle';
-    const size = 2 + Math.random() * 4;
-    p.style.left = `${(Math.random() * 100).toFixed(1)}%`;
-    p.style.top = `${(Math.random() * 100).toFixed(1)}%`;
-    p.style.width = `${size.toFixed(1)}px`;
-    p.style.height = `${(size * (0.6 + Math.random() * 0.8)).toFixed(1)}px`;
-    p.style.setProperty('--p-color', cfg.color);
-    p.style.setProperty('--p-anim', cfg.anim);
-    p.style.setProperty('--p-dur', `${(6 + Math.random() * 9).toFixed(1)}s`);
-    p.style.setProperty('--p-delay', `${(-Math.random() * 12).toFixed(1)}s`);
-    p.style.setProperty('--p-drift', `${(Math.random() * 10 - 5).toFixed(1)}vw`);
-    p.style.setProperty('--p-alpha', cfg.alpha);
-    el.arenaParticles.appendChild(p);
-  }
-}
-
-function spawnDamageFloat(fighter, amount, isCrit = false) {
-  if (!settings.damageNumbers || effekteVoll(fighter)) return;
-  const span = document.createElement('span');
-  span.className = isCrit ? 'dmg-float crit' : 'dmg-float';
-  span.textContent = formatNum(amount);
-  span.style.left = `${35 + Math.random() * 30}%`;
-  effektAnhängen(fighter, span, 900);
-}
-
-function spawnHealFloat(fighter, amount) {
-  if (!settings.damageNumbers || effekteVoll(fighter)) return;
-  const span = document.createElement('span');
-  span.className = 'dmg-float heal';
-  span.textContent = `+${formatNum(amount)}`;
-  span.style.left = `${35 + Math.random() * 30}%`;
-  effektAnhängen(fighter, span, 900);
-}
-
-function spawnMissFloat(fighter) {
-  if (!settings.damageNumbers || effekteVoll(fighter)) return;
-  const span = document.createElement('span');
-  span.className = 'dmg-float miss';
-  span.textContent = 'Verfehlt';
-  span.style.left = `${30 + Math.random() * 40}%`;
-  effektAnhängen(fighter, span, 900);
-}
-
-// Hieb-Bogen: Ein heller Bogen schwingt in Angriffsrichtung — der Schlag
-// bekommt eine sichtbare Bahn, nicht nur den Lunge-Schwung des Körpers.
-function spawnSlash(fighter, direction) {
-  if (!settings.hitFlash || effekteVoll(fighter)) return;
-  const span = document.createElement('span');
-  span.className = 'slash';
-  span.style.setProperty('--slash-rot', `${direction * 38}deg`);
-  span.style.setProperty('--slash-sweep', `${direction * 64}deg`);
-  effektAnhängen(fighter, span, 240);
-}
-
-// Funken-Burst am Trefferpunkt: kurze Partikel-Explosion aus Asche und
-// Glut; der Krit setzt einen goldenen Ring darüber. Gekoppelt an die
-// bestehende Treffer-Effekt-Option (Aufblitzen), kein neuer Schalter.
-function spawnImpact(fighter, kind = 'hit') {
-  if (!settings.hitFlash || effekteVoll(fighter)) return;
-  const burst = document.createElement('span');
-  burst.className = `impact impact-${kind}`;
-  burst.style.left = `${36 + Math.random() * 26}%`;
-  burst.style.top = `${30 + Math.random() * 22}%`;
-  const count = kind === 'crit' ? 12 : 7;
-  for (let i = 0; i < count; i += 1) {
-    const spark = document.createElement('i');
-    const angle = Math.random() * Math.PI * 2;
-    const dist = 16 + Math.random() * (kind === 'crit' ? 40 : 26);
-    spark.style.setProperty('--spark-dx', `${Math.cos(angle) * dist}px`);
-    spark.style.setProperty('--spark-dy', `${Math.sin(angle) * dist - 8}px`);
-    spark.style.setProperty('--spark-delay', `${(Math.random() * 60).toFixed(0)}ms`);
-    burst.appendChild(spark);
-  }
-  effektAnhängen(fighter, burst, 560);
-  if (kind === 'crit') {
-    const ring = document.createElement('span');
-    ring.className = 'crit-ring';
-    ring.style.left = burst.style.left;
-    ring.style.top = burst.style.top;
-    effektAnhängen(fighter, ring, 450);
-  }
-}
-
-function showOverlay(text, html = false) {
-  const target = document.getElementById('overlay-text');
-  if (html) target.innerHTML = text;
-  else target.textContent = text;
-  document.getElementById('overlay').classList.add('show');
-  overlayDismissible = false;
-}
-
-let overlayDone = null;
-
-function finishDismissible() {
-  hideOverlay();
-  overlayDismissible = false;
-  const done = overlayDone;
-  overlayDone = null;
-  if (done) done();
-}
-
-function showDismissibleOverlay(text, duration, html = false, onDone = null) {
-  // Überholt ein laufendes Overlay (z. B. Boss-Gate → Kontinent-Annale):
-  // dessen Timer stoppen, sonst blättert es das neue vorzeitig weg.
-  if (sceneTimer) {
-    clearTimeout(sceneTimer);
-    sceneTimer = null;
-  }
-  overlayDone = null;
-  showOverlay(text, html);
-  overlayDismissible = true;
-  overlayDone = onDone;
-  sceneTimer = setTimeout(() => {
-    sceneTimer = null;
-    finishDismissible();
-  }, duration);
-}
-
-function dismissOverlay() {
-  if (!overlayDismissible) return;
-  if (autoDoorTimer) {
-    // Klick aufs Boss-Gate heißt bei aktiver Auto-Tür: sofort weiter — nicht
-    // abbrechen, sonst bliebe die Arena leer und der Lauf verfallen.
-    autoDoorAdvance();
-    return;
-  }
-  if (sceneTimer) {
-    clearTimeout(sceneTimer);
-    sceneTimer = null;
-  }
-  finishDismissible();
-}
-
-function hideOverlay() {
-  document.getElementById('overlay').classList.remove('show');
-}
-
-// Der Auto-Tür-Lauf hängt an einem eigenen Timer-Register statt an sceneTimer:
-// dismissOverlay räumt sceneTimer ab, ein Klick aufs Gate würde den Lauf sonst
-// canceln und die Arena leer zurücklassen. Klick aufs Gate führt den Lauf
-// sofort aus — Tür auf, voll heilen, Kampf an.
-function autoDoorAdvance() {
-  clearTimeout(autoDoorTimer);
-  autoDoorTimer = null;
-  if (sceneTimer) {
-    clearTimeout(sceneTimer);
-    sceneTimer = null;
-  }
-  hideOverlay();
-  overlayDismissible = false;
-  enterZone(state.zone + 1);
-  heroAttackProgress = 0;
-  enemyAttackProgress = 0;
-  heroHp = heroMaxHp();
-  spawnEnemy();
-}
+// Der Auto-Tür-Lauf hängt an einem eigenen Timer-Register statt am Szenen-
+// Timer: dismissOverlay räumt die Szene ab, ein Klick aufs Gate würde den
+// Lauf sonst canceln und die Arena leer zurücklassen. Klick aufs Gate führt
+// den Lauf sofort aus — Tür auf, voll heilen, Kampf an.
+provide('overlayGate', () => {
+  if (!autoDoorTimer) return false;
+  autoDoorAdvance();
+  return true;
+});
 
 function showScreen(target) {
   if (target !== el.sceneHero) exitSellMode();
-  for (const screen of [el.menu, el.hub, el.sceneHero, el.sceneSkills, el.sceneOptions, el.sceneMap, el.sceneCrafting, el.sceneStats, el.sceneBestiary, el.sceneAchievements, el.sceneThrone, el.sceneChronik, el.sceneVictory, el.game]) {
+  for (const screen of [el.menu, el.hub, el.sceneHero, el.sceneSkills, el.sceneOptions, el.sceneMap, el.sceneCrafting, el.sceneBestiary, el.sceneAchievements, el.sceneThrone, el.sceneChronik, el.sceneVictory, el.game]) {
     screen.hidden = screen !== target;
   }
   // Sanfter Einstieg statt harter Schaltung — ein kurzes Aufblenden pro
   // Szenenwechsel (pulseClass erzwingt per Reflow den Neustart der Animation).
   pulseClass(target, 'scene-enter', 450);
 }
-
-const CONTINENT_FIGURE_CLASSES = ['cont-aschenlande', 'cont-frostreich', 'cont-faulmoor', 'cont-blutmark', 'cont-sternenleere', 'cont-tiefen'];
 
 function setEnemyFigure(zoneIndex, name, enemyType) {
   for (const cls of CONTINENT_FIGURE_CLASSES) el.enemyFigure.classList.remove(cls);
@@ -381,7 +169,12 @@ function gainXp(amount) {
     state.level += 1;
     state.statPoints += STAT_POINTS_PER_LEVEL;
     // Runenpunkte gibt es erst, sobald der Fertigkeitenbaum offen ist.
-    if (state.level >= SKILL_TREE_UNLOCK_LEVEL) state.skillPoints += 1;
+    if (state.level >= SKILL_TREE_UNLOCK_LEVEL) {
+      state.skillPoints += 1;
+      // Der exakte Schwellen-Treffer feiert den Moment — die Kachel war bis
+      // hierher unsichtbar, der Spieler hat sie also noch nie gesehen.
+      if (state.level === SKILL_TREE_UNLOCK_LEVEL) toast('Stufe 20 — die Runen erwachen: Die Fertigkeiten-Kachel ist im Schrein erschienen.', '#c1663a');
+    }
     heroHp = heroMaxHp();
     sfx.levelUp();
     levelUpFloat(state.level);
@@ -549,10 +342,7 @@ function killEnemy() {
     // Auto-Tür: Das Gate geht von allein weiter — Epitaph kurz lesen lassen,
     // dann heilt der Eintritt ins nächste Gebiet und der Kampf läuft an.
     if (settings.autoDoor) {
-      if (sceneTimer) {
-        clearTimeout(sceneTimer);
-        sceneTimer = null;
-      }
+      clearSceneTimer();
       autoDoorTimer = setTimeout(autoDoorAdvance, 2200);
       enemy = null;
       save();
@@ -661,8 +451,7 @@ function die() {
     : 'Die Asche nimmt dich zurück.') + ' Am Schrein erwachst du mit einem Viertel deiner Lebenskraft.' + recap + wallHint, true);
   render();
   save();
-  sceneTimer = setTimeout(() => {
-    sceneTimer = null;
+  scheduleScene(() => {
     hideOverlay();
     returnToHub();
   }, 2000);
@@ -710,21 +499,6 @@ function hubTick() {
   renderHubHero();
 }
 
-// HP-Leiste mit Geist-Nachlauf: Die helle Schicht hält kurz die alte Höhe,
-// während die Füllung schon fällt — jeder Treffer ist ablesbar, statt in
-// der Breite zu verschwinden. Bei Heilung springt der Geist ohne Verzögerung.
-// Schreibungen werden geglättet: gleiche Breite = keine DOM-Mutation.
-function setHpBar(fill, ghost, pct) {
-  const clamped = Math.max(0, Math.min(100, pct));
-  const width = `${clamped}%`;
-  if (ghost) {
-    const previous = parseFloat(fill.style.width);
-    ghost.classList.toggle('healing', !(previous <= clamped));
-    if (ghost.style.width !== width) ghost.style.width = width;
-  }
-  if (fill.style.width !== width) fill.style.width = width;
-}
-
 function renderHubHero() {
   const max = heroMaxHp();
   setText(el.hubHeroLevel, state.level);
@@ -740,292 +514,6 @@ function renderHubHero() {
     setText(el.hubHeroRegen, seconds === 1 ? 'voll in 1 s' : `voll in ${seconds} s`);
   } else {
     setHidden(el.hubHeroRegen, true);
-  }
-}
-
-// Die Statistik-Seite: Spielzeit, Tode, Beute je Seltenheit — die Zähler
-// aus dem Spielstand bekommen ihr Gesicht. Rendert nur, wenn sie offen ist.
-function renderStats() {
-  if (el.sceneStats.hidden) return;
-  el.statsPlaytime.textContent = formatDuration(state.playtimeMs);
-  el.statsKills.textContent = formatNum(state.kills);
-  el.statsDeaths.textContent = formatNum(state.deaths);
-  el.statsCleared.textContent = `${Math.min(state.cleared, MAIN_ZONE_COUNT)} von ${MAIN_ZONE_COUNT}`;
-  el.statsDepth.textContent = state.cleared > 0 ? zoneDef(state.cleared - 1).name : '—';
-  el.statsAsh.textContent = formatNum(state.ash);
-  el.statsDrops.replaceChildren();
-  for (const rarity of RARITIES) {
-    const row = document.createElement('div');
-    const label = document.createElement('dt');
-    label.textContent = rarity.label;
-    label.style.color = rarity.color;
-    const value = document.createElement('dd');
-    value.textContent = formatNum(state.drops[rarity.key] ?? 0);
-    row.append(label, value);
-    el.statsDrops.appendChild(row);
-  }
-}
-
-// Der Ruhm-Laden: Beutelschein und Zollerlass, gestaffelt, permanent.
-function renderRuhmShop() {
-  el.ruhmShop.replaceChildren();
-  const head = document.createElement('h3');
-  head.textContent = 'Ruhm-Laden';
-  el.ruhmShop.appendChild(head);
-  const available = ruhmAvailable(state);
-  for (const [kind, def] of Object.entries(RUHM_SHOP)) {
-    const level = state.shopPurchases[kind] ?? 0;
-    const maxed = level >= def.levels.length;
-    const cost = maxed ? 0 : def.levels[level];
-    const row = document.createElement('div');
-    row.className = 'chronicle-entry';
-    const who = document.createElement('div');
-    who.className = 'chronicle-who';
-    who.textContent = `${def.name}${maxed ? ' — vollständig' : ` · Stufe ${level + 1}/${def.levels.length}`}`;
-    const text = document.createElement('div');
-    text.className = 'chronicle-text';
-    text.textContent = def.desc + (level > 0 ? ` (Aktuell: Stufe ${level})` : '');
-    const buy = document.createElement('button');
-    buy.className = 'btn-small';
-    buy.dataset.buy = kind;
-    if (maxed) {
-      buy.textContent = 'Ausgeschöpft';
-      buy.disabled = true;
-    } else {
-      buy.textContent = `Kaufen · ${cost} Ruhm`;
-      buy.disabled = available < cost;
-    }
-    row.append(who, text, buy);
-    el.ruhmShop.appendChild(row);
-  }
-}
-
-function buyRuhmUpgrade(kind) {
-  const def = RUHM_SHOP[kind];
-  const level = state.shopPurchases[kind] ?? 0;
-  if (!def || level >= def.levels.length) return;
-  const cost = def.levels[level];
-  if (ruhmAvailable(state) < cost) return;
-  state.ruhmAusgegeben += cost;
-  state.shopPurchases[kind] = level + 1;
-  toast(`${def.name} erworben — Stufe ${level + 1}.`, '#c1663a');
-  sfx.unlock();
-  save();
-  renderAchievements();
-  render();
-}
-
-// Der Thron: Kronenasche, das Vermächtnis und „Erneut erwachen". Die Prestige-
-// Szene — erst nach dem ersten Kronensieg über die Hub-Kachel erreichbar.
-function renderThrone() {
-  if (el.sceneThrone.hidden) return;
-  el.throneSummary.textContent = `${formatNum(kronenascheAvailable(state))} Kronenasche verfügbar · ${formatNum(kronenascheEarnedOf(state))} erworben · ${formatNum(state.prestigeRuns)} ${state.prestigeRuns === 1 ? 'Lauf' : 'Läufe'} hinter dir`;
-  el.legacyShop.replaceChildren();
-  const head = document.createElement('h3');
-  head.textContent = 'Das Vermächtnis';
-  el.legacyShop.appendChild(head);
-  const available = kronenascheAvailable(state);
-  for (const [title, def] of Object.entries(LEGACY_TITLES)) {
-    const level = legacyLevel(state, title);
-    const maxed = level >= def.levels.length;
-    const cost = maxed ? 0 : def.levels[level];
-    // Kronen-Akzent: Der Thron-Laden spricht eine andere Währung als der
-    // Ruhm-Laden — das soll man den Zeilen ansehen.
-    const row = document.createElement('div');
-    row.className = 'chronicle-entry chronicle-entry-legacy';
-    const who = document.createElement('div');
-    who.className = 'chronicle-who';
-    who.textContent = `${def.name}${maxed ? ' — vollständig' : ` · Stufe ${level + 1}/${def.levels.length}`}`;
-    const text = document.createElement('div');
-    text.className = 'chronicle-text';
-    text.textContent = def.desc + (level > 0 ? ` (Aktuell: Stufe ${level})` : '');
-    const buy = document.createElement('button');
-    buy.className = 'btn-small';
-    buy.dataset.legacy = title;
-    if (maxed) {
-      buy.textContent = 'Ausgeschöpft';
-      buy.disabled = true;
-    } else {
-      buy.textContent = `Kaufen · ${cost} Kronenasche`;
-      buy.disabled = available < cost;
-    }
-    row.append(who, text, buy);
-    el.legacyShop.appendChild(row);
-  }
-  const ready = state.cleared >= MAIN_ZONE_COUNT;
-  const reward = kronenascheReward(state.cleared);
-  // Vorschau als Zwei-Spalten: Was verfällt, was bleibt — der größte Moment
-  // des Spiels verdient eine klare Abbildung statt Fließtext.
-  el.prestigePreview.innerHTML = ready
-    ? `<div class="prestige-reward">Der Lauf zahlt <strong>${reward} Kronenasche</strong>.</div>
-      <div class="prestige-columns">
-        <div class="prestige-col"><h4>Verfällt</h4><ul><li>Zone &amp; Gebiete</li><li>Held — Stufe, EP, Punkte</li><li>Asche</li><li>Ausrüstung &amp; Inventar</li><li>Runen &amp; Pfad-Bindung</li></ul></div>
-        <div class="prestige-col prestige-col-kept"><h4>Bleibt</h4><ul><li>Ruhm — Errungenschaften &amp; Laden</li><li>Kronenasche &amp; Vermächtnis</li><li>Bestiarium</li><li>Chronik &amp; Statistik</li></ul></div>
-      </div>`
-    : 'Der Thron verlangt die Krone dieses Laufs — hebe sie zuerst erneut.';
-  el.prestigeButton.disabled = !ready;
-  el.prestigeButton.classList.toggle('armed', prestigeArmed);
-  el.prestigeButton.textContent = prestigeArmed
-    ? 'Wirklich? Erwache erneut.'
-    : ready ? `Erneut erwachen · ${reward} Kronenasche` : 'Die Krone dieses Laufs fehlt';
-}
-
-function buyLegacy(title) {
-  const def = LEGACY_TITLES[title];
-  const level = legacyLevel(state, title);
-  if (!def || level >= def.levels.length) return;
-  const cost = def.levels[level];
-  if (kronenascheAvailable(state) < cost) return;
-  state.kronenascheAusgegeben += cost;
-  state.legacy[title] = level + 1;
-  toast(`${def.name} — Stufe ${level + 1}.`, '#c1663a');
-  sfx.unlock();
-  save();
-  renderThrone();
-  render();
-}
-
-let prestigeArmed = false;
-
-let prestigeArmTimer = null;
-
-function attemptPrestige() {
-  if (state.cleared < MAIN_ZONE_COUNT) return;
-  if (!prestigeArmed) {
-    prestigeArmed = true;
-    el.prestigeButton.classList.add('armed');
-    clearTimeout(prestigeArmTimer);
-    prestigeArmTimer = setTimeout(() => {
-      prestigeArmed = false;
-      prestigeArmTimer = null;
-      renderThrone();
-    }, 4000);
-    renderThrone();
-    return;
-  }
-  clearTimeout(prestigeArmTimer);
-  prestigeArmTimer = null;
-  prestigeArmed = false;
-  const reward = kronenascheReward(state.cleared);
-  state.kronenascheEarned += reward;
-  state.prestigeRuns += 1;
-  // Der Lauf verfällt — alles Run-Bezogene kehrt zum Erwachen zurück. Die
-  // Start-Werte kommen aus den Titel-Definitionen (perLevel), nie aus Kopien.
-  state.ash = LEGACY_TITLES['der-vorbereitete'].perLevel * legacyLevel(state, 'der-vorbereitete');
-  state.xp = 0;
-  state.level = 1;
-  state.maxHp = 35;
-  state.damage = 2;
-  state.armorBase = 0;
-  state.critBonus = 0;
-  state.statPoints = LEGACY_TITLES['alter-pfad'].perLevel * legacyLevel(state, 'alter-pfad');
-  state.skillPoints = 0;
-  state.skills = ['start'];
-  state.inventory = [];
-  for (const slot of GEAR_SLOTS) state.equipment[slot.key] = null;
-  state.zone = 0;
-  state.cleared = 0;
-  state.zoneKills = 0;
-  state.safedropZones = {};
-  // Die Annalen erneut: Der zweite Lauf liest dieselbe Geschichte neu.
-  state.seenContinents = [];
-  state.inField = false;
-  heroHp = heroMaxHp();
-  setCombatIntensity(false);
-  sfx.victory();
-  save();
-  showScreen(el.hub);
-  // Asche-Wiedergeburt: Der Hub atmet einmal kronengolden, während der
-  // neue Lauf beginnt.
-  pulseClass(el.hub, 'ash-rebirth', 1800);
-  render();
-  showDismissibleOverlay(`Du erwachst erneut — der Lauf zahlt <strong>${reward} Kronenasche</strong>. Die Asche erinnert sich an alles andere.`, 5500, true);
-}
-
-// Das Bestiarium: 150 Kreaturen der fünf Kontinente plus die Namen der
-// Tiefen — erlegt zählt, unerlegt bleibt als „???" versiegelt.
-function renderBestiary() {
-  if (!el.sceneBestiary || el.sceneBestiary.hidden) return;
-  const killsOf = (name) => state.bestiary[name] ?? 0;
-  const types = [['normal', 'Normal'], ['elite', 'Elite'], ['boss', 'Boss']];
-  let known = 0;
-  el.bestiarySummary.textContent = 'Erlege Kreaturen, um ihre Einträge zu entschleiern.';
-  el.bestiaryList.replaceChildren();
-  const entry = (name, kind, zoneName, continentKey) => {
-    const kills = killsOf(name);
-    if (kills > 0) known += 1;
-    const row = document.createElement('div');
-    row.className = 'chronicle-entry chronicle-entry-bestiary' + (kills > 0 ? '' : ' entry-locked');
-    // Jede Kreatur trägt ihr Porträt — derselbe Sprite wie in der Arena,
-    // ungelegt als dunkle Silhouette, wenn sie noch nie erlegt wurde.
-    const icon = document.createElement('span');
-    icon.className = `bestiary-icon cont-${continentKey}`;
-    icon.innerHTML = spriteSvgFor(name, kind === 'boss');
-    const body = document.createElement('div');
-    body.className = 'chronicle-entry-body';
-    const who = document.createElement('div');
-    who.className = 'chronicle-who';
-    who.textContent = (kills > 0 ? '' : '??? ') + name + (kind === 'boss' ? ' — Boss' : kind === 'elite' ? ' — Elite' : '');
-    if (kind === 'boss') who.style.color = '#c1663a';
-    const text = document.createElement('div');
-    text.className = 'chronicle-text';
-    text.textContent = kills > 0 ? `${zoneName} · ${kills} erlegt` : `${zoneName} · Noch nie erlegt.`;
-    body.append(who, text);
-    row.append(icon, body);
-    el.bestiaryList.appendChild(row);
-  };
-  for (const [ci, continent] of CONTINENTS.entries()) {
-    const head = document.createElement('h3');
-    head.textContent = continent.name;
-    el.bestiaryList.appendChild(head);
-    const key = continentKeyOf(ci * 10);
-    for (let z = ci * 10; z < ci * 10 + 10; z += 1) {
-      for (const [kind] of types) {
-        entry(ZONE_ENEMIES[z][kind].name, kind, ZONES[z].name, key);
-      }
-    }
-  }
-  const head = document.createElement('h3');
-  head.textContent = 'Die Tiefen';
-  el.bestiaryList.appendChild(head);
-  for (const [kind, label] of types) {
-    const labelMap = { normal: 'Normal', elite: 'Elite', boss: 'Boss' };
-    for (const name of DEPTH_ENEMY_NAMES[kind]) {
-      entry(name, kind, `Aschentiefe · ${labelMap[kind]}`, 'tiefen');
-    }
-  }
-  el.bestiarySummary.textContent = `${known} von ${ZONE_ENEMIES.length * 3 + DEPTH_ENEMY_NAMES.normal.length + DEPTH_ENEMY_NAMES.elite.length + DEPTH_ENEMY_NAMES.boss.length} Kreaturen erlegt.`;
-}
-
-// Errungenschaften: Gesperrte Einträge zeigen ihren Fortschritt, errungene
-// leuchten in Kronenfarbe. Darunter der Ruhm-Laden — Ruhm entsteht nur
-// durch Errungenschaften und kauft permanente Erleichterungen.
-function renderAchievements() {
-  if (!el.sceneAchievements || el.sceneAchievements.hidden) return;
-  const earned = new Set(state.achievements);
-  el.achievementsSummary.textContent = `${earned.size} von ${ACHIEVEMENTS.length} errungen · Ruhm: ${formatNum(ruhmAvailable(state))} verfügbar (${ruhmEarned(state)} verdient)`;
-  renderRuhmShop();
-  el.achievementsList.replaceChildren();
-  for (const achievement of ACHIEVEMENTS) {
-    const done = earned.has(achievement.id);
-    const row = document.createElement('div');
-    row.className = 'chronicle-entry' + (done ? '' : ' entry-locked');
-    const who = document.createElement('div');
-    who.className = 'chronicle-who';
-    who.textContent = (done ? '◆ ' : '◇ ') + achievement.name;
-    who.style.color = done ? '#c1663a' : '';
-    const text = document.createElement('div');
-    text.className = 'chronicle-text';
-    let line = achievement.desc;
-    if (achievement.progress) {
-      const [cur, target] = achievement.progress(state);
-      line += achievement.format === 'zeit'
-        ? ` (${formatDuration(cur)} / ${formatDuration(target)})`
-        : ` (${formatNum(cur)} / ${formatNum(target)})`;
-    }
-    text.textContent = done ? line + ' — errungen.' : line;
-    row.append(who, text);
-    el.achievementsList.appendChild(row);
   }
 }
 
@@ -1085,10 +573,13 @@ function render() {
   setText(el.skillPointsHud, state.skillPoints);
   el.skillPointsHud.classList.toggle('has-points', state.skillPoints > 0);
   const skillsLocked = state.level < SKILL_TREE_UNLOCK_LEVEL;
-  el.tileSkills.disabled = skillsLocked;
-  setText(el.tileSkillsSub, skillsLocked
-    ? `Erwacht ab Stufe ${SKILL_TREE_UNLOCK_LEVEL}`
-    : state.skillPoints > 0 ? `${state.skillPoints} Punkte frei` : 'Wähle weise');
+  // Der Schrein hält Kacheln verborgen, bis sie etwas zu sagen haben:
+  // Fertigkeiten erwachen auf Stufe 20 (mit Toast), die Werkstatt erscheint
+  // mit der ersten Beute — hint-drop hält sie dauerhaft sichtbar, sobald
+  // einmal etwas gefunden wurde.
+  setHidden(el.tileSkills, skillsLocked);
+  setText(el.tileSkillsSub, state.skillPoints > 0 ? `${state.skillPoints} Punkte frei` : 'Wähle weise');
+  setHidden(el.tileCrafting, !(state.inventory.length > 0 || state.hints['hint-drop']));
   setHidden(el.tileThrone, !state.crownWon);
   setText(el.tileThroneSub, state.crownWon && state.cleared >= MAIN_ZONE_COUNT
     ? `Erneut erwachen · ${formatNum(kronenascheReward(state.cleared))} Kronenasche`
@@ -1167,46 +658,7 @@ function checkAchievements() {
   save();
 }
 
-// Blockierter Speicher (Web-Build, Privatmodus, Quota): Ein Wurf darf das
-// Spiel nicht töten — gedrosselte Warnung statt Exception.
-let lastStorageWarning = 0;
-
-function warnStorageBroken() {
-  if (Date.now() - lastStorageWarning < 30000) return;
-  lastStorageWarning = Date.now();
-  toast('Spielstand konnte nicht gespeichert werden — der Speicher blockiert Schreibzugriffe.', '#c1663a');
-}
-
-function save() {
-  if (saveSuppressed) return;
-  state.lastSeen = Date.now();
-  state.hp = Math.max(0, Math.round(heroHp));
-  rotateBackups();
-  try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-  } catch {
-    warnStorageBroken();
-  }
-}
-
-const asNumber = (value, fallback) => (typeof value === 'number' && Number.isFinite(value) ? value : fallback);
-
-function parseSave(raw) {
-  if (!raw) return null;
-  try {
-    const data = JSON.parse(raw);
-    if (!data || typeof data !== 'object') return null;
-    if (typeof data.level !== 'number' || !Number.isFinite(data.level)) return null;
-    if (typeof data.ash !== 'number' || !Number.isFinite(data.ash)) return null;
-    return data;
-  } catch {
-    return null;
-  }
-}
-
 // ——— Onboarding: Einmal-Hinweise im richtigen Moment ———
-
-const ONBOARDING_HINT_KEYS = ['hint-combat', 'hint-levelup', 'hint-drop', 'hint-epic', 'hint-leech', 'hint-boss', 'hint-skills', 'hint-map', 'hint-crafting'];
 
 function hintOnce(key, text, { duration = 4400, pauseCombat = false } = {}) {
   if (state.hints[key]) return;
@@ -1268,383 +720,6 @@ function playCombatIntro() {
   showDismissibleOverlay(COMBAT_INTRO_PAGES[0], 4400, false, page(0));
   save();
 }
-
-function migrateSave(data) {
-  if (typeof data.saveVersion !== 'number') data.saveVersion = 1; // Spielstände vor 0.4.0
-  if (data.saveVersion < 3) data.inField ??= true; // Spielstände vor 0.7.0: Held galt stets als im Feld
-  if (data.saveVersion < 4) {
-    // Spielstände vor 0.9.0: Onboarding nur nachholen, was wirklich verpasst wurde.
-    data.hints = {};
-    if ((data.kills ?? 0) > 0 || (data.cleared ?? 0) > 0) data.hints['hint-combat'] = true;
-    if ((data.level ?? 1) >= 2) data.hints['hint-levelup'] = true;
-    if ((data.itemSeq ?? 0) > 0) data.hints['hint-drop'] = true;
-    if ((data.cleared ?? 0) > 0) data.hints['hint-boss'] = true;
-    if ((data.kills ?? 0) > 30) {
-      for (const key of ONBOARDING_HINT_KEYS) data.hints[key] = true;
-    }
-  }
-  // Spielstände vor 0.11.0 (v4): Keine Migration nötig — die Felder Basis,
-  // Ilvl und die Statistik-Zähler härtet prepareSave für Altbestand nach.
-  // Spielstände vor 0.13.0 (v5): Bestiarium, Errungenschaften und
-  // Tiefen-Meisterschaften kommen ebenfalls über die prepareSave-Härtung.
-  // Künftige Migrationen hier anhängen (if (data.saveVersion === n) …).
-  data.saveVersion = SAVE_VERSION;
-  return data;
-}
-
-// Zeitstempel der letzten geglückten Rotation im laufenden Prozess — der
-// Warm-Pfad steigt damit aus, ganz ohne localStorage-Read und JSON.parse.
-let lastBackupRotatedAt = 0;
-
-function rotateBackups(force = false) {
-  // save() läuft mit jedem 3-Sekunden-Tick und jedem Kill; die beiden
-  // Voll-Parses des Spielstands fielen sonst in jedem Aufruf an.
-  if (!force && Date.now() - lastBackupRotatedAt < BACKUP_MIN_GAP_MS) return;
-  const current = parseSave(localStorage.getItem(SAVE_KEY));
-  if (!current) return;
-  const newest = parseSave(localStorage.getItem(BACKUP_KEYS[0]));
-  if (!force && newest && Date.now() - (newest.lastSeen ?? 0) < BACKUP_MIN_GAP_MS) return;
-  try {
-    localStorage.setItem(BACKUP_KEYS[2], localStorage.getItem(BACKUP_KEYS[1]) ?? '');
-    localStorage.setItem(BACKUP_KEYS[1], localStorage.getItem(BACKUP_KEYS[0]) ?? '');
-    localStorage.setItem(BACKUP_KEYS[0], JSON.stringify(current));
-    lastBackupRotatedAt = Date.now();
-  } catch {
-    // Backups sind der zweite Schutzring — ihr Scheitern darf das Speichern
-    // des Hauptstands nicht mitreißen (die Quota gilt für beide).
-  }
-}
-
-// Härtung: bereinigt ALLES auf dem rohen Spielstand-Objekt, bevor etwas davon
-// den echten Spielstand berührt — korrupte Werte werden repariert oder
-// verworfen, ein böser Spielstand darf nie den Render-Loop crashen.
-function prepareSave(data) {
-  migrateSave(data);
-  data.ash = Math.max(0, asNumber(data.ash, 0));
-  data.xp = Math.max(0, asNumber(data.xp, 0));
-  data.level = Math.max(1, asNumber(data.level, 1));
-  data.maxHp = Math.max(1, asNumber(data.maxHp, 30));
-  data.hp = Math.max(0, asNumber(data.hp, 0));
-  data.damage = Math.max(1, asNumber(data.damage, 2));
-  data.kills = Math.max(0, asNumber(data.kills, 0));
-  data.zoneKills = Math.max(0, asNumber(data.zoneKills, 0));
-  data.statPoints = Math.max(0, asNumber(data.statPoints, 0));
-  data.armorBase = Math.max(0, asNumber(data.armorBase, 0));
-  data.critBonus = Math.max(0, asNumber(data.critBonus, 0));
-  data.skillPoints = Math.max(0, asNumber(data.skillPoints, 0));
-  data.itemSeq = asCount(data.itemSeq);
-  const rawEquipment = data.equipment && typeof data.equipment === 'object' && !Array.isArray(data.equipment)
-    ? data.equipment
-    : {};
-  data.equipment = {};
-  const seenIds = new Set();
-  const ensureId = (item) => {
-    if (typeof item.id !== 'number' || !Number.isFinite(item.id) || seenIds.has(item.id)) {
-      data.itemSeq += 1;
-      item.id = data.itemSeq;
-    }
-    seenIds.add(item.id);
-  };
-  for (const slot of GEAR_SLOTS) {
-    data.equipment[slot.key] = sanitizeItem(rawEquipment[slot.key]);
-    if (data.equipment[slot.key]) ensureId(data.equipment[slot.key]);
-  }
-  data.inventory = (Array.isArray(data.inventory) ? data.inventory : [])
-    .map(sanitizeItem)
-    .filter(Boolean);
-  data.inventory.forEach(ensureId);
-  if (!Array.isArray(data.skills)) data.skills = ['start'];
-  if (!data.skills.includes('start')) data.skills.unshift('start');
-  data.skills = data.skills.filter((id) => SKILL_NODES_BY_ID[id]);
-  // Runenpunkte gibt es erst ab SKILL_TREE_UNLOCK_LEVEL — verdient pro Stufe
-  // darüber, verbraucht vom Startknoten abgesehen.
-  const earnedSkillPoints = Math.max(0, data.level - SKILL_TREE_UNLOCK_LEVEL + 1);
-  data.skillPoints = Math.max(0, earnedSkillPoints - (data.skills.length - 1));
-  data.zone = Math.max(0, Math.min(Math.trunc(asNumber(data.zone, 0)), MAX_ZONE));
-  data.cleared = Math.max(0, Math.min(Math.trunc(asNumber(data.cleared, 0)), MAX_ZONE));
-  data.zone = Math.min(data.zone, data.cleared);
-  data.crownWon = data.crownWon === true;
-  data.inField = data.inField === true;
-  // Statistik-Zähler: Alte Spielstände starten bei null, kaputte Werte
-  // werden auf sichere Grenzen gezogen.
-  data.deaths = Math.max(0, asNumber(data.deaths, 0));
-  data.playtimeMs = Math.max(0, asNumber(data.playtimeMs, 0));
-  data.drops = data.drops && typeof data.drops === 'object' && !Array.isArray(data.drops) ? data.drops : {};
-  for (const rarity of RARITIES) data.drops[rarity.key] = Math.max(0, asNumber(data.drops[rarity.key], 0));
-  // Bestiarium (Name → Kill-Zähler) und Errungenschaften (ID-Liste):
-  // Fremdes wird verworfen, Überlängen geklemmt, Nullen verworfen.
-  data.bestiary = data.bestiary && typeof data.bestiary === 'object' && !Array.isArray(data.bestiary) ? data.bestiary : {};
-  const cleanBestiary = {};
-  for (const [name, count] of Object.entries(data.bestiary)) {
-    const kills = asCount(count);
-    if (typeof name === 'string' && name && kills > 0) cleanBestiary[name.slice(0, 60)] = kills;
-  }
-  data.bestiary = cleanBestiary;
-  data.achievements = Array.isArray(data.achievements)
-    ? data.achievements.filter((id) => typeof id === 'string' && id.length <= 40)
-    : [];
-  // Ruhm-Laden: ausgegebener Ruhm und Kaufläufe geklemmt.
-  data.ruhmAusgegeben = Math.max(0, asNumber(data.ruhmAusgegeben, 0));
-  data.shopPurchases = data.shopPurchases && typeof data.shopPurchases === 'object' && !Array.isArray(data.shopPurchases) ? data.shopPurchases : {};
-  data.shopPurchases.beutelschein = Math.min(3, asNumber(data.shopPurchases.beutelschein, 0));
-  data.shopPurchases.zollerlass = Math.min(4, asNumber(data.shopPurchases.zollerlass, 0));
-  data.shopPurchases.aschesegen = Math.min(3, asNumber(data.shopPurchases.aschesegen, 0));
-  data.shopPurchases.tiefenkunde = Math.min(3, asNumber(data.shopPurchases.tiefenkunde, 0));
-  data.shopPurchases.werkstatthandwerk = Math.min(3, asNumber(data.shopPurchases.werkstatthandwerk, 0));
-  // Prestige: Kronenasche-Buch und Vermächtnis-Stufen (nur bekannte Titel, 0–3).
-  data.kronenascheEarned = Math.max(0, asNumber(data.kronenascheEarned, 0));
-  data.kronenascheAusgegeben = Math.min(data.kronenascheEarned, Math.max(0, asNumber(data.kronenascheAusgegeben, 0)));
-  data.prestigeRuns = Math.max(0, Math.min(99999, Math.trunc(asNumber(data.prestigeRuns, 0))));
-  data.legacy = data.legacy && typeof data.legacy === 'object' && !Array.isArray(data.legacy) ? data.legacy : {};
-  const cleanLegacy = {};
-  for (const title of Object.keys(LEGACY_TITLES)) {
-    const level = asNumber(data.legacy[title], 0);
-    if (level > 0) cleanLegacy[title] = Math.min(3, Math.trunc(level));
-  }
-  data.legacy = cleanLegacy;
-  // Safedrop-Register: Gebiete, deren Elite-Erstkill schon gedroppt hat.
-  data.safedropZones = data.safedropZones && typeof data.safedropZones === 'object' && !Array.isArray(data.safedropZones) ? data.safedropZones : {};
-  const cleanSafedrops = {};
-  for (const zone of Object.keys(data.safedropZones)) {
-    const idx = asCount(zone);
-    if (idx >= 0 && idx <= MAX_ZONE) cleanSafedrops[idx] = 1;
-  }
-  data.safedropZones = cleanSafedrops;
-  data.seenContinents = Array.isArray(data.seenContinents)
-    ? data.seenContinents.filter((key) => typeof key === 'string')
-    : [];
-  data.hints = data.hints && typeof data.hints === 'object' && !Array.isArray(data.hints)
-    ? data.hints
-    : {};
-  return data;
-}
-
-function loadSave() {
-  for (const [attempt, key] of [SAVE_KEY, ...BACKUP_KEYS].entries()) {
-    const data = parseSave(localStorage.getItem(key));
-    if (!data) continue;
-    try {
-      prepareSave(data);
-    } catch {
-      continue; // unerwartet Böses → nächste Backup-Generation probieren
-    }
-    Object.assign(state, data);
-    if (attempt > 0) saveNotice = `Hauptspielstand war beschädigt — Backup ${attempt} geladen.`;
-    return true;
-  }
-  return false;
-}
-
-const tauriSaveApi = () => (window.__TAURI__?.dialog && window.__TAURI__?.fs ? window.__TAURI__ : null);
-
-function flashButton(button, text) {
-  const original = button.textContent;
-  button.textContent = text;
-  button.disabled = true;
-  setTimeout(() => {
-    button.textContent = original;
-    button.disabled = false;
-  }, 2000);
-}
-
-async function exportSave() {
-  const raw = localStorage.getItem(SAVE_KEY);
-  if (!raw) return false;
-  const payload = JSON.stringify({
-    game: 'ashen-crown',
-    saveVersion: SAVE_VERSION,
-    exportedAt: new Date().toISOString(),
-    state: JSON.parse(raw),
-  }, null, 2);
-  const fileName = `ashen-crown-spielstand-${new Date().toISOString().slice(0, 10)}.json`;
-  const tauri = tauriSaveApi();
-  if (tauri) {
-    const path = await tauri.dialog.save({
-      defaultPath: fileName,
-      filters: [{ name: 'JSON', extensions: ['json'] }],
-    });
-    if (!path) return false;
-    await tauri.fs.writeTextFile(path, payload);
-    return true;
-  }
-  const url = URL.createObjectURL(new Blob([payload], { type: 'application/json' }));
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = fileName;
-  link.click();
-  URL.revokeObjectURL(url);
-  return true;
-}
-
-function unwrapSave(text) {
-  try {
-    const parsed = JSON.parse(text);
-    if (parsed?.game === 'ashen-crown' && parsed.state) return parsed.state;
-    if (parsed && typeof parsed.level === 'number' && typeof parsed.ash === 'number') return parsed;
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-function pickSaveFile() {
-  return new Promise((resolve) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json,application/json';
-    input.addEventListener('change', async () => {
-      const file = input.files?.[0];
-      resolve(file ? await file.text() : null);
-    });
-    input.addEventListener('cancel', () => resolve(null));
-    input.click();
-  });
-}
-
-async function importSave() {
-  const button = el.importButton;
-  if (!importArmed) {
-    importArmed = true;
-    button.classList.add('armed');
-    button.textContent = 'Wirklich? Überschreibt den Spielstand.';
-    importTimer = setTimeout(() => {
-      importArmed = false;
-      button.classList.remove('armed');
-      button.textContent = 'Importieren';
-    }, 4000);
-    return;
-  }
-  clearTimeout(importTimer);
-  importArmed = false;
-  button.classList.remove('armed');
-  button.textContent = 'Importieren';
-  const tauri = tauriSaveApi();
-  let text = null;
-  if (tauri) {
-    const path = await tauri.dialog.open({
-      multiple: false,
-      filters: [{ name: 'JSON', extensions: ['json'] }],
-    });
-    if (!path) return;
-    text = await tauri.fs.readTextFile(path);
-  } else {
-    text = await pickSaveFile();
-  }
-  if (!text) return;
-  const data = unwrapSave(text);
-  if (!data) {
-    flashButton(button, 'Ungültige Datei');
-    return;
-  }
-  rotateBackups(true);
-  localStorage.setItem(SAVE_KEY, JSON.stringify(migrateSave(data)));
-  location.reload();
-}
-
-function formatDuration(ms) {
-  const totalMinutes = Math.floor(ms / 60000);
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  return hours > 0 ? `${hours} h ${minutes} min` : `${minutes} min`;
-}
-
-// Simulierter Kampf (Offline-Fortschritt): rechnet mit denselben Formeln wie
-// das Live-Gefecht — Krit, Tempo, Gegnerprofile, erlittener Schaden und
-// Lifeleech. Stoppt am Boss (Bosse verlangen deine Anwesenheit) oder beim
-// Tod. Rückgabe: 'time' | 'boss' | 'died'.
-function simulateKills(seconds) {
-  const speed = heroAttackSpeed();
-  const critFactor = 1 + (Math.min(100, heroCritChance()) / 100) * (critMultiplier() - 1);
-  const avgHit = heroDamage() * critFactor;
-  const { pct, flat } = heroLifeleech();
-  let remaining = seconds;
-  let guard = 0;
-  while (remaining > 0 && guard < 200000) {
-    guard += 1;
-    if (state.cleared <= state.zone && state.zoneKills >= BOSS_AFTER_KILLS) {
-      // Boss-Wand offline: Bosse verlangen deine Anwesenheit — der simulierte
-      // Held weicht aufs höchste errungene Gebiet aus und farmt dort weiter.
-      // Erst ganz ohne errungenes Gebiet bleibt die Nacht ungenutzt.
-      if (state.cleared <= 0) return 'boss';
-      state.zone = state.cleared - 1;
-      state.zoneKills = 0;
-      offlineDiversion = zoneDef(state.zone).name;
-    }
-    const isElite = state.zoneKills > 0 && state.zoneKills % ELITE_EVERY_KILLS === 0;
-    const def = scaledEnemy(isElite ? 'elite' : 'normal');
-    // Erwartete Treffer: HERO_MISS_CHANCE der eigenen Schläge geht daneben.
-    const fightS = Math.max(1, Math.ceil(def.hp / avgHit)) * (ATTACK_INTERVAL_MS / 1000) / speed / (1 - HERO_MISS_CHANCE);
-    const duration = fightS + ENEMY_RESPAWN_S;
-    if (duration > remaining) return 'time';
-    remaining -= duration;
-    const swings = Math.max(0, Math.floor(fightS / (def.attackIntervalMs / 1000)) - 1);
-    const reduction = Math.min(0.5, heroArmor() / (heroArmor() + ARMOR_RESISTANCE * def.damage));
-    const taken = Math.max(1, Math.round(def.damage * (1 - reduction)));
-    const heroHits = Math.ceil(def.hp / avgHit) / (1 - HERO_MISS_CHANCE);
-    const healed = Math.round(def.hp * pct / 100) + flat * heroHits;
-    // Erwartungswert: ENEMY_MISS_CHANCE der Gegner-Schläge geht daneben.
-    const expectedTaken = swings * taken * (1 - ENEMY_MISS_CHANCE);
-    if (expectedTaken - healed >= heroHp) return 'died';
-    // Safedrop: Der erste Elite-Kill eines Gebiets garantiert auch offline.
-    const eliteSafedrop = isElite && !state.safedropZones[state.zone];
-    if (eliteSafedrop) state.safedropZones[state.zone] = 1;
-    heroHp = Math.min(heroMaxHp(), heroHp - expectedTaken + healed);
-    state.kills += 1;
-    state.zoneKills += 1;
-    // Bestiarium: Offline-Erlegtes zählt wie im Feld unter dem Kreaturnamen.
-    state.bestiary[def.name] = (state.bestiary[def.name] ?? 0) + 1;
-    state.ash += Math.round(def.ash * (1 + statBonus('ash') / 100) * ashGainFactor());
-    gainXp(Math.round(def.xp * enemyXpMultiplier(def.level, state.level)));
-    rollDrop(isElite ? 'elite' : 'normal', eliteSafedrop);
-  }
-  return 'time';
-}
-
-function applyOfflineProgress() {
-  if (!state.inField) return;
-  state.inField = false;
-  offlineDiversion = null;
-  if (!settings.offlineProgress) {
-    save();
-    return;
-  }
-  const elapsed = Date.now() - (state.lastSeen || Date.now());
-  if (elapsed < OFFLINE_MIN_GAP_MS) {
-    save();
-    return;
-  }
-  const capped = Math.min(elapsed, offlineCapMs());
-  const ashBefore = state.ash;
-  const levelBefore = state.level;
-  const killsBefore = state.kills;
-  const dropsBefore = totalDropCount();
-  const result = simulateKills(capped / 1000);
-  const ash = state.ash - ashBefore;
-  const levels = state.level - levelBefore;
-  const kills = state.kills - killsBefore;
-  const found = totalDropCount() - dropsBefore;
-  const levelsPart = levels > 0 ? `, +${levels} ${levels === 1 ? 'Stufe' : 'Stufen'}` : '';
-  const dropsPart = found > 0 ? `, ${found} ${found === 1 ? 'Beutestück gefunden' : 'Beutestücke gefunden'}` : '';
-  let summary = `Während du fort warst (${formatDuration(capped)}): ${kills} Kämpfe, +${formatNum(ash)} Asche${levelsPart}${dropsPart}`;
-  if (result === 'died') {
-    state.deaths += 1;
-    const toll = takeDeathToll();
-    heroHp = Math.round(heroMaxHp() * DEATH_REVIVE_SHARE);
-    summary += ` — gefallen. Die Asche nahm ${formatNum(toll)} Asche.`;
-  } else if (result === 'boss') {
-    summary += '. Ein Boss versperrt den Weg.';
-  } else if (offlineDiversion) {
-    summary += `. Ein Boss versperrte den Weg — ausgewichen auf ${offlineDiversion} und weitergefarmt.`;
-  } else {
-    summary += '.';
-  }
-  if (kills > 0 || result === 'died') {
-    offlineSummary = summary;
-    save();
-  }
-}
-
-const totalDropCount = () => Object.values(state.drops ?? {}).reduce((sum, n) => sum + (Number.isFinite(n) ? n : 0), 0);
 
 function idleTick() {
   // Spielzeit: echte Wanduhr-Deltas, bei Kommastillstand (Throttling,
@@ -1732,12 +807,7 @@ function returnToHub() {
     clearTimeout(autoDoorTimer);
     autoDoorTimer = null;
   }
-  if (sceneTimer) {
-    clearTimeout(sceneTimer);
-    sceneTimer = null;
-  }
-  hideOverlay();
-  overlayDismissible = false;
+  cancelScene();
   paused = true;
   state.inField = false;
   setLowHp(false);
@@ -1789,6 +859,10 @@ function bindEvents() {
     for (const page of el.optionsPanel.querySelectorAll('.options-page')) {
       page.hidden = page.dataset.page !== btn.dataset.tab;
     }
+    // Sofort rendern — der Guard in renderStats überspringt den Reiter,
+    // solange er verborgen ist; ohne diesen Aufruf bliebe er bis zum
+    // nächsten 3-Sekunden-Tick im alten Zustand.
+    if (btn.dataset.tab === 'stats') renderStats();
   });
   el.optionsPanel.addEventListener('change', (e) => {
     const input = e.target.closest('[data-setting]');
@@ -1824,11 +898,10 @@ function bindEvents() {
       return;
     }
     clearTimeout(resetTimer);
-    // Rücksichtslos löschen heißt: Hauptstand UND Backup-Kette — sonst lädt
-    // der nächste Start still das Backup und der „gelöschte" Held kehrt
-    // zurück. saveSuppressed hält Zwischenspeicherer aus dem Fenster.
-    saveSuppressed = true;
-    for (const key of [SAVE_KEY, ...BACKUP_KEYS]) localStorage.removeItem(key);
+    // purgeSaves löscht Hauptstand UND Backup-Kette und dämmt das Speichern
+    // bis zum Reload — sonst lädt der nächste Start still das Backup und
+    // der „gelöschte" Held kehrt zurück.
+    purgeSaves();
     location.reload();
   });
   el.exportButton.addEventListener('click', () => {
@@ -1876,10 +949,6 @@ function bindEvents() {
   el.tileChronik.addEventListener('click', () => {
     renderChronicle();
     showScreen(el.sceneChronik);
-  });
-  el.tileStats.addEventListener('click', () => {
-    showScreen(el.sceneStats);
-    renderStats();
   });
   el.tileBestiary.addEventListener('click', () => {
     showScreen(el.sceneBestiary);
@@ -1988,12 +1057,15 @@ export function startGame() {
     if (!hasSave) {
       paused = true;
       playIntro();
-    } else if (saveNotice) {
-      showDismissibleOverlay(saveNotice, 5000);
-      saveNotice = null;
-    } else if (offlineSummary) {
-      if (settings.offlineSummary) showDismissibleOverlay(offlineSummary, 4500);
-      offlineSummary = null;
+    } else {
+      // Rettungs-Meldung schlägt Offline-Zusammenfassung — letztere bleibt
+      // für den nächsten Start liegen, bis sie drankommt.
+      const notice = consumeSaveNotice();
+      if (notice) showDismissibleOverlay(notice, 5000);
+      else {
+        const summary = consumeOfflineSummary();
+        if (summary && settings.offlineSummary) showDismissibleOverlay(summary, 4500);
+      }
     }
   }
 }

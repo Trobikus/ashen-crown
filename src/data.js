@@ -894,6 +894,14 @@ function formatNum(value) {
   return `${sign}${text.replace('.', ',')}${NUM_SUFFIXES[tier]}`;
 }
 
+// Minuten-Genauigkeit reicht — Spielzeit und Offline-Zeilen sprechen „h/min".
+function formatDuration(ms) {
+  const totalMinutes = Math.floor(ms / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return hours > 0 ? `${hours} h ${minutes} min` : `${minutes} min`;
+}
+
 const MASTERY_POOL = {
   damage: [
     { stat: 'damagePct', min: 8, max: 15 },
@@ -1218,6 +1226,6 @@ export {
 
   ENEMY_PROFILES, PROFILE_CYCLE, profileOf, continentKeyOf,
 
-  CONTINENTS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, formatNum,
+  CONTINENTS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, formatNum, formatDuration,
 
 };

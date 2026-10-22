@@ -104,6 +104,16 @@ export function sellButtonAction() {
 
 }
 
+// Das Erwachen leert Inventar und Ausrüstung im Spielstand — das Panel darf
+// nicht vom alten Stand zehren: Verkaufsmodus und Selektion verfallen mit dem
+// Lauf, der Dirty-Marker zwingt das nächste renderGearIfDirty() zum Neuaufbau
+// (sonst bliebe das getragene Gear bis zum nächsten Drop im DOM stehen).
+export function resetGearForPrestige() {
+  sellMode = false;
+  selectedForSale.clear();
+  gearDirty = true;
+}
+
 export function renderGearIfDirty() {
 
   if (!gearDirty) return;
