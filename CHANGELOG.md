@@ -4,6 +4,54 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.18.0] — 2026-10-22
+
+### Hinzugefügt
+- **Die Annalen**: Bestiarium, Errungenschaften und Chronik sind im Schrein
+  in eine kompakte eigene Reihe unter den Kacheln gewandert — schmale
+  Einträge unter eigenem Label, Ansehen getrennt vom Handeln. Die Reihen-
+  Kacheln behalten ihre IDs und Szenen; nur die Bühne ist eine andere.
+- **Statistik-Reiter in den Optionen**: Spielzeit, Tode, Beute je Seltenheit
+  und das höchst errungene Gebiet liegen als vierter Reiter in den Optionen.
+  Er rendert nur bei Sichtbarkeit (Guard gegen die offene Options-Szene);
+  ein Klick auf den Reiter zeichnet sofort statt beim nächsten
+  3-Sekunden-Tick.
+
+### Geändert
+- **Der Schrein wächst mit dem Fortschritt**: Ein frischer Lauf startet mit
+  drei Kacheln (Held, Krypta, Gebiete). Fertigkeiten erscheinen komplett erst
+  ab Stufe 20 — mit Meldestreifen beim Erreichen statt dauerhaft grau —, die
+  Werkstatt mit der ersten Beute (der `hint-drop`-Merker hält sie dauerhaft,
+  damit sie beim Verkaufen nicht wieder verschwindet), der Thron wie gehabt
+  nach dem Kronensieg. Nach einem Prestige räumt sich der Hub von allein
+  wieder ein.
+- **Helden-Block am Schrein**: Das Porträt füllt die gesamte Reserve oben
+  links und steht unmittelbar auf seiner Lebenskraft-Leiste (22 px); Wert und
+  Regenerations-Timer („voll in X s") sitzen in einer Zeile darunter. Der
+  Hub-Inhalt bindet mit `flex-start` an die Reserve-Unterkante — die
+  HUD-Linie schließt den Block bündig ab, statt je nach Fensterhöhe in der
+  Mitte zu schweben. Beide Seiten lesen dieselbe CSS-Variable
+  (`--hub-hero-reserve`), Porträt und Reserve bleiben an jeder Fenstergröße
+  synchron.
+- **Spiellogik in Fach-Modulen**: game.js (2 009 → 1 070 Zeilen) wurde in
+  kohärente Module gespalten — `domfx` (DOM-Schreib-Helfer & Kampf-Effekte),
+  `overlay` (Botschaften & Szenen-Timer), `saveio` (Speichern, Migration,
+  Härtung, Backups, Import/Export), `offline` (Offline-Fortschritt), `throne`
+  (Prestige-Szene) und `records` (Bestiarium, Errungenschaften, Statistik).
+  Rückwärts-Abhängigkeiten laufen über einen Manager-Bus (`bus.js`,
+  provide/use): game.js meldet Kern-Dienste an (Held-HP, XP, Todeszoll,
+  Szenenwechsel, Render, Auto-Tür-Schranke), die Fach-Module ziehen sie von
+  dort — der Abhängigkeitsbaum ist ein Stern um den Bus statt ein
+  Knotennetz. Verhalten 1:1 übernommen; items/skilltree/crafting unverändert.
+
+### Behoben
+- **Inventar nach dem Erwachen**: Nach dem „Erneut erwachen" zeigte das
+  Inventar-Panel noch die Ausrüstung des vorigen Laufs — der Spielstand war
+  korrekt geleert, aber das Panel rendert nur bei gesetztem Dirty-Marker, und
+  der Prestige-Reset setzte ihn nie. `resetGearForPrestige()` markiert das
+  Panel jetzt beim Reset und wirft zusätzlich Verkaufsmodus und Selektion
+  weg, die den Lauf sonst überlebt hätten.
+
 ## [0.17.0] — 2026-10-17
 
 ### Geändert

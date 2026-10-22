@@ -3,10 +3,21 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.17.0',
-  date: '17.10.2026',
-  headline: 'Flüssiger durch die Asche — Performance unter der Haube',
+  version: '0.18.0',
+  date: '22.10.2026',
+  headline: 'Der Schrein neu geordnet — ein Hub, der mitwächst',
   sections: [
+    {
+      heading: '0.18.0 — Der Schrein neu geordnet',
+      items: [
+        'Ruhigerer Schrein: Nur Kacheln mit etwas zu sagen. Fertigkeiten erscheinen ab Stufe 20 (mit Meldestreifen), die Werkstatt mit der ersten Beute — ein frischer Lauf startet mit Held, Krypta und Gebieten.',
+        'Die Annalen: Bestiarium, Errungenschaften und Chronik sind jetzt eine kompakte eigene Reihe unter den Kacheln — Ansehen getrennt vom Handeln.',
+        'Statistik in den Optionen: Spielzeit, Tode, Beute je Seltenheit und die Tiefe liegen als eigener Reiter in den Optionen — die Kachel im Schrein ist weg.',
+        'Der Held am Schrein: Das Porträt füllt den Bereich oben links und steht auf seiner Lebenskraft-Leiste — Wert und Regenerations-Timer („voll in X s“) sitzen am unteren Rand.',
+        'Fix: Nach dem „Erneut erwachen“ zeigte das Inventar noch die Ausrüstung des vorigen Laufs — das Panel leert sich jetzt sauber, der Verkaufsmodus ebenfalls.',
+        'Unter der Haube: Die Spiellogik wurde in Fach-Module um einen zentralen Bus geordnet (Overlay, Speicher-Subsystem, Offline-Fortschritt, Thron, Aufzeichnungen) — gleiche Regeln, wartbarer Code für alles Kommende.',
+      ],
+    },
     {
       heading: '0.17.0 — Flüssiger durch die Asche',
       items: [
