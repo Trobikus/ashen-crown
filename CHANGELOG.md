@@ -4,6 +4,51 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.18.2] — 2026-10-22
+
+### Hinzugefügt
+- **Abholbare Errungenschaften**: Erfüllte Errungenschaften landen im Abhol-
+  Regal (`achievementsPending`) und buchen ihren Ruhm erst beim Einsammeln —
+  `ruhmEarned` zählt nur Eingesammeltes. In den Annalen pulsiert die Zeile in
+  Kronengold (reiner Opacity-Puls, unter `prefers-reduced-motion` aus) und
+  trägt den Knopf „Abholen · +X Ruhm"; die Zusammenfassung zählt die Bereiten
+  mit („… · 2 bereit zum Abholen · …"). Der Erfüllungs-Toast verweist auf das
+  Abholen; die Save-Härtung reinigt das neue Feld, Altsaves starten mit leerem
+  Regal (bestehende Errungenschaften gelten als eingesammelt), das Prestige
+  behält alles.
+- **Fünf neue Ruhm-Upgrades (Laden jetzt 10 Stück)**: Kriegerherz (+5 %
+  Lebenskraft auf den Maximalwert, ×3), Wuchtschlag (+10 % Kritschaden, ×3),
+  Alte Lehre (+5 % Erfahrung, ×3), Schrein-Atem (Schrein-Regeneration +25 %,
+  ×3 — auch im „voll in X s"-Timer) und Aschewille (Auferstehung +5 % je
+  Stufe, 25 % → 40 %). Gesamtkosten 89 → 168 bei unverändert 77 Ertrag —
+  Ruhm bleibt eine Auswahl-Entscheidung. Verdrahtet über neue Faktor-
+  Funktionen in state.js (`heroHpFactor`, `critDmgBonusPct`, `hubRegenFactor`,
+  `deathReviveShare`, `xpGainFactor`-Erweiterung) an den bestehenden Hebeln
+  (`heroMaxHp`, `critMultiplier`, `hubTick` inkl. Timer-Anzeige, Todes-
+  aufwachen im Feld wie offline); Save-Härtung klemmt die neuen Stufen auf 3.
+
+### Geändert
+- **Annalen in Reitern**: Die Errungenschaften-Szene teilt sich in die
+  Reiter „Errungenschaften" und „Ruhm-Laden" (gleiche Mechanik wie die
+  Options-Reiter, über den neuen Helfer `bindSceneTabs` — der Options-Handler
+  nutzt ihn ebenfalls). Die Zusammenfassung bleibt über beiden Reitern; die
+  Guards rendern nur den sichtbaren Reiter, ein Klick zeichnet sofort, ein
+  Ruhm-Kauf aktualisiert Shop und Zusammenfassung unmittelbar. Das Panel ist
+  mit 760 px breiter als die Options-Formulare.
+- **Runenpunkte im Takt und gedeckelt**: Ab Stufe 20 kommt alle zwei Stufen
+  ein Runenpunkt dazu (vorher jeder Stufe), und der Zustrom stoppt an
+  `MAX_SKILL_POINTS` = 102 — zwei vollständige Pfade (2 × 51 Knoten) sind das
+  Maximum, das die Pfad-Bindung je verteilen kann; mehr würde nur gehortet.
+  `prepareSave` normalisiert unverteilte Punkte auf den neuen Rhythmus und
+  klemmt sie an die Obergrenze — verteilte Knoten bleiben überall unangetastet.
+  Der Onboarding-Hint nennt den neuen Takt.
+
+### Behoben
+- **Zu viele Runenpunkte**: Ein Tester meldete, der Ertrag übersteige die
+  verteilbare Menge — bei Stufe 166 waren es 147 Punkte, verteilen ließen
+  sich bei 2 von 4 Bäumen aber nie mehr als 102. Ertrag und Obergrenze sind
+  jetzt aneinandergekoppelt (siehe „Runenpunkte im Takt und gedeckelt").
+
 ## [0.18.1] — 2026-10-22
 
 ### Hinzugefügt

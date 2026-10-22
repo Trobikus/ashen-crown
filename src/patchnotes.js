@@ -3,10 +3,19 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.18.1',
+  version: '0.18.2',
   date: '22.10.2026',
-  headline: 'Ein Name in der Asche — und Handschuhe, die beide Hände kennen',
+  headline: 'Eingesammelter Ruhm — Errungenschaften, die auf dich warten',
   sections: [
+    {
+      heading: '0.18.2 — Eingesammelter Ruhm',
+      items: [
+        'Abholbare Errungenschaften: Erfüllte Errungenschaften schütten ihren Ruhm nicht mehr automatisch aus — sie pulsieren in den Annalen und warten auf deinen Klick („Abholen · +X Ruhm“). Die Zusammenfassung zählt mit, was bereit liegt.',
+        'Ordnung in den Annalen: Errungenschaften und Ruhm-Laden sind jetzt eigene Reiter — die Liste atmet, der Shop steht für sich.',
+        'Ruhm-Laden erweitert: 10 permanente Upgrades. Neu: Kriegerherz (+5 % Lebenskraft), Wuchtschlag (+10 % Kritschaden), Alte Lehre (+5 % Erfahrung), Schrein-Atem (Regeneration +25 %) und Aschewille (Auferstehung bis 40 %).',
+        'Runenpunkte im Takt: Ab Stufe 20 kommt alle zwei Stufen ein Runenpunkt dazu — und der Zustrom stoppt, sobald zwei vollständige Pfade gesättigt sind (102 Punkte). Bereits geskillte Runen bleiben unangetastet.',
+      ],
+    },
     {
       heading: '0.18.1 — Ein Name in der Asche',
       items: [
