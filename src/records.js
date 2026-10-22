@@ -37,8 +37,10 @@ function renderStats() {
   }
 }
 
-// Der Ruhm-Laden: Beutelschein und Zollerlass, gestaffelt, permanent.
+// Der Ruhm-Laden: Beutelschein und Zollerlass, gestaffelt, permanent —
+// eigener Reiter neben der Errungenschaften-Liste.
 function renderRuhmShop() {
+  if (!el.sceneAchievements || el.sceneAchievements.hidden || el.ruhmPage.hidden) return;
   el.ruhmShop.replaceChildren();
   const head = document.createElement('h3');
   head.textContent = 'Ruhm-Laden';
@@ -82,7 +84,7 @@ function buyRuhmUpgrade(kind) {
   toast(`${def.name} erworben — Stufe ${level + 1}.`, '#c1663a');
   sfx.unlock();
   save();
-  renderAchievements();
+  renderRuhmShop();
   use('render')();
 }
 
@@ -142,22 +144,29 @@ function renderBestiary() {
 }
 
 // Errungenschaften: Gesperrte Einträge zeigen ihren Fortschritt, errungene
-// leuchten in Kronenfarbe. Darunter der Ruhm-Laden — Ruhm entsteht nur
-// durch Errungenschaften und kauft permanente Erleichterungen.
+// leuchten in Kronenfarbe. Die Zusammenfassung bleibt über beiden Reitern
+// sichtbar; die Liste rendert nur auf ihrem Reiter, der Ruhm-Laden auf
+// seinem (jeder Guard schützt einen Tick-Durchlauf).
 function renderAchievements() {
   if (!el.sceneAchievements || el.sceneAchievements.hidden) return;
   const earned = new Set(state.achievements);
-  el.achievementsSummary.textContent = `${earned.size} von ${ACHIEVEMENTS.length} errungen · Ruhm: ${formatNum(ruhmAvailable(state))} verfügbar (${ruhmEarned(state)} verdient)`;
-  renderRuhmShop();
+  const pendingIds = state.achievementsPending ?? [];
+  const pendingSet = new Set(pendingIds);
+  el.achievementsSummary.textContent = `${earned.size} von ${ACHIEVEMENTS.length} errungen`
+    + (pendingIds.length ? ` · ${pendingIds.length} bereit zum Abholen` : '')
+    + ` · Ruhm: ${formatNum(ruhmAvailable(state))} verfügbar (${ruhmEarned(state)} verdient)`;
+  if (el.achievementsPage.hidden) return;
   el.achievementsList.replaceChildren();
   for (const achievement of ACHIEVEMENTS) {
     const done = earned.has(achievement.id);
+    const ready = pendingSet.has(achievement.id);
     const row = document.createElement('div');
-    row.className = 'chronicle-entry' + (done ? '' : ' entry-locked');
+    row.className = 'chronicle-entry'
+      + (done ? '' : ready ? ' chronicle-entry-ready' : ' entry-locked');
     const who = document.createElement('div');
     who.className = 'chronicle-who';
-    who.textContent = (done ? '◆ ' : '◇ ') + achievement.name;
-    who.style.color = done ? '#c1663a' : '';
+    who.textContent = (done || ready ? '◆ ' : '◇ ') + achievement.name;
+    who.style.color = done || ready ? '#c1663a' : '';
     const text = document.createElement('div');
     text.className = 'chronicle-text';
     let line = achievement.desc;
@@ -167,10 +176,18 @@ function renderAchievements() {
         ? ` (${formatDuration(cur)} / ${formatDuration(target)})`
         : ` (${formatNum(cur)} / ${formatNum(target)})`;
     }
-    text.textContent = done ? line + ' — errungen.' : line;
-    row.append(who, text);
+    text.textContent = done ? `${line} — errungen.` : ready ? `${line} — bereit.` : line;
+    if (ready) {
+      const claim = document.createElement('button');
+      claim.className = 'btn-small';
+      claim.dataset.claim = achievement.id;
+      claim.textContent = `Abholen · +${formatNum(achievement.ruhm)} Ruhm`;
+      row.append(who, text, claim);
+    } else {
+      row.append(who, text);
+    }
     el.achievementsList.appendChild(row);
   }
 }
 
-export { renderStats, renderBestiary, renderAchievements, buyRuhmUpgrade };
+export { renderStats, renderBestiary, renderAchievements, renderRuhmShop, buyRuhmUpgrade };

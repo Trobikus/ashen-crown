@@ -1636,7 +1636,8 @@ input[type='range'] {
   .figure.elite-flash svg,
   .crown-settle,
   #hub.ash-rebirth,
-  #menu-crown {
+  #menu-crown,
+  .chronicle-entry-ready {
     animation: none !important;
   }
 

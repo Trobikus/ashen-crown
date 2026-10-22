@@ -1,4 +1,4 @@
-import { GEAR_SLOTS, INVENTORY_CAP, DEATH_ASH_PENALTY, OFFLINE_CAP_MS } from './data.js';
+import { GEAR_SLOTS, INVENTORY_CAP, DEATH_ASH_PENALTY, DEATH_REVIVE_SHARE, OFFLINE_CAP_MS } from './data.js';
 
 import { ashLegacyFactor, xpLegacyFactor } from './prestige.js';
 
@@ -60,6 +60,7 @@ const state = {
   drops: { gewoehnlich: 0, magisch: 0, selten: 0, episch: 0, legendär: 0 },
   bestiary: {},
   achievements: [],
+  achievementsPending: [],
   ruhmAusgegeben: 0,
   shopPurchases: { beutelschein: 0, zollerlass: 0, aschesegen: 0, tiefenkunde: 0, werkstatthandwerk: 0 },
   safedropZones: {},
@@ -87,9 +88,29 @@ function ashGainFactor() {
   return (1 + 0.1 * (state.shopPurchases.aschesegen ?? 0)) * ashLegacyFactor(state);
 }
 
-// Erfahrung: Kronenasche-Fundament + Aschengeist (Vermächtnis).
+// Erfahrung: Kronenasche-Fundament + Aschengeist (Vermächtnis) + Alte Lehre.
 function xpGainFactor() {
-  return xpLegacyFactor(state);
+  return xpLegacyFactor(state) * (1 + 0.05 * (state.shopPurchases.altelehre ?? 0));
+}
+
+// Kriegerherz: +5 % auf den gesamten Maximalwert der Lebenskraft je Stufe.
+function heroHpFactor() {
+  return 1 + 0.05 * (state.shopPurchases.kriegerherz ?? 0);
+}
+
+// Wuchtschlag: +10 Kritschaden-Prozentpunkte je Stufe (wie Gear-Kritschaden).
+function critDmgBonusPct() {
+  return 10 * (state.shopPurchases.wuchtschlag ?? 0);
+}
+
+// Schrein-Atem: Die Regeneration am Schrein läuft 25 % schneller je Stufe.
+function hubRegenFactor() {
+  return 1 + 0.25 * (state.shopPurchases.schreinatem ?? 0);
+}
+
+// Aschewille: Die Auferstehung startet mit mehr Lebenskraft (+5 % je Stufe).
+function deathReviveShare() {
+  return DEATH_REVIVE_SHARE + 0.05 * (state.shopPurchases.aschwille ?? 0);
 }
 
 // Tiefenkunde: verlängert den Offline-Fortschritt über die 8-h-Grenze hinaus.
@@ -102,4 +123,4 @@ function craftCostFactor() {
   return 1 - 0.05 * (state.shopPurchases.werkstatthandwerk ?? 0);
 }
 
-export { SAVE_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, SAVE_VERSION, settings, state, inventoryCap, deathPenalty, ashGainFactor, xpGainFactor, offlineCapMs, craftCostFactor };
+export { SAVE_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, SAVE_VERSION, settings, state, inventoryCap, deathPenalty, ashGainFactor, xpGainFactor, offlineCapMs, craftCostFactor, heroHpFactor, critDmgBonusPct, hubRegenFactor, deathReviveShare };

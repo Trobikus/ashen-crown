@@ -61,10 +61,27 @@ export const ACHIEVEMENTS = [
 ];
 
 // Ruhm: Die Errungenschaften-Währung. Sie wird NICHT separat gespeichert,
-// sondern aus den errungenen IDs abgeleitet — Ausgaben zählt
-// state.ruhmAusgegeben. Alte Spielstände sind damit rückwirkend versorgt.
+// sondern aus den eingesammelten IDs abgeleitet — Ausgaben zählt
+// state.ruhmAusgegeben. Erfüllte, aber noch nicht abgeholte Errungenschaften
+// (achievementsPending) zählen noch nicht; sie buchen erst beim Einsammeln.
 export function ruhmEarned(state) {
   return state.achievements.reduce((sum, id) => sum + (ACHIEVEMENTS.find((a) => a.id === id)?.ruhm ?? 0), 0);
+}
+
+// Der Ruhm im Abhol-Regal — sichtbar, aber noch nicht gebucht.
+export function ruhmPending(state) {
+  return (state.achievementsPending ?? []).reduce((sum, id) => sum + (ACHIEVEMENTS.find((a) => a.id === id)?.ruhm ?? 0), 0);
+}
+
+// Errungenschaft einsammeln: Sie wandert aus dem Abhol-Regal in die Annalen
+// und bucht ihren Ruhm — Rückgabe ist der Betrag für Toast & Sound.
+export function claimAchievement(state, id) {
+  const pending = state.achievementsPending ?? [];
+  const index = pending.indexOf(id);
+  if (index === -1) return 0;
+  pending.splice(index, 1);
+  if (!state.achievements.includes(id)) state.achievements.push(id);
+  return ACHIEVEMENTS.find((a) => a.id === id)?.ruhm ?? 0;
 }
 
 export function ruhmAvailable(state) {
@@ -72,27 +89,34 @@ export function ruhmAvailable(state) {
 }
 
 // Der Ruhm-Laden: permanente Erleichterungen, gestaffelt nach Stufen. Die
-// Gesamtkosten (89) übersteigen bewusst den Gesamt-Ertrag (77) — Ruhm bleibt
-// eine Entscheidung, nicht eine Checkliste.
+// Gesamtkosten (168) übersteigen bewusst den Gesamt-Ertrag (77) — Ruhm bleibt
+// eine Entscheidung, nicht eine Checkliste: Es passt nie alles rein.
 export const RUHM_SHOP = {
   beutelschein: { name: 'Beutelschein', desc: '+8 Inventarplätze pro Stufe — die Asche trägt mehr.', levels: [3, 6, 9] },
   zollerlass: { name: 'Zollerlass', desc: 'Todeszoll −3 % pro Stufe (15 % → 3 %).', levels: [2, 4, 6, 8] },
   aschesegen: { name: 'Aschesegen', desc: '+10 % Asche-Ertrag pro Stufe — im Feld wie offline.', levels: [3, 6, 9] },
   tiefenkunde: { name: 'Tiefenkunde', desc: 'Offline-Fortschritt +4 Stunden pro Stufe (8 h → bis 20 h).', levels: [3, 5, 7] },
   werkstatthandwerk: { name: 'Werkstatthandwerk', desc: 'Werkstatt-Kosten −5 % pro Stufe.', levels: [4, 6, 8] },
+  kriegerherz: { name: 'Kriegerherz', desc: '+5 % Lebenskraft pro Stufe — auf den gesamten Maximalwert.', levels: [4, 7, 10] },
+  wuchtschlag: { name: 'Wuchtschlag', desc: '+10 % Kritschaden pro Stufe.', levels: [3, 6, 9] },
+  altelehre: { name: 'Alte Lehre', desc: '+5 % Erfahrung pro Stufe.', levels: [3, 6, 9] },
+  schreinatem: { name: 'Schrein-Atem', desc: 'Schrein-Regeneration +25 % pro Stufe.', levels: [2, 4, 6] },
+  aschwille: { name: 'Aschewille', desc: 'Auferstehung +5 % Lebenskraft pro Stufe (25 % → 40 %).', levels: [2, 3, 5] },
 };
 
 // Tiefen-Meisterschaft neu schmieden: unbegrenzt, bewusst günstig.
 export const RUHM_RELIC_REROLL_COST = 2;
 
-// Prüft alle noch gesperrten Errungenschaften, trägt neue direkt in den
-// Spielstand ein und gibt deren IDs zurück (für Toasts).
+// Prüft alle noch unbekannten Errungenschaften und trägt erfüllte ins Abhol-
+// Regal (achievementsPending) ein — Ruhm gibt es erst beim Einsammeln.
+// Rückgabe sind die neuen IDs (für Toasts).
 export function evaluateAchievements(state) {
   const earned = new Set(state.achievements);
+  const pending = new Set(state.achievementsPending ?? []);
   const fresh = [];
   for (const achievement of ACHIEVEMENTS) {
-    if (!earned.has(achievement.id) && achievement.check(state)) {
-      state.achievements.push(achievement.id);
+    if (!earned.has(achievement.id) && !pending.has(achievement.id) && achievement.check(state)) {
+      (state.achievementsPending ??= []).push(achievement.id);
       fresh.push(achievement.id);
     }
   }

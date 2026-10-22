@@ -3,7 +3,8 @@
 // dem rohen Spielstand, bevor etwas davon den echten Spielstand berührt —
 // ein böser Spielstand darf nie den Render-Loop crashen.
 import { state, SAVE_KEY, SAVE_VERSION } from './state.js';
-import { GEAR_SLOTS, RARITIES, SKILL_NODES_BY_ID, MAX_ZONE, sanitizeItem, asCount } from './data.js';
+import { GEAR_SLOTS, RARITIES, SKILL_NODES_BY_ID, SKILL_TREE_UNLOCK_LEVEL, MAX_ZONE, sanitizeItem, asCount } from './data.js';
+import { MAX_SKILL_POINTS } from './skilltree.js';
 import { LEGACY_TITLES } from './prestige.js';
 import { el } from './dom.js';
 import { flashButton } from './domfx.js';
@@ -158,10 +159,19 @@ function prepareSave(data) {
   if (!Array.isArray(data.skills)) data.skills = ['start'];
   if (!data.skills.includes('start')) data.skills.unshift('start');
   data.skills = data.skills.filter((id) => SKILL_NODES_BY_ID[id]);
-  // Runenpunkte gibt es erst ab SKILL_TREE_UNLOCK_LEVEL — verdient pro Stufe
-  // darüber, verbraucht vom Startknoten abgesehen.
-  const earnedSkillPoints = Math.max(0, data.level - SKILL_TREE_UNLOCK_LEVEL + 1);
-  data.skillPoints = Math.max(0, earnedSkillPoints - (data.skills.length - 1));
+  // Runenpunkte gibt es erst ab SKILL_TREE_UNLOCK_LEVEL, dann alle zwei
+  // Stufen einen — geklemmt an die Ertrags-Obergrenze der Pfad-Bindung: Nie
+  // mehr unverteilte Punkte, als zwei vollständige Pfade noch aufnehmen.
+  // Verteilte Knoten bleiben unangetastet, auch wenn alte Spielstände nach
+  // dem neuen Rhythmus „zu viel" erhalten hätten.
+  const earnedSkillPoints = data.level >= SKILL_TREE_UNLOCK_LEVEL
+    ? Math.floor((data.level - SKILL_TREE_UNLOCK_LEVEL) / 2) + 1
+    : 0;
+  const distributedSkillPoints = data.skills.length - 1;
+  data.skillPoints = Math.min(
+    Math.max(0, earnedSkillPoints - distributedSkillPoints),
+    Math.max(0, MAX_SKILL_POINTS - distributedSkillPoints),
+  );
   data.zone = Math.max(0, Math.min(Math.trunc(asNumber(data.zone, 0)), MAX_ZONE));
   data.cleared = Math.max(0, Math.min(Math.trunc(asNumber(data.cleared, 0)), MAX_ZONE));
   data.zone = Math.min(data.zone, data.cleared);
@@ -192,6 +202,10 @@ function prepareSave(data) {
   data.achievements = Array.isArray(data.achievements)
     ? data.achievements.filter((id) => typeof id === 'string' && id.length <= 40)
     : [];
+  // Abhol-Regal: erfüllte, aber noch nicht eingesammelte Errungenschaften.
+  data.achievementsPending = Array.isArray(data.achievementsPending)
+    ? data.achievementsPending.filter((id) => typeof id === 'string' && id.length <= 40)
+    : [];
   // Ruhm-Laden: ausgegebener Ruhm und Kaufläufe geklemmt.
   data.ruhmAusgegeben = Math.max(0, asNumber(data.ruhmAusgegeben, 0));
   data.shopPurchases = data.shopPurchases && typeof data.shopPurchases === 'object' && !Array.isArray(data.shopPurchases) ? data.shopPurchases : {};
@@ -200,6 +214,11 @@ function prepareSave(data) {
   data.shopPurchases.aschesegen = Math.min(3, asNumber(data.shopPurchases.aschesegen, 0));
   data.shopPurchases.tiefenkunde = Math.min(3, asNumber(data.shopPurchases.tiefenkunde, 0));
   data.shopPurchases.werkstatthandwerk = Math.min(3, asNumber(data.shopPurchases.werkstatthandwerk, 0));
+  data.shopPurchases.kriegerherz = Math.min(3, asNumber(data.shopPurchases.kriegerherz, 0));
+  data.shopPurchases.wuchtschlag = Math.min(3, asNumber(data.shopPurchases.wuchtschlag, 0));
+  data.shopPurchases.altelehre = Math.min(3, asNumber(data.shopPurchases.altelehre, 0));
+  data.shopPurchases.schreinatem = Math.min(3, asNumber(data.shopPurchases.schreinatem, 0));
+  data.shopPurchases.aschwille = Math.min(3, asNumber(data.shopPurchases.aschwille, 0));
   // Prestige: Kronenasche-Buch und Vermächtnis-Stufen (nur bekannte Titel, 0–3).
   data.kronenascheEarned = Math.max(0, asNumber(data.kronenascheEarned, 0));
   data.kronenascheAusgegeben = Math.min(data.kronenascheEarned, Math.max(0, asNumber(data.kronenascheAusgegeben, 0)));

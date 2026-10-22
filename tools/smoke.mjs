@@ -24,8 +24,8 @@ assert(A.ACHIEVEMENTS.every((a) => typeof a.check === 'function' && typeof a.pro
 const ruhmTotal = A.ACHIEVEMENTS.reduce((sum, a) => sum + a.ruhm, 0);
 assert(ruhmTotal === 77, `Gesamt-Ruhm 77 (${ruhmTotal})`);
 const shopCost = Object.values(A.RUHM_SHOP).reduce((sum, def) => sum + def.levels.reduce((s, level) => s + level, 0), 0);
-assert(shopCost === 89, `Ruhm-Laden kostet 89 (${shopCost}) — bewusst mehr als der Ertrag`);
-assert(Object.keys(A.RUHM_SHOP).length === 5, `5 Ruhm-Käufe definiert (${Object.keys(A.RUHM_SHOP).length})`);
+assert(shopCost === 168, `Ruhm-Laden kostet 168 (${shopCost}) — bewusst mehr als der Ertrag`);
+assert(Object.keys(A.RUHM_SHOP).length === 10, `10 Ruhm-Käufe definiert (${Object.keys(A.RUHM_SHOP).length})`);
 
 // checks feuern auf synthetischem Maximal-Zustand (inkl. vollem Bestiarium
 // und 2.000+ Beutestücken, damit auch die Stufen-Errungenschaften feuern):
@@ -36,7 +36,10 @@ for (const zone of D.ZONE_ENEMIES) {
 const fake = { kills: 60000, deaths: 300, playtimeMs: 400000e3, drops: { gewoehnlich: 1900, magisch: 40, selten: 40, episch: 19, 'legendär': 60 }, cleared: 120, bestiary, achievements: [] };
 const fresh = A.evaluateAchievements(fake);
 assert(fresh.length === A.ACHIEVEMENTS.length, `alle Errungenschaften feuern auf Maximal-Zustand (${fresh.length}/${A.ACHIEVEMENTS.length})`);
-assert(A.ruhmEarned(fake) === 77, `ruhmEarned liest 77 (${A.ruhmEarned(fake)})`);
+// Ruhm erst beim Abholen: Erfülltes wartet im Abhol-Regal, der Claim bucht.
+assert(A.ruhmEarned(fake) === 0 && A.ruhmPending(fake) === 77, `ungeholt: Ruhm 0, 77 im Regal (${A.ruhmEarned(fake)}/${A.ruhmPending(fake)})`);
+for (const id of fresh) A.claimAchievement(fake, id);
+assert(A.ruhmEarned(fake) === 77 && A.ruhmPending(fake) === 0 && A.evaluateAchievements(fake).length === 0, `nach Abholen: 77 gebucht, Regal leer, kein zweites Feuern (${A.ruhmEarned(fake)}/${A.ruhmPending(fake)})`);
 
 // Fortschritt der Tiefen-Errungenschaften zählt ab null (nicht negativ):
 const tiefe1 = A.ACHIEVEMENTS.find((a) => a.id === 'tiefe-1');
@@ -45,6 +48,7 @@ assert(cur === 0, `Tiefen-Fortschritt vor Zone 50 zeigt 0 (${cur})`);
 
 // ——— Kauf-Effekte (state.js) ———
 const S = await import('../src/state.js');
+const STATS = await import('../src/stats.js');
 S.state.shopPurchases = { beutelschein: 3, zollerlass: 4, aschesegen: 3, tiefenkunde: 3, werkstatthandwerk: 3 };
 assert(S.inventoryCap() === 64, `Beutelschein 3 → Inventar 64 (${S.inventoryCap()})`);
 assert(S.deathPenalty() === 0.03, `Zollerlass 4 → Todeszoll 3 % (${S.deathPenalty()})`);
@@ -53,9 +57,25 @@ assert(S.offlineCapMs() === 20 * 60 * 60 * 1000, `Tiefenkunde 3 → 20 h Offline
 assert(S.craftCostFactor() === 0.85, `Werkstatthandwerk 3 → 85 % Werkstatt-Kosten (${S.craftCostFactor()})`);
 S.state.shopPurchases = { beutelschein: 0, zollerlass: 0, aschesegen: 0, tiefenkunde: 0, werkstatthandwerk: 0 };
 assert(S.inventoryCap() === 40 && S.offlineCapMs() === 8 * 60 * 60 * 1000, 'ohne Käufe: Basis 40 Plätze / 8 h');
+// Neue Käufe (0.18.1+): die fünf Faktoren greifen an ihren Hebeln.
+S.state.shopPurchases.kriegerherz = 3;
+S.state.shopPurchases.wuchtschlag = 3;
+S.state.shopPurchases.altelehre = 3;
+S.state.shopPurchases.schreinatem = 3;
+S.state.shopPurchases.aschwille = 3;
+assert(Math.abs(S.heroHpFactor() - 1.15) < 1e-9, `Kriegerherz 3 → ×1,15 Lebenskraft (${S.heroHpFactor()})`);
+assert(Math.round(STATS.heroMaxHp()) === Math.round(S.state.maxHp * 1.15), `heroMaxHp multipliziert Kriegerherz ein (${STATS.heroMaxHp()})`);
+assert(S.critDmgBonusPct() === 30 && Math.abs(STATS.critMultiplier() - 2.3) < 1e-9, `Wuchtschlag 3 → Krit ×2,3 (${STATS.critMultiplier()})`);
+assert(Math.abs(S.hubRegenFactor() - 1.75) < 1e-9, `Schrein-Atem 3 → ×1,75 Regen (${S.hubRegenFactor()})`);
+assert(Math.abs(S.deathReviveShare() - 0.4) < 1e-9, `Aschewille 3 → Auferstehung 40 % (${S.deathReviveShare()})`);
+assert(Math.abs(S.xpGainFactor() - 1.15) < 1e-9, `Alte Lehre 3 → ×1,15 XP (${S.xpGainFactor()})`);
+S.state.shopPurchases = { beutelschein: 0, zollerlass: 0, aschesegen: 0, tiefenkunde: 0, werkstatthandwerk: 0, kriegerherz: 0, wuchtschlag: 0, altelehre: 0, schreinatem: 0, aschwille: 0 };
+assert(S.xpGainFactor() === 1 && Math.abs(S.deathReviveShare() - 0.25) < 1e-9 && STATS.heroMaxHp() === S.state.maxHp, 'ohne Käufe: XP/Revive/HP auf Basis');
 
 // ——— Pfad-Bindung (skilltree.js über attemptAllocate) ———
 const T = await import('../src/skilltree.js');
+// Ertrags-Obergrenze: Zwei vollständige Pfade à 51 Knoten — mehr gibt es nie.
+assert(T.MAX_SKILL_POINTS === 102, `Maximal 102 Runenpunkte (2×51) (${T.MAX_SKILL_POINTS})`);
 const st = S.state;
 st.level = 30;
 st.skillPoints = 10;

@@ -26,6 +26,16 @@ const BRANCH_KEYS = [...new Set(SKILL_NODES.map((node) => node.branch))]
 
 const BRANCH_LOCK_LIMIT = 2;
 
+// Die harte Ertrags-Obergrenze: Zwei vollständige Pfade — mehr kann die
+// Pfad-Bindung je verteilen, also stoppt der Punktezustrom hier (Brücken-
+// Knoten sind optionaler Zusatz, kein Bestandteil der Obergrenze).
+const MAX_SKILL_POINTS = (() => {
+  const sizes = BRANCH_KEYS
+    .map((key) => SKILL_NODES.filter((node) => node.branch === key).length)
+    .sort((a, b) => b - a);
+  return sizes[0] + sizes[1];
+})();
+
 function activeBranches() {
   const active = new Set();
   for (const id of state.skills) {
@@ -383,4 +393,4 @@ export function bindSkillTreeEvents(hooks) {
 
 
 
-export { skillBonus, buildSkillTree, renderSkillTree, attemptAllocate, applySkillView };
+export { skillBonus, MAX_SKILL_POINTS, buildSkillTree, renderSkillTree, attemptAllocate, applySkillView };

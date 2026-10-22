@@ -54,6 +54,18 @@
   padding-left: 0.7rem;
 }
 
+/* Abholbereite Errungenschaften atmen Kronengold — der Puls läuft über die
+   Deckkraft (Compositor statt Neu-Malen), der Blick fällt ohne Klingel. */
+.chronicle-entry-ready {
+  border-color: #d9a03f;
+  animation: entry-ready-pulse 1.9s ease-in-out infinite;
+}
+
+@keyframes entry-ready-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
 .chronicle-entry-legacy .chronicle-who {
   color: #d9a03f;
 }
@@ -446,6 +458,12 @@
    dafür bekommt sie mehr Breite als die Formular-Seiten. */
 #scene-stats.options-page {
   width: clamp(340px, 52vw, 760px);
+}
+
+/* Die Errungenschaften-Reiter tragen lange Einträge-Listen — ebenfalls mehr
+   Breite als die Options-Formulare. */
+#achievements-panel .options-page {
+  width: min(760px, 92vw);
 }
 
 .option-row {

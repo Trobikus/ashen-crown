@@ -341,8 +341,18 @@
       </header>
       <h2>Errungenschaften</h2>
       <p class="skill-hud" id="achievements-summary"></p>
-      <div id="ruhm-shop"></div>
-      <div id="achievements-list"></div>
+      <nav id="achievements-tabs">
+        <button class="options-tab active" data-tab="achievements">Errungenschaften</button>
+        <button class="options-tab" data-tab="ruhm">Ruhm-Laden</button>
+      </nav>
+      <div id="achievements-panel">
+        <div class="options-page" data-page="achievements" id="achievements-page">
+          <div id="achievements-list"></div>
+        </div>
+        <div class="options-page" data-page="ruhm" id="ruhm-page" hidden>
+          <div id="ruhm-shop"></div>
+        </div>
+      </div>
       <p class="tagline">Ruhm wird gezählt, nicht geschenkt.</p>
     </section>
     <section class="scene" id="scene-throne" hidden>

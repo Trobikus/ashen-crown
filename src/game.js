@@ -9,15 +9,15 @@
 // Rendern, Szenenwechsel, Lebenskraft und Kampfhelfer als Dienste an.
 import { el, cacheDom } from './dom.js';
 
-import { state, settings, inventoryCap, deathPenalty, ashGainFactor, xpGainFactor } from './state.js';
+import { state, settings, inventoryCap, deathPenalty, ashGainFactor, xpGainFactor, hubRegenFactor, deathReviveShare } from './state.js';
 
 import { loadSettings, saveSettings, applySettings } from './settings.js';
 
-import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, GEAR_SLOTS, ARMOR_RESISTANCE, DEATH_REVIVE_SHARE, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, formatNum } from './data.js';
+import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, GEAR_SLOTS, ARMOR_RESISTANCE, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, formatNum } from './data.js';
 
 import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier, heroLifeleech } from './stats.js';
 
-import { buildSkillTree, renderSkillTree, bindSkillTreeEvents, applySkillView } from './skilltree.js';
+import { buildSkillTree, renderSkillTree, bindSkillTreeEvents, applySkillView, MAX_SKILL_POINTS } from './skilltree.js';
 
 import { buildZoneList, renderZones, resetZoneView, switchZoneView } from './zones.js';
 
@@ -31,7 +31,7 @@ import { INTRO_PAGES, COMBAT_INTRO_PAGES, CONTINENT_LORE, epitaphOf, continentLo
 
 import { initItems, rollDrop, unequipItem, sortInventory, equipBest, exitSellMode, sellButtonAction, selectAllForSale, handleInventoryClick, renderGearIfDirty, buildDepthRelic, grantItem, itemSellValue } from './items.js';
 
-import { ACHIEVEMENTS, evaluateAchievements } from './achievements.js';
+import { ACHIEVEMENTS, claimAchievement, evaluateAchievements } from './achievements.js';
 
 import { kronenascheReward } from './prestige.js';
 
@@ -176,12 +176,14 @@ function gainXp(amount) {
     state.xp -= xpNeeded(state.level);
     state.level += 1;
     state.statPoints += STAT_POINTS_PER_LEVEL;
-    // Runenpunkte gibt es erst, sobald der Fertigkeitenbaum offen ist.
-    if (state.level >= SKILL_TREE_UNLOCK_LEVEL) {
-      state.skillPoints += 1;
-      // Der exakte Schwellen-Treffer feiert den Moment — die Kachel war bis
-      // hierher unsichtbar, der Spieler hat sie also noch nie gesehen.
-      if (state.level === SKILL_TREE_UNLOCK_LEVEL) toast('Stufe 20 — die Runen erwachen: Die Fertigkeiten-Kachel ist im Schrein erschienen.', '#c1663a');
+    // Runenpunkte gibt es erst ab SKILL_TREE_UNLOCK_LEVEL, dann alle zwei
+    // Stufen einen — und der Zustrom stoppt an der Obergrenze: Mehr Punkte,
+    // als zwei vollständige Pfade je verteilen können, würde nur gehortet.
+    if (state.level >= SKILL_TREE_UNLOCK_LEVEL && (state.level - SKILL_TREE_UNLOCK_LEVEL) % 2 === 0) {
+      if (state.skills.length - 1 + state.skillPoints < MAX_SKILL_POINTS) {
+        state.skillPoints += 1;
+        if (state.level === SKILL_TREE_UNLOCK_LEVEL) toast('Stufe 20 — die Runen erwachen: Die Fertigkeiten-Kachel ist im Schrein erschienen.', '#c1663a');
+      }
     }
     heroHp = heroMaxHp();
     sfx.levelUp();
@@ -435,7 +437,8 @@ function takeDeathToll() {
 function die() {
   // Aufwachen mit einem Viertel statt 0 — der sofortige Rückkehr-Versuch ist
   // angeschlagen, aber nicht tot; das Warten am Schrein behält seinen Wert.
-  heroHp = Math.round(heroMaxHp() * DEATH_REVIVE_SHARE);
+  // Aschewille hebt den Anteil an.
+  heroHp = Math.round(heroMaxHp() * deathReviveShare());
   paused = true;
   state.inField = false;
   setLowHp(false);
@@ -496,12 +499,14 @@ function tick() {
 }
 
 // Der Schrein atmet: Außerhalb des Felds kehrt die Lebenskraft zurück —
-// 2 % des Maximums pro Sekunde, ganz ohne Zutun.
+// 2 % des Maximums pro Sekunde (Schrein-Atem beschleunigt das), ganz ohne
+// Zutun.
 function hubTick() {
   if (state.inField) return;
   const max = heroMaxHp();
   if (heroHp >= max) return;
-  heroHp = Math.min(max, heroHp + max * HUB_REGEN_PER_SECOND * (TICK_MS / 1000));
+  const regen = HUB_REGEN_PER_SECOND * hubRegenFactor();
+  heroHp = Math.min(max, heroHp + max * regen * (TICK_MS / 1000));
   renderHubHero();
 }
 
@@ -516,7 +521,8 @@ function renderHubHero() {
   const regenerating = !state.inField && heroHp < max;
   el.hubHeroHpBar.classList.toggle('regen', regenerating);
   if (regenerating) {
-    const seconds = Math.ceil((max - heroHp) / (max * HUB_REGEN_PER_SECOND));
+    const regen = HUB_REGEN_PER_SECOND * hubRegenFactor();
+    const seconds = Math.ceil((max - heroHp) / (max * regen));
     setHidden(el.hubHeroRegen, false);
     setText(el.hubHeroRegen, seconds === 1 ? 'voll in 1 s' : `voll in ${seconds} s`);
   } else {
@@ -652,16 +658,19 @@ function render() {
   renderStats();
   renderBestiary();
   renderAchievements();
+  renderRuhmShop();
 }
 
-// Errungenschaften prüfen: Im 3-Sekunden-Tick reicht — neu Errungenes wird
-// mit Toast und Klang gefeiert, Offline-Errungenschaften erscheinen still.
+// Errungenschaften prüfen: Im 3-Sekunden-Tick reicht — Erfülltes landet im
+// Abhol-Regal, meldet sich mit Toast und Klang und pulsier in den Annalen;
+// gebucht wird der Ruhm erst beim Einsammeln. Offline-Errungenschaften
+// erscheinen beim nächsten Tick wie gewohnt.
 function checkAchievements() {
   const fresh = evaluateAchievements(state);
   if (!fresh.length) return;
   for (const id of fresh) {
     const achievement = ACHIEVEMENTS.find((a) => a.id === id);
-    toast(`Errungenschaft: ${achievement.name}`, '#c1663a');
+    toast(`Errungenschaft erfüllt: ${achievement.name} — bereit zum Abholen.`, '#c1663a');
   }
   sfx.unlock();
   save();
@@ -688,7 +697,7 @@ function hintOnce(key, text, { duration = 4400, pauseCombat = false } = {}) {
 function checkOnboardingHints() {
   if (state.hints['hint-levelup'] && state.hints['hint-drop'] && state.hints['hint-epic'] && state.hints['hint-leech']) return;
   if (state.level >= 2) {
-    hintOnce('hint-levelup', 'Jede Stufe bringt 2 Statpunkte (Held-Screen). Ab Stufe 20 erwacht der Fertigkeitenbaum — danach kommt pro Stufe 1 Runenpunkt dazu.');
+    hintOnce('hint-levelup', 'Jede Stufe bringt 2 Statpunkte (Held-Screen). Ab Stufe 20 erwacht der Fertigkeitenbaum — danach kommt alle zwei Stufen ein Runenpunkt dazu.');
   }
   if (state.inventory.length > 0) {
     hintOnce('hint-drop', 'Beute landet im Inventar deines Helden — „Bestes anlegen" rüstet das Stärkste in einem Klick an.');
@@ -870,6 +879,23 @@ function returnToMenu() {
   showScreen(el.menu);
 }
 
+// Szene-interne Reiter: gleiche Mechanik wie die Options-Tabs — Klick setzt
+// den aktiven Knopf und die sichtbare Seite; onPage rendert die neue Seite
+// sofort, sonst bliebe sie bis zum nächsten 3-Sekunden-Tick im alten Stand.
+function bindSceneTabs(nav, panel, onPage) {
+  nav.addEventListener('click', (e) => {
+    const btn = e.target.closest('.options-tab');
+    if (!btn) return;
+    for (const tab of nav.querySelectorAll('.options-tab')) {
+      tab.classList.toggle('active', tab === btn);
+    }
+    for (const page of panel.querySelectorAll('.options-page')) {
+      page.hidden = page.dataset.page !== btn.dataset.tab;
+    }
+    onPage(btn.dataset.tab);
+  });
+}
+
 function bindEvents() {
   el.shrineButton.addEventListener('click', () => {
     // Der Schrein verwirft den laufenden Kampf — Bosse heilen sich voll.
@@ -891,19 +917,11 @@ function bindEvents() {
   el.victoryContinue.addEventListener('click', returnToHub);
   el.hubOptions.addEventListener('click', () => openOptions('hub'));
   el.overlay.addEventListener('click', dismissOverlay);
-  el.optionsTabs.addEventListener('click', (e) => {
-    const btn = e.target.closest('.options-tab');
-    if (!btn) return;
-    for (const tab of el.optionsTabs.querySelectorAll('.options-tab')) {
-      tab.classList.toggle('active', tab === btn);
-    }
-    for (const page of el.optionsPanel.querySelectorAll('.options-page')) {
-      page.hidden = page.dataset.page !== btn.dataset.tab;
-    }
+  bindSceneTabs(el.optionsTabs, el.optionsPanel, (tab) => {
     // Sofort rendern — der Guard in renderStats überspringt den Reiter,
     // solange er verborgen ist; ohne diesen Aufruf bliebe er bis zum
     // nächsten 3-Sekunden-Tick im alten Zustand.
-    if (btn.dataset.tab === 'stats') renderStats();
+    if (tab === 'stats') renderStats();
   });
   el.optionsPanel.addEventListener('change', (e) => {
     const input = e.target.closest('[data-setting]');
@@ -998,6 +1016,21 @@ function bindEvents() {
   el.tileAchievements.addEventListener('click', () => {
     showScreen(el.sceneAchievements);
     renderAchievements();
+  });
+  el.achievementsList.addEventListener('click', (e) => {
+    const claim = e.target.closest('[data-claim]');
+    if (!claim) return;
+    const reward = claimAchievement(state, claim.dataset.claim);
+    if (!reward) return;
+    toast(`Ruhm eingeheimst: +${formatNum(reward)} Ruhm.`, '#c1663a');
+    sfx.unlock();
+    save();
+    renderAchievements();
+    renderRuhmShop();
+  });
+  bindSceneTabs(el.achievementsTabs, el.achievementsPanel, (tab) => {
+    if (tab === 'achievements') renderAchievements();
+    if (tab === 'ruhm') renderRuhmShop();
   });
   el.ruhmShop.addEventListener('click', (e) => {
     const buy = e.target.closest('[data-buy]');
