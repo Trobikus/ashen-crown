@@ -5,7 +5,7 @@
   kämpfst dich Gebiet für Gebiet durch **fünf Kontinente** — und formst dabei einen
   Helden, der ganz nach deinem Willen geformt ist.
 
-  [![Version](https://img.shields.io/badge/Alpha-v0.16.3-C14B3A)](releases)
+  [![Version](https://img.shields.io/badge/Alpha-v0.17.0-C14B3A)](releases)
   [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev)
   [![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)](https://tauri.app)
   [![pnpm](https://img.shields.io/badge/pnpm-Paketmanager-F69220?logo=pnpm&logoColor=white)](https://pnpm.io)
@@ -15,7 +15,7 @@
 
   *Web & Desktop — ohne Framework, ohne Server, mit Speicherstand im Browser.*
 
-  **🧪 Aktuell: Closed Alpha (v0.16.3)** — Installer über die
+  **🧪 Aktuell: Closed Alpha (v0.17.0)** — Installer über die
   [Releases](releases), Updates installieren sich im Spiel von selbst.
 </div>
 
@@ -45,6 +45,12 @@ Denn die Asche erinnert sich — an jedes Reich, das vor dir versuchte, ihr zu e
   Kontinents. Kämpfen ist Handwerk: **Gegner greifen gelegentlich daneben** (15 %),
   dein Held verfehlt auch (12 %), die Kritchance deckelt bei 75 %, und Rüstung
   mindert nie mehr als die Hälfte — mindestens 50 % jedes Schlags kommen durch.
+- **Die Arena ist eine Bühne** — Sieben handgesetzte Silhouetten-Sprites
+  (Diener, Bestie, Ritter, Kultist, Schatten, Koloss, Regent) kämpfen auf einer
+  kontinentfarbenen Bühne mit Bodenschatten: Bosse tragen die goldene Krone,
+  Eliten einen goldenen Randschimmer, Wut lässt die Augen aufflammen. Funken am
+  Einschlag, der Hieb-Bogen und der Geist-Nachlauf auf den HP-Leisten machen
+  jeden Treffer lesbar.
 - **Der Gegner-Inspektor** — Hover auf den Gegner verrät Level, Schaden pro Schlag,
   Angriffstempo, Temperament und die Schadensminderung, die deine Rüstung gerade
   bewirkt. Und wenn es doch schiefgeht, nennt der **Todesrückblick** den Bezwinger
@@ -115,20 +121,51 @@ mit eigener Gegnerschaft. Der erste Boss jeder Tiefe hinterlässt garantiert ein
 und **zwei Meisterschaften**. Die zweite Meisterschaft lässt sich für **2 Ruhm**
 neu schmieden: günstig, unbegrenzt, die Jagd des Endgames.
 
+### 🔁 Erneut erwachen: Der Thron
+
+Nach dem ersten Kronensieg öffnet sich die Hub-Kachel **„Der Thron"** — dort,
+wo die Krone ruht. Jeder abgeschlossene Lauf zahlt **Kronenasche**: 1 für die
+gehobene Krone, +1 je volle 5 errungene Aschentiefen. Sie ist die zweite,
+wiederkehrende Meta-Währung neben Ruhm — und sie wirkt nicht durchs Ausgeben:
+**Jede erworbene Kronenasche segnet alle künftigen Läufe** mit +3 % Asche &
+Erfahrung, lebenslang, unabhängig davon, was du investierst.
+
+Ausgegeben wird sie im **Vermächtnis** auf sechs gestufte Titel (je 3 Stufen,
+zusammen 36 Kronenasche — der Satz füllt sich über mehrere Läufe, die
+Reihenfolge wählst du):
+
+| Titel | Wirkung je Stufe |
+| --- | --- |
+| *Zweiter Atem* | +5 % Lebenskraft & Schaden auf den Helden-Grundwert |
+| *Aschengeist* | +5 % Erfahrung |
+| *Beutelspähler* | +5 % Asche-Ertrag |
+| *Alter Pfad* | Erwache mit +2 freien Statpunkten |
+| *Tiefenwissen* | +10 % Elite-/Boss-Fundchance |
+| *Der Vorbereitete* | Erwache mit 25 Asche |
+
+**Erneut erwachen** setzt den Lauf zurück — Zone & Gebiete, Held (Stufe, EP,
+Statpunkte, Runen & Pfad-Bindung), Asche, Ausrüstung & Inventar. Was bleibt:
+das ganze **Ruhm-Ökosystem**, **Kronenasche & Vermächtnis**, **Bestiarium,
+Chronik & Statistik**. Der Thron zeigt vorher eine Verfällt/Bleibt-Vorschau
+und will den Entschluss zweimal gehört haben — erst der zweite Klick vollzieht
+das Erwachen. Die Kontinent-Annalen liest du dabei erneut; die Asche erinnert
+sich an alles andere.
+
 ### 🌙 Chronik, Klang & Komfort
 
 - **Chronik & Lore** — Die Asche erinnert sich: Intro-Erzählung beim Erwachen, eine
   Annale pro Kontinent beim ersten Betreten, ein Epitaph über jedem der **50
   bezwungenen Bosse** und Flüstertöne aus den Tiefen — alles gesammelt am Schrein.
 - **Klang & Feedback** — Prozeduraler Sound aus der Web Audio API (keine Assets):
-  Treffer, Krits, Bosse, Beute, Aufstiege, Enrage, dazu ein dunkler Ambient-Drone —
+  Treffer, Krits, Bosse, Beute, Aufstiege, Enrage, dazu ein dunkler Ambient-Drone,
+  der über Intensitäts-Layer mit Abstieg, Hub, Sieg und Prestige dichter wird —
   mit Reglern für Gesamt, Effekte und Musik. Schadenszahlen, Aufblitzen und Toasts
   lassen sich trennen.
 - **Offline-Fortschritt** — Wer im Feld aufhört, kämpft bis zu **8 Stunden** ohne
   dich weiter (mit Tiefenkunde bis 20). An einer Boss-Wand weicht der simulierte
   Held aufs beste errungene Gebiet aus und farmt weiter — und meldet dir bei der
   Rückkehr, was er erlegt, gefunden und gelernt hat.
-- **Spielstand mit Sicherheitsnetz** — Versioniert (aktuell v8), drei rotierende
+- **Spielstand mit Sicherheitsnetz** — Versioniert (aktuell v9), drei rotierende
   Backups, Export/Import als JSON, Migrationen für alte Helden. Korrupte Items
   repariert das Spiel beim Laden — oder es greift zum Backup.
 - **Onboarding ohne Tutorial-Zwang** — Einmal-Hinweise im richtigen Moment, und ein
@@ -162,22 +199,23 @@ Gebiete — je tiefer die Ebene, desto besser Beute und Werkstatt.
 > Alles Folgende ist **Idee, kein Versprechen**: Umfang, Reihenfolge und ob überhaupt
 > ändern sich mit dem Feedback der Alpha. Nichts hier ist gebunden.
 
-- **Prestige / Meta-Progression** — der letzte große Block Richtung 1.0: freiwilliger
-  Neuanfang mit permanenten Boni und Belohnungen in den Aschentiefen. Als nächstes
-  auf dem Tisch — die Design-Runde läuft.
+- **Vermächtnis-Ausbau** — weitere Titel für die Kronenasche, etwa Teuer-Titel
+  mit Startvorsprung (Start in tieferen Zonen, Start-Gear); langfristig offen
+  Richtung Meta-Baum — siehe das
+  [Prestige-Papier](docs/prestige-optionen.md).
 - **Boss-Signaturen** — namensgebende Uniques der zehn Kontinent-Bosse („Herz der
   Asche") als Jagdziele mit eigener Prägung.
 - **Tiefen- & Elite-Modifier** — rotierende Bestimmungen (z. B. „Gestählt: +40 %
   Leben, +80 % Asche"), damit die Endlos-Wand und die Kampagne Abwechslung bekommen.
 - **Versunkene Kontinente** — Story-Kapitel in den Tiefen: eine Annale, Gegner und
   Epitaphe pro Kapitel, auf der bestehenden Tiefen-Kurve.
-- **QoL & Härtung** — Werkstatt-Schmieden per Halten wiederholen, Tastatur-Shortcuts,
-  tastatur-navigierbare Tooltips und weitere automatische Tests für Speicherstand
+- **QoL & Härtung** — Werkstatt-Schmieden per Halten wiederholen, Tastatur-Shortcuts
+  über die Tooltips hinaus und weitere automatische Tests für Speicherstand
   und Formeln.
 
 ## 🧪 Closed Alpha
 
-Ashen Crown befindet sich im geschlossenen Alpha-Stadium (aktuell **v0.16.3**):
+Ashen Crown befindet sich im geschlossenen Alpha-Stadium (aktuell **v0.17.0**):
 
 - **Mitmachen:** Installer aus den [Releases](releases) laden und installieren —
   das Spiel aktualisiert sich danach bei neuen Versionen von selbst. Ohne
@@ -221,6 +259,7 @@ node tools/smoke.mjs                  # Smoke-Checks für Kern-Module
 │   ├── crafting.js       # Werkstatt: Verstärken, Umschmieden, Meisterschafts-Reroll
 │   ├── skilltree.js      # Fertigkeitenbaum: Graph, Pfad-Bindung & Punktevergabe
 │   ├── stats.js          # Heldenwerte aus Basis, Gear, Skills & Meisterschaft
+│   ├── prestige.js       # Der Thron: Kronenasche, Vermächtnis-Titel, Prestige-Reset
 │   ├── achievements.js   # Errungenschaften, Ruhm-Währung & Ruhm-Laden
 │   ├── lore.js           # Chronik: Intro, Annalen, Epitaphe, Tiefen-Flüstertöne
 │   ├── state.js          # Spielstand & Einstellungen (localStorage)
@@ -229,6 +268,7 @@ node tools/smoke.mjs                  # Smoke-Checks für Kern-Module
 │   ├── audio.js          # Prozeduraler Sound (Web Audio API)
 │   ├── feedback.js       # Toasts & Levelup-Einblendungen
 │   ├── display.js        # Vollbild-Steuerung (Desktop & Web)
+│   ├── sprites.js        # Gegner-Sprites: Sieben SVG-Archetypen in Kontinent-Farbe
 │   ├── patchnotes.js     # Patchnote-Fenster beim Spielstart
 │   ├── updater.js        # Auto-Update über GitHub Releases
 │   ├── style.css         # Basis-Styling
