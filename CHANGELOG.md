@@ -4,6 +4,40 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.18.1] — 2026-10-22
+
+### Hinzugefügt
+- **Der Name des Erweckten**: Am Ende der Intro-Seiten fragt der Schrein nach
+  dem Namen (max. 24 Zeichen, Eingabe per Enter oder Knopf, danach Begrüßung).
+  Der Name steht am Schrein („Kael · Lv 4"), im Todesrückblick („Kael ist
+  gefallen — …") und auf dem Kronen-Screen. Die Save-Härtung klemmt jeden
+  Spielstand (inkl. Importe) auf 24 Zeichen ohne Steuer-/Nullbreiten-Zeichen
+  und fällt auf „Held" zurück; alle innerHTML-Stellen escapen den Namen. Das
+  Prestige behält den Namen — die Asche erinnert sich; erst nach dem
+  „Spielstand zurücksetzen" wird wieder gefragt.
+
+### Geändert
+- **Stat-Respec ab 5 Punkten**: Der Button „Punkte neu verteilen" (mit
+  Hinweistext) erscheint im Helden-Screen erst, wenn mindestens 5 Statpunkte
+  verteilt sind (`STAT_RESPEC_MIN_SPENT`) — vorher stand er von Beginn an da,
+  auch ohne etwas zurückzuholen. Nach Respec und Prestige verschwindet er
+  wieder.
+
+### Behoben
+- **Handschuhe waren an Links/Rechts gebunden**: Der Drop würfelte den
+  Hand-Slot fest ins Item; Anlegen, Delta-Vergleich und „Bestes anlegen"
+  behandelten die inhaltlich identischen Slots (gleiche Basen, gleicher Stat,
+  gleiches Icon) als verschiedene Stücke — ein besserer Handschuh konnte
+  nicht die Hand auffüllen, die ihn brauchte, und der Vergleich zeigte bei
+  „falscher" Seite gar nichts. Neu: `SLOT_PAIRS`/`pairedSlotsOf` in data.js
+  definieren die beiden Hand-Slots als symmetrisches Paar; `equipTargetOf`
+  legt beim Anlegen in den schwächeren bzw. leeren der beiden, der
+  Delta-Vergleich zeigt die Deltas gegen das Ersetzungsstück, und
+  „Bestes anlegen" optimiert das Paar als Gruppe (die zwei besten Stücke auf
+  die Hände, Verdrängtes ins Inventar; bei Punkte-Gleichstand bleibt das
+  Getragene — kein Geister-Tausch). Altsaves bleiben kompatibel; die
+  Werkstatt und die Inventar-Sortierung bleiben slot-basiert.
+
 ## [0.18.0] — 2026-10-22
 
 ### Hinzugefügt

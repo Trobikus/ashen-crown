@@ -3,10 +3,18 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.18.0',
+  version: '0.18.1',
   date: '22.10.2026',
-  headline: 'Der Schrein neu geordnet — ein Hub, der mitwächst',
+  headline: 'Ein Name in der Asche — und Handschuhe, die beide Hände kennen',
   sections: [
+    {
+      heading: '0.18.1 — Ein Name in der Asche',
+      items: [
+        'Dein Name: Am Ende des Erwachens fragt der Schrein, wie du heißt — und erinnert sich fortan an dich: am Schrein, im Todesrückblick und auf dem Kronen-Screen. Wer leer lässt, bleibt schlicht „Held“.',
+        'Fix: Handschuhe waren beim Fund fest an die linke oder rechte Hand gebunden. Jetzt füllen sie beim Anlegen automatisch die schwächere Hand, der Tooltip-Vergleich zeigt immer den Unterschied — und „Bestes anlegen“ rüstet beide Hände als Paar aus.',
+        'Feinschliff: „Punkte neu verteilen“ erscheint erst, sobald mindestens 5 Statpunkte verteilt sind — vorher stand er ohne Grund im Weg.',
+      ],
+    },
     {
       heading: '0.18.0 — Der Schrein neu geordnet',
       items: [
