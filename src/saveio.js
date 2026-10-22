@@ -167,6 +167,13 @@ function prepareSave(data) {
   data.zone = Math.min(data.zone, data.cleared);
   data.crownWon = data.crownWon === true;
   data.inField = data.inField === true;
+  // Der Name des Erweckten: Steuer- und Nullbreiten-Zeichen raus, Länge
+  // geklemmt — wer leer abgibt, bleibt schlicht „Held".
+  data.heroName = String(data.heroName ?? '')
+    .replace(/[\u0000-\u001f\u007f\u200b-\u200f\u2028\u2029\u2060\ufeff]/g, ' ')
+    .trim()
+    .slice(0, 24);
+  if (!data.heroName) data.heroName = 'Held';
   // Statistik-Zähler: Alte Spielstände starten bei null, kaputte Werte
   // werden auf sichere Grenzen gezogen.
   data.deaths = Math.max(0, asNumber(data.deaths, 0));

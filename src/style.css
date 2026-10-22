@@ -136,6 +136,38 @@ button:focus-visible {
   max-width: 560px;
 }
 
+.victory-hero {
+  color: #d9a03f;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  margin: 0.6rem 0 0;
+}
+
+/* Die Namensfrage beim Erwachen: Eingabe zentriert unter dem Overlay-Text —
+   kein Klick-Weiter, Enter oder der Knopf bestätigen. */
+.hero-name-input {
+  display: block;
+  width: min(280px, 70vw);
+  margin: 1.1rem auto 0.9rem;
+  padding: 0.6rem 0.9rem;
+  background: #12100c;
+  color: #efe9df;
+  border: 1px solid #4a443b;
+  text-align: center;
+  letter-spacing: 0.12em;
+  font-size: 1rem;
+}
+
+.hero-name-input:focus {
+  outline: none;
+  border-color: #d9a03f;
+}
+
+.hero-name-confirm {
+  margin-top: 0.2rem;
+}
+
 .armed {
   border-color: #d9a03f !important;
   color: #d9a03f !important;

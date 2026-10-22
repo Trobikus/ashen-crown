@@ -440,6 +440,16 @@ const GEAR_SLOTS = [
   { key: 'hand-rechts', label: 'Handschuh Rechts', bases: HANDSCHUH_BASES, abbrev: 'HR', stat: 'damage', pool: 'hands' },
 ];
 
+// Symmetrische Slot-Paare: Diese Slots tragen dieselben Bases und denselben
+// Stat — links/rechts ist reine Verwaltung, nicht Spielwert. Anlegen, Delta-
+// Vergleich und „Bestes anlegen" behandeln sie als austauschbares Paar;
+// alle anderen Slots stehen für sich allein.
+const SLOT_PAIRS = [
+  ['hand-links', 'hand-rechts'],
+];
+
+const pairedSlotsOf = (key) => SLOT_PAIRS.find((pair) => pair.includes(key)) ?? [key];
+
 const RARITIES = [
   { key: 'gewoehnlich', label: 'Gewöhnlich', suffix: 'der Asche', color: '#8a7f6d', weight: 54, mult: 1 },
   { key: 'magisch', label: 'Magisch', suffix: 'des Funkens', color: '#6d8aa6', weight: 26, mult: 1.5 },
@@ -1226,6 +1236,6 @@ export {
 
   ENEMY_PROFILES, PROFILE_CYCLE, profileOf, continentKeyOf,
 
-  CONTINENTS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, formatNum, formatDuration,
+  CONTINENTS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, formatNum, formatDuration, pairedSlotsOf,
 
 };

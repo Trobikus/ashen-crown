@@ -83,6 +83,14 @@ let lastPlayTick = null;
 
 let hooks = { after: () => {}, clampHp: () => {}, save: () => {}, render: () => {} };
 
+// Der Name kommt vom Spieler — überall, wo er in innerHTML landet
+// (Begrüßung, Tod, Sieg), wird er escaped; der Schrein schreibt per textContent.
+const escapeHtml = (text) => text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// Der Stat-Respec erscheint erst, wenn genug verteilt wurde — darunter gäbe
+// es nichts zurückzuholen und die Zeile wäre nur Deko.
+const STAT_RESPEC_MIN_SPENT = 5;
+
 // Die Bus-Anmeldung: Kern-Dienste für die Fach-Module. Funktionsdeklarationen
 // sind gehoistet — die Closures dürfen sich auf weiter unten stehende
 // Funktionen beziehen, denn gelesen wird erst zur Laufzeit.
@@ -446,9 +454,7 @@ function die() {
   const recap = enemy
     ? `<br><br>Gefallen gegen <strong>${enemy.name}</strong> (Lv ${enemy.level}): ${enemy.hitsOnHero} Treffer, ${formatNum(enemy.damageToHero)} Schaden insgesamt.`
     : '';
-  showOverlay((toll > 0
-    ? `Die Asche nimmt dich zurück — und ihren Zoll: ${formatNum(toll)} Asche.`
-    : 'Die Asche nimmt dich zurück.') + ' Am Schrein erwachst du mit einem Viertel deiner Lebenskraft.' + recap + wallHint, true);
+  showOverlay(`<strong>${escapeHtml(state.heroName)}</strong> ist gefallen — die Asche nimmt dich zurück${toll > 0 ? `, und ihren Zoll: ${formatNum(toll)} Asche` : ''}. Am Schrein erwachst du mit einem Viertel deiner Lebenskraft.` + recap + wallHint, true);
   render();
   save();
   scheduleScene(() => {
@@ -501,6 +507,7 @@ function hubTick() {
 
 function renderHubHero() {
   const max = heroMaxHp();
+  setText(el.heroNameText, state.heroName);
   setText(el.hubHeroLevel, state.level);
   setHpBar(el.hubHeroHp, el.hubHeroHpGhost, (heroHp / max) * 100);
   setText(el.hubHeroHpText, `${formatNum(Math.ceil(Math.max(0, heroHp)))} / ${formatNum(max)}`);
@@ -564,9 +571,11 @@ function render() {
   for (const button of el.spendButtons) {
     button.classList.toggle('active', Number(button.dataset.amount) === statSpendAmount);
   }
+  const statSpent = allocatedStatPoints();
   const statCost = statRespecCost();
+  setHidden(el.statRespecRow, statSpent < STAT_RESPEC_MIN_SPENT);
   setText(el.statRespecCost, formatNum(statCost));
-  el.statRespecButton.disabled = allocatedStatPoints() <= 0 || state.ash < statCost;
+  el.statRespecButton.disabled = statSpent <= 0 || state.ash < statCost;
   setText(el.statRespecButton, statRespecArmed
     ? 'Wirklich? Die Werte fallen.'
     : `Punkte neu verteilen · ${formatNum(statCost)} Asche`);
@@ -771,15 +780,46 @@ function enterZone(index) {
   save();
 }
 
-// Das Erwachen: Intro-Seiten für frisch Geformte, klickbar zum Weiterblättern.
+// Das Erwachen: Intro-Seiten für frisch Geformte, klickbar zum Weiterblättern —
+// als Abschluss gibt sich der Held seinen Namen.
 function playIntro() {
   const pages = [...INTRO_PAGES];
   const next = () => {
-    if (!pages.length) return;
+    if (!pages.length) return askHeroName();
     const page = pages.shift();
     showDismissibleOverlay(`<em>${page}</em>`, pages.length ? 4200 : 3400, true, next);
   };
   next();
+}
+
+// Die Namensfrage: Kein Klick-Weiter hier — das Overlay bleibt stehen, Enter
+// oder der Knopf bestätigen. Steuerzeichen schneidet die Save-Härtung ohnehin
+// weg; hier klemmen wir nur Zeilenabstände und Länge vor. Wer leer lässt,
+// bleibt schlicht „Held".
+function askHeroName() {
+  showOverlay(`
+    <h3>Wie nennst du dich?</h3>
+    <p>Die Asche wird dich so erinnern — Lauf für Lauf, bis du selbst vergisst.</p>
+    <input id="hero-name-input" class="hero-name-input" maxlength="24" autocomplete="off" spellcheck="false" placeholder="Held">
+    <button id="hero-name-confirm" class="btn-small hero-name-confirm">Erwache</button>
+  `, true);
+  const input = document.getElementById('hero-name-input');
+  const confirm = () => {
+    state.heroName = (input.value || '').replace(/\s+/g, ' ').trim().slice(0, 24) || 'Held';
+    save();
+    hideOverlay();
+    showDismissibleOverlay(`So sei gegrüßt, <strong>${escapeHtml(state.heroName)}</strong> — die Asche erinnert sich an dich.`, 4400, true);
+    render();
+  };
+  const onKey = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      confirm();
+    }
+  };
+  input.addEventListener('keydown', onKey);
+  document.getElementById('hero-name-confirm').addEventListener('click', confirm);
+  setTimeout(() => input.focus(), 60);
 }
 
 function showVictory() {
@@ -796,6 +836,7 @@ function showVictory() {
   el.victoryKills.textContent = formatNum(state.kills);
   el.victoryLevel.textContent = formatNum(state.level);
   el.victoryAsh.textContent = formatNum(state.ash);
+  setText(el.victoryHeroName, `${state.heroName} trägt die Krone.`);
   showScreen(el.sceneVictory);
   // Kronen-Settle: Der Titel senkt sich einmal glühend auf den Sieg-Screen.
   pulseClass(el.sceneVictory.querySelector('h2'), 'crown-settle', 1600);

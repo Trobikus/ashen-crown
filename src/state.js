@@ -35,6 +35,7 @@ const state = {
   hp: 0,
   damage: 2,
   kills: 0,
+  heroName: 'Held',
   zone: 0,
   cleared: 0,
   crownWon: false,

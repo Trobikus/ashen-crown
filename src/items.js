@@ -4,7 +4,7 @@ import helmIcon from './assets/icons/helm.svg';
 import hoseIcon from './assets/icons/hose.svg';
 import schuheIcon from './assets/icons/schuhe.svg';
 import handIcon from './assets/icons/hand.svg';
-import { GEAR_SLOTS, RARITIES, DROP_CHANCES, LIFELEECH_PCT_BY_RARITY, zoneDef, gearSlotOf, rarityOf, rollRarity, pickBase, rollItemValues, itemStats, itemStatRanges, itemIlvl, itemScore, rollMastery, rollRangesVisible, setRollRanges, SKILL_EFFECT_LABELS, formatNum } from './data.js';
+import { GEAR_SLOTS, RARITIES, DROP_CHANCES, LIFELEECH_PCT_BY_RARITY, zoneDef, gearSlotOf, rarityOf, rollRarity, pickBase, rollItemValues, itemStats, itemStatRanges, itemIlvl, itemScore, rollMastery, rollRangesVisible, setRollRanges, SKILL_EFFECT_LABELS, formatNum, pairedSlotsOf } from './data.js';
 
 import { state, settings, inventoryCap } from './state.js';
 
@@ -244,14 +244,25 @@ function spawnLootPulse(color) {
   setTimeout(() => pulse.remove(), 750);
 }
 
+// Ziel-Slot beim Anlegen: Symmetrische Paare (derzeit die beiden Handschuh-
+// Slots) legen in den schwächeren bzw. leeren der beiden — leer zählt als am
+// schwächsten. Alle anderen Slots sind ihr eigenes Ziel.
+function equipTargetOf(item) {
+  const pair = pairedSlotsOf(item.slot);
+  if (pair.length < 2) return item.slot;
+  const scoreOf = (key) => (state.equipment[key] ? itemScore(state.equipment[key]) : -1);
+  return scoreOf(pair[0]) <= scoreOf(pair[1]) ? pair[0] : pair[1];
+}
+
 function equipItem(id) {
   const index = state.inventory.findIndex((item) => item.id === id);
   if (index === -1) return;
   const item = state.inventory[index];
-  const previous = state.equipment[item.slot];
+  const target = equipTargetOf(item);
+  const previous = state.equipment[target];
   state.inventory.splice(index, 1);
   if (previous) state.inventory.push(previous);
-  state.equipment[item.slot] = item;
+  state.equipment[target] = item;
   gearDirty = true;
   hooks.clampHp();
   hooks.save();
@@ -297,15 +308,36 @@ function sortInventory() {
 
 function equipBest() {
   let changed = false;
+  // Gruppen: normale Slots einzeln, symmetrische Paare als eine — ein Paar
+  // wird nur einmal betrachtet.
+  const groups = [];
   for (const slot of GEAR_SLOTS) {
-    const candidates = state.inventory.filter((item) => item.slot === slot.key);
+    const pair = pairedSlotsOf(slot.key);
+    if (pair.length > 1) {
+      if (pair[0] === slot.key) groups.push(pair);
+      continue;
+    }
+    groups.push([slot.key]);
+  }
+  for (const slots of groups) {
+    const worn = slots.map((key) => state.equipment[key]).filter(Boolean);
+    const candidates = state.inventory.filter((item) => slots.includes(item.slot));
     if (!candidates.length) continue;
-    const best = candidates.reduce((a, b) => (itemScore(b) > itemScore(a) ? b : a));
-    const equipped = state.equipment[slot.key];
-    if (equipped && itemScore(equipped) >= itemScore(best)) continue;
-    state.inventory.splice(state.inventory.indexOf(best), 1);
-    if (equipped) state.inventory.push(equipped);
-    state.equipment[slot.key] = best;
+    // Bei Punkte-Gleichstand bleibt das Getragene im Slot — kein geister-
+    // hafter Tausch gleichwertiger Stücke.
+    const wornIds = new Set(worn.map((item) => item.id));
+    const pool = [...candidates, ...worn].sort((a, b) =>
+      itemScore(b) - itemScore(a) || (wornIds.has(a) ? -1 : wornIds.has(b) ? 1 : 0));
+    const best = pool.slice(0, slots.length);
+    const same = best.length === worn.length && best.every((item) => wornIds.has(item.id));
+    if (same) continue;
+    const keepIds = new Set(best.map((item) => item.id));
+    for (const item of candidates) {
+      if (keepIds.has(item.id)) state.inventory.splice(state.inventory.indexOf(item), 1);
+    }
+    slots.forEach((key, i) => { state.equipment[key] = best[i] ?? null; });
+    // Verdrängte Getragene und nicht gewählte Kandidaten zurück ins Inventar.
+    for (const item of pool.slice(slots.length)) state.inventory.push(item);
     changed = true;
   }
   if (!changed) return;
@@ -332,7 +364,9 @@ const DELTA_STATS = [
 ];
 
 function comparisonHtml(item) {
-  const equipped = state.equipment[item.slot];
+  // Verglichen wird gegen das Stück, das beim Anlegen ersetzt würde — bei
+  // symmetrischen Paaren also gegen den schwächeren der beiden getragenen.
+  const equipped = state.equipment[equipTargetOf(item)];
   if (!equipped || equipped.id === item.id) return '';
   const now = itemStats(item);
   const worn = itemStats(equipped);

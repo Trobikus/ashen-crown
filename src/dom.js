@@ -7,6 +7,7 @@ function cacheDom() {
   el.hubLevel = document.getElementById('hub-level');
   el.hubAsh = document.getElementById('hub-ash');
   el.hubHeroLevel = document.getElementById('hub-hero-level');
+  el.heroNameText = document.getElementById('hero-name-text');
   el.hubHeroHp = document.getElementById('hub-hero-hp');
   el.hubHeroHpGhost = document.getElementById('hub-hero-hp-ghost');
   el.hubHeroHpBar = document.getElementById('hub-hero-hp-bar');
@@ -84,6 +85,7 @@ function cacheDom() {
   el.victoryKills = document.getElementById('victory-kills');
   el.victoryLevel = document.getElementById('victory-level');
   el.victoryAsh = document.getElementById('victory-ash');
+  el.victoryHeroName = document.getElementById('victory-hero-name');
   el.craftSlots = document.getElementById('craft-slots');
   el.craftDetail = document.getElementById('craft-detail');
   el.craftAsh = document.getElementById('craft-ash');
@@ -108,6 +110,7 @@ function cacheDom() {
   el.statPointsRow = document.getElementById('stat-points-row');
   el.statPointsValue = document.getElementById('hero-stat-points');
   el.statRespecButton = document.getElementById('btn-stat-respec');
+  el.statRespecRow = document.getElementById('stat-respec-row');
   el.statRespecCost = document.getElementById('stat-respec-cost');
   el.statPlusButtons = Array.from(document.querySelectorAll('.stat-plus'));
   el.spendButtons = Array.from(document.querySelectorAll('.spend-amount button'));

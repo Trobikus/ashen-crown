@@ -31,7 +31,7 @@
     </main>
     <div id="hub" hidden>
       <div id="hub-hero">
-        <span id="hub-hero-name">Held · Lv <strong id="hub-hero-level">1</strong></span>
+        <span id="hub-hero-name"><span id="hero-name-text">Held</span> · Lv <strong id="hub-hero-level">1</strong></span>
         <div id="hub-hero-figure" aria-hidden="true"></div>
         <div class="hp-bar hub-hp-bar" id="hub-hero-hp-bar">
           <div id="hub-hero-hp-ghost" class="hp-ghost"></div>
@@ -155,7 +155,7 @@
               <div class="tooltip">Zählt jedes erschlagene Wesen seit deiner Erweckung.</div>
             </div>
           </dl>
-          <div class="skill-respec">
+          <div class="skill-respec" id="stat-respec-row">
             <button class="btn-small" id="btn-stat-respec">Punkte neu verteilen · <span id="stat-respec-cost">0</span> Asche</button>
             <span class="skill-respec-hint">Setzt Schaden, Lebenskraft, Rüstung und Kritchance zurück und erstattet alle Statpunkte.</span>
           </div>
@@ -371,6 +371,7 @@
       <p class="victory-text">Du hast sie gehoben — die Krone, aus der die Asche kam.<br>
       Sie ist leicht. Sie ist kalt. Sie ist dein.<br>
       Vier Reiche sind auf dem Weg hierher verbrannt. Hüte dein Haupt.</p>
+      <p class="victory-hero" id="victory-hero-name"></p>
       <dl class="stat-list">
         <div><dt>Erlegte Kreaturen</dt><dd id="victory-kills">0</dd></div>
         <div><dt>Stufe</dt><dd id="victory-level">1</dd></div>
