@@ -3,10 +3,18 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.18.2',
+  version: '0.18.3',
   date: '22.10.2026',
-  headline: 'Eingesammelter Ruhm — Errungenschaften, die auf dich warten',
+  headline: 'Hotfix — Der Kampf kehrt zurück',
   sections: [
+    {
+      heading: '0.18.3 — Hotfix: Der Kampf kehrt zurück',
+      items: [
+        'Fix: Der Autokampf stand still — die Annalen-Reiter brachen den Render-Pfad (fehlender Import). Absteigen und kämpfen funktioniert wieder wie gewohnt.',
+        'Nachgereicht: Kriegerherz, Wuchtschlag und Aschewille (offline) waren in 0.18.2 nicht voll wirksam — die Verdrahtung ist jetzt komplett.',
+        'Komfort: Der Zurück-Knopf klebt oben links am Bildschirmrand, auch in langen Listen — kein Hochscrollen mehr.',
+      ],
+    },
     {
       heading: '0.18.2 — Eingesammelter Ruhm',
       items: [

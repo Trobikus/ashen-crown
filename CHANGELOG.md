@@ -4,6 +4,30 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.18.3] — 2026-10-22
+
+### Behoben
+- **Autokampf stillgestellt (kritisch)**: Der Annalen-Reiter-Refactor rief in
+  render() `renderRuhmShop()` auf, ohne den Import in game.js zu ergänzen —
+  jeder render() warf einen `ReferenceError`, und weil `descend()` vor
+  `beginCombat()` rendert, kam der Kampf nie in Gang; auch der Hub-Tick
+  crashte. Fix: Import ergänzt. Nachweis: Neuer Kampf-Smoke (startGame →
+  Abstieg per Klick → 12 s Live-Kampf in Node) lief vorher mit genau diesem
+  `ReferenceError` als Uncaught-Exception im Tick, danach ohne eine einzige
+  Exception bei 3 Kills und fließender Asche.
+- **Ruhm-Upgrades 0.18.2 unvollständig veröffentlicht**: Der Release-Commit
+  0.18.2 ließ stats.js und offline.js außer vor — Kriegerherz (Max-HP-
+  Multiplikator) und Wuchtschlag (Kritschaden) griffen nicht und Aschewille
+  wirkte offline nicht. Beide Dateien sind im Hotfix enthalten; state.js und
+  game.js (Schrein-Atem, Alte Lehre) waren bereits korrekt drin.
+
+### Geändert
+- **Zurück-Knopf klebt am Bildschirmrand**: Der Szenen-Header ist von
+  `absolute` auf `fixed` umgestellt — in langen Listen (Bestiarium, Annalen,
+  Chronik) muss man nicht mehr nach oben scrollen, um zurückzukommen.
+  Tropfen-Schatten hält den Knopf über durchscrollendem Text lesbar; das
+  Overlay bleibt über ihm.
+
 ## [0.18.2] — 2026-10-22
 
 ### Hinzugefügt
