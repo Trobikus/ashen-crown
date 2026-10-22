@@ -114,6 +114,17 @@ provide('overlayGate', () => {
   return true;
 });
 
+function autoDoorAdvance() {
+  clearTimeout(autoDoorTimer);
+  autoDoorTimer = null;
+  cancelScene();
+  enterZone(state.zone + 1);
+  heroAttackProgress = 0;
+  enemyAttackProgress = 0;
+  heroHp = heroMaxHp();
+  spawnEnemy();
+}
+
 function showScreen(target) {
   if (target !== el.sceneHero) exitSellMode();
   for (const screen of [el.menu, el.hub, el.sceneHero, el.sceneSkills, el.sceneOptions, el.sceneMap, el.sceneCrafting, el.sceneBestiary, el.sceneAchievements, el.sceneThrone, el.sceneChronik, el.sceneVictory, el.game]) {
