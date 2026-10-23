@@ -9,6 +9,8 @@ export const EN_UI = {
   'Optionen': 'Options',
   'Beenden': 'Quit',
   'Überspringen': 'Skip',
+  'Aktualisiere {n} %': 'Updating {n} %',
+  'Aktualisiere …': 'Updating …',
   'Closed Alpha — alles Ungewöhnliche gern auf GitHub melden.': 'Closed Alpha — please report anything unusual on GitHub.',
   'Version {v}': 'Version {v}',
   'Beenden ist nur in der Desktop-App möglich.': 'Quitting is only possible in the desktop app.',

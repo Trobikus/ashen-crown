@@ -340,6 +340,52 @@ assert(all.includes('Second Wind'), 'Vermächtnis-Titel englisch');
 assert(all.includes('Blade of Bones'), 'Item-Name englisch komponiert (Klinge der Gebeine → Blade of Bones)');
 assert(all.includes('Glove of Bones'), 'Handschuh-Name englisch komponiert');
 
+// ——— Updater: Fortschrittstexte in BEIDEN Sprachen ———
+// Der Lauf oben fährt nur Englisch; rohe englische Strings im Quellcode
+// fielen dadurch bislang durch (der Fall hier). Der Updater braucht
+// window.__TAURI__ — im Stub nachgereicht, die Ereignisse decken alle
+// vier Textzustände ab: 0 %, unbekannte Größe (…), Prozent, 100 %.
+// Muss NACH der deutschen-Funde-Auswertung laufen — der deutsche Durchlauf
+// schreibt bewusst deutsche Texte ins Protokoll.
+const U = await src('updater.js');
+const runUpdateFlow = async () => {
+  const before = written.length;
+  globalThis.window.__TAURI__ = {
+    updater: {
+      check: async () => ({
+        download: async (onEvent) => {
+          onEvent({ event: 'Started', data: {} });
+          onEvent({ event: 'Progress', data: { chunkLength: 80 } });
+          onEvent({ event: 'Started', data: { contentLength: 200 } });
+          onEvent({ event: 'Progress', data: { chunkLength: 100 } });
+          onEvent({ event: 'Finished' });
+        },
+        install: async () => {},
+        close: () => {},
+      }),
+    },
+    process: { relaunch: async () => {} },
+  };
+  U.initUpdater();
+  await new Promise((r) => setTimeout(r, 900)); // delay(600) im Updater + Puffer
+  return written.slice(before).filter((w) => w.id === 'update-text').map((w) => w.value);
+};
+
+let seq = await runUpdateFlow();
+assert(
+  seq.length === 4 && seq[0] === 'Updating 0 %' && seq[1] === 'Updating …' && seq[2] === 'Updating 90 %' && seq[3] === 'Updating 100 %',
+  `Updater-Fortschritt englisch (0 % / … / 90 % / 100 %) (${seq.join(' | ')})`,
+);
+
+I.setLangPreference('de');
+seq = await runUpdateFlow();
+assert(
+  seq.length === 4 && seq[0] === 'Aktualisiere 0 %' && seq[1] === 'Aktualisiere …' && seq[2] === 'Aktualisiere 90 %' && seq[3] === 'Aktualisiere 100 %',
+  `Updater-Fortschritt deutsch (0 % / … / 90 % / 100 %) (${seq.join(' | ')})`,
+);
+I.setLangPreference('en');
+delete globalThis.window.__TAURI__;
+
 // Debug: Läuft der Kampf-Pfad nicht bis zum Boss-Overlay/Tod, zeigt dieser
 // Streifen, was stattdessen im Log gelandet ist.
 if (failed) {

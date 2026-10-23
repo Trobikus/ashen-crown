@@ -1,5 +1,6 @@
 // Prüft beim Öffnen auf neue Versionen (GitHub Releases) und installiert
 // sie automatisch — nur in der Desktop-App; im Web passiert nichts.
+import { t } from './i18n.js';
 
 let suppressed = false;
 
@@ -29,7 +30,7 @@ async function runUpdate(tauri) {
     .addEventListener('click', suppressUpdate, { once: true });
 
   document.getElementById('update-banner').hidden = false;
-  text.textContent = 'Updating 0 %';
+  text.textContent = t('Aktualisiere {n} %', { n: 0 });
   await delay(600);
 
   let downloaded = 0;
@@ -40,14 +41,14 @@ async function runUpdate(tauri) {
       downloaded += data.chunkLength;
       if (total > 0) {
         const pct = Math.min(100, Math.floor((downloaded / total) * 100));
-        text.textContent = `Updating ${pct} %`;
+        text.textContent = t('Aktualisiere {n} %', { n: pct });
         bar.style.width = `${pct}%`;
       } else {
-        text.textContent = 'Updating …';
+        text.textContent = t('Aktualisiere …');
       }
     }
     if (event === 'Finished') {
-      text.textContent = 'Updating 100 %';
+      text.textContent = t('Aktualisiere {n} %', { n: 100 });
       bar.style.width = '100%';
     }
   });
