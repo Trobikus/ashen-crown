@@ -4,10 +4,18 @@
 import { readStorage, writeStorage } from './storage.js';
 
 export const PATCH_NOTES = {
-  version: '0.21.3',
+  version: '0.21.4',
   date: '23.10.2026',
-  headline: 'Härtung — Schutzschild, Updates & Offline',
+  headline: 'Hotfix — Desktop-Anzeige & Export gerettet',
   sections: [
+    {
+      heading: '0.21.4 — Hotfix: Desktop-Anzeige & Export',
+      items: [
+        'Fix (Desktop): Das in 0.21.3 aktivierte Sicherheitsschutzschild (Content Security Policy) war strenger als beabsichtigt — Seltenheitsfarben in Tooltips, die Beutestück-Icons in Inventar und Ausrüstung und die Größe der Arena-Figuren konnten im Desktop-Build still nicht angezeigt werden. All diese Stile laufen jetzt über CSS-Klassen bzw. sichere Zuweisungen; das Schutzschild bleibt voll aktiv.',
+        'Fix: Der Spielstand-Export bricht bei einem beschädigten Hauptspielstand nicht mehr mit einem Fehler ab — er fällt auf das neueste lesbare Backup zurück und sagt dir, welches er exportiert hat. Ist gar nichts Lesbares vorhanden, gibt es eine klare Meldung statt einer kaputten Datei.',
+        'Unter der Haube: Ein neuer automatisierter Check verhindert dauerhaft, dass Inline-Stile in den HTML-Bau zurückkommen; der Speicher-Test deckt den Export-Rettungsfall ab.',
+      ],
+    },
     {
       heading: '0.21.3 — Härtung: Schutzschild, Updates & Offline',
       items: [

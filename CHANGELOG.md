@@ -4,6 +4,38 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.21.4] — 2026-10-23
+
+### Behoben
+- **CSP blockierte Inline-Styles dynamischer UI (Desktop-Regression aus
+  0.21.3)**: Die aktivierte Policy (`style-src 'self'`) verwirft
+  `style="…"`-Attribute aus HTML-Template-Strings still beim Parsen —
+  9 Stellen in items.js (Tooltip-Rarity-Farben; `--icon`-URLs in Gear-
+  und Inventar-Icons), crafting.js (Slot-Liste, Detail) und sprites.js
+  (SVG-Wrapper). Fix ohne Aufweichung (bewusst kein `unsafe-inline`):
+  Rarity-Farben als Klassen `.rarity-*` (+ `.rarity-leer`), dynamische
+  Icon-URLs per CSSOM `setProperty('--icon', …)` nach dem innerHTML-Aufbau,
+  SVG-Wrapper als Klasse `.sprite-svg`. Beweis im echten Chromium (headless
+  Edge, exakte Produktions-Policy als Header, geseedeter Spielstand,
+  kompletter Browser-Flow): 14/14 Checks inklusive computed-Maske und
+  Seltenheitsfarben, 0 CSP-Verletzungen.
+- **Export bei beschädigtem Hauptspielstand**: `exportSave()` parste das
+  `readStorage()`-Ergebnis mit nacktem `JSON.parse` — kaputtes JSON im
+  Speicher ließ den Export mit einer Exception abbrechen, obwohl Backups
+  rettbares hielten. Neu: `parseSave()` (validiert Syntax und Form),
+  Fallback über bak1–bak3 auf das neueste lesbare Backup mit Toast
+  „Hauptspielstand war beschädigt — Backup {n} exportiert."; nichts
+  Lesbares → klare Meldung + kontrolliert `false`.
+
+### Werkzeug
+- **tools/csp-check.mjs** (neues CI-Gate in der Composite-Action): verbietet
+  `style="`, `<style`, `setAttribute('style')` und `.cssText` in index.html
+  und allen src-Modulen — Inline-Styles können nicht mehr still in den
+  HTML-Bau zurückkehren.
+- tools/storage-smoke.mjs: Regression für den Export-Rettungsfall (Blob- und
+  Anker-Stubs; kaputter Hauptstand → Export aus bak1 gegen den echten
+  Blob-Inhalt geprüft; alles unlesbar → `false` ohne Throw) — jetzt 13 Checks.
+
 ## [0.21.3] — 2026-10-23
 
 ### Sicherheit / Härtung
