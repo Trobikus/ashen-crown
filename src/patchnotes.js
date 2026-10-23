@@ -3,10 +3,18 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.20.0',
+  version: '0.20.1',
   date: '23.10.2026',
-  headline: 'Zweisprachig — die Asche spricht jetzt auch Englisch',
+  headline: 'Hotfix — Epitaphe in beiden Sprachen',
   sections: [
+    {
+      heading: '0.20.1 — Hotfix: Epitaphe sprechen nun auch Englisch',
+      items: [
+        'Fix: Nach einem besiegten Boss stand das Epitaph noch auf Deutsch — egal welche Sprache eingestellt war. Die Boss-Sieges-Meldung spricht jetzt durchgehend die gewählte Sprache.',
+        'Nachgezogen: Gegner-Inspektor (Hover) und die Runen-Beschriftungen für die Tastatursteuerung aktualisieren sich jetzt sauber bei einem Sprachwechsel.',
+        'Unter der Haube: Ein neuer automatisierter Check fährt das Spiel komplett auf Englisch und prüft jeden angezeigten Text (fester CI-Bestandteil) — solche Sprach-Lücken rutschen nicht mehr durch.',
+      ],
+    },
     {
       heading: '0.20.0 — Zweisprachig: Deutsch & Englisch',
       items: [

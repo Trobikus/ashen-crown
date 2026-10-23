@@ -152,6 +152,13 @@ globalThis.window = {
 Object.defineProperty(globalThis, 'navigator', { value: { language: 'de-DE' }, configurable: true });
 globalThis.requestAnimationFrame = (cb) => setTimeout(cb, 16);
 
+// Deterministischer Lauf: Math.random auf 0,5 fixiert — der Held verfehlt nie
+// (12 %-Wurf greift nie), der Gegner trifft immer (15 %-Wurf greift nie), Beute
+// fällt nie. Ohne das bleibt der Todespfad ein Wettrennen zwischen dem ersten
+// Gegner-Schlag (spawn + 1,5 s) und dem Heldenschlag (spawn + 1,6 s) — der
+// Assert darauf wäre mit ~15 % Flakiness pro Spawn behaftet.
+Math.random = () => 0.5;
+
 // ——— Spielstand & Einstellungen (Englisch, reicher Endgame-Stand) ———
 
 const item = (over = {}) => ({

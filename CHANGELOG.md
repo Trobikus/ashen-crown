@@ -4,6 +4,23 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.20.1] — 2026-10-23
+
+### Behoben
+- **Boss-Epitaphe im Sieges-Overlay (i18n)**: `killEnemy` setzte `epitaphOf()`
+  roh ins Overlay — mit Englisch als Sprache erschienen sämtliche Boss-Epitaphe
+  auf Deutsch. Fix: das Epitaph läuft durch `t()`. Dazu zwei Sprachwechsel-
+  Nachzügler: die Signatur des Gegner-Inspektors (der sein Markup nur bei
+  Änderung neu baut) zählt jetzt die Sprache mit, und die Aria-Labels der
+  Runen-Knoten werden beim Sprachwechsel nachgezogen.
+
+### Werkzeug
+- **tools/i18n-runtime-check.mjs** (neuer CI-Schritt): fährt das echte Spiel in
+  Node mit DOM-Stubs auf Englisch (Start, alle Szenen-Renderer, Boss-Kill mit
+  Epitaph-Overlay, Tod) und scheitert bei jedem deutschen Fund im Protokoll
+  aller DOM-Schreibvorgänge — ergänzt den statischen Schlüssel-Audit um die
+  Prüfung, dass auch jede Anzeigestelle wirklich übersetzt.
+
 ## [0.20.0] — 2026-10-23
 
 ### Neu
