@@ -12,36 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 11
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Abhängigkeiten installieren
-        run: pnpm install --frozen-lockfile
-
-      - name: Produktions-Build
-        run: pnpm build
-
-      - name: i18n-Audit (alle t-/lname-Schlüssel in den Wörterbüchern)
-        run: node tools/i18n-check.mjs
-
-      - name: i18n-Runtime-Check (echtes Spiel auf Englisch, DOM-Protokoll)
-        run: node tools/i18n-runtime-check.mjs
-
-      - name: Balance-Verifikation (Sim gegen echte data.js)
-        run: node tools/balance-sim.mjs --verify
-
-      - name: Prestige-Balance (gefülltes Vermächtnis im Zielkorridor)
-        # Entscheidung 2026-10-16 „Korridor als Sättigungsziel“: Lauf 3+ mit
-        # vollem Vermächtnis muss im Median in 60–75 % der Basiskampagne
-        # liegen, frühe Läufe bleiben bewusst ~90 % (siehe
-        # docs/prestige-optionen.md §9).
-        run: node tools/balance-sim.mjs --prestige --gate
+      # Die Web-Gates leben in der Composite-Action — derselbe Satz läuft
+      # im Release-Workflow vor jedem Publish (.github/actions/web-gates).
+      - uses: ./.github/actions/web-gates
 
   rust:
     name: Check (Tauri/Rust)

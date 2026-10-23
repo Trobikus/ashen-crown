@@ -1,5 +1,12 @@
 name: Release
 
+# Ein Release veröffentlicht nur nach bestandenen Gates auf exakt dem
+# getaggten Commit: Der Web-Gate-Job blockiert den Publish-Job (needs),
+# und der Release-Job führt cargo check auf demselben Stand aus. Sich
+# stattdessen auf den CI-Lauf auf main zu verlassen, wäre löchrig — er
+# kann fehlen oder noch laufen, und ein Tag darf auf beliebig alten
+# Commits zeigen. Die Web-Gates deshalb bewusst hier erneut ausführen,
+# geteilt über .github/actions/web-gates.
 on:
   push:
     tags:
@@ -9,8 +16,17 @@ permissions:
   contents: write
 
 jobs:
+  web-gates:
+    name: Gates (Web)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./.github/actions/web-gates
+
   release:
     name: Release (Windows)
+    needs: web-gates
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
@@ -29,6 +45,10 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+
+      - name: cargo check (Rust-Gate auf dem getaggten Commit)
+        working-directory: src-tauri
+        run: cargo check --locked
 
       - name: Abhängigkeiten installieren
         run: pnpm install --frozen-lockfile

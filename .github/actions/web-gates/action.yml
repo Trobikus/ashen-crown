@@ -1,0 +1,46 @@
+name: 'Web-Gates'
+description: >-
+  Installiert Abhängigkeiten, baut den Web-Stand und führt alle Web-Gates aus.
+  Geteilt zwischen CI und Release: Der Release-Workflow lässt dieselben Gates
+  auf dem getaggten Commit laufen, bevor etwas veröffentlicht wird — neue
+  Gates gehören daher hier hinein, nicht in die Workflows.
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v6
+      with:
+        version: 11
+
+    - uses: actions/setup-node@v7
+      with:
+        node-version: 22
+        cache: pnpm
+
+    - name: Abhängigkeiten installieren
+      shell: bash
+      run: pnpm install --frozen-lockfile
+
+    - name: Produktions-Build
+      shell: bash
+      run: pnpm build
+
+    - name: i18n-Audit (alle t-/lname-Schlüssel in den Wörterbüchern)
+      shell: bash
+      run: node tools/i18n-check.mjs
+
+    - name: i18n-Runtime-Check (echtes Spiel auf Englisch, DOM-Protokoll)
+      shell: bash
+      run: node tools/i18n-runtime-check.mjs
+
+    - name: Balance-Verifikation (Sim gegen echte data.js)
+      shell: bash
+      run: node tools/balance-sim.mjs --verify
+
+    - name: Prestige-Balance (gefülltes Vermächtnis im Zielkorridor)
+      # Entscheidung 2026-10-16 „Korridor als Sättigungsziel“: Lauf 3+ mit
+      # vollem Vermächtnis muss im Median in 60–75 % der Basiskampagne
+      # liegen, frühe Läufe bleiben bewusst ~90 % (siehe
+      # docs/prestige-optionen.md §9).
+      shell: bash
+      run: node tools/balance-sim.mjs --prestige --gate
