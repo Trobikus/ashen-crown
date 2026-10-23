@@ -1,16 +1,16 @@
-name: Idee / Vorschlag
-description: Was würdest du in Ashen Crown gerne sehen?
+name: Idea / suggestion
+description: What would you like to see in Ashen Crown?
 labels: [enhancement]
 body:
   - type: textarea
     id: idea
     attributes:
-      label: Deine Idee
-      description: Was soll passieren, und welches Problem löst es?
+      label: Your idea
+      description: What should happen, and what problem does it solve?
     validations:
       required: true
   - type: textarea
     id: why
     attributes:
-      label: Warum passt es ins Spiel?
-      description: Kurzer Plausibilitätscheck — Ton, Balance, Aufwand.
+      label: Why does it fit the game?
+      description: Short sanity check — tone, balance, effort.

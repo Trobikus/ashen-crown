@@ -1,37 +1,37 @@
-name: Fehlerbericht
-description: Etwas funktioniert nicht? Hilf mir, es nachzuvollziehen.
+name: Bug report
+description: Something isn't working? Help me reproduce it.
 labels: [bug]
 body:
   - type: textarea
     id: what-happened
     attributes:
-      label: Was ist passiert?
-      description: Was hast du getan, was hast du erwartet, was ist stattdessen passiert?
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
     validations:
       required: true
   - type: dropdown
     id: platform
     attributes:
-      label: Plattform
+      label: Platform
       options:
         - Desktop (Tauri)
-        - Web (Browser)
+        - Web (browser)
     validations:
       required: true
   - type: textarea
     id: steps
     attributes:
-      label: Schritte zum Nachstellen
+      label: Steps to reproduce
       placeholder: |
-        1. Spiel starten
+        1. Start the game
         2. …
   - type: textarea
     id: screenshot
     attributes:
       label: Screenshots
-      description: Falls hilfreich — Bilder sagen mehr als Worte.
+      description: If helpful — pictures say more than words.
   - type: textarea
     id: context
     attributes:
-      label: Sonstiges
-      description: Spielstand beteiligt? Konsole/F12-Ausgabe? Browser/OS?
+      label: Anything else
+      description: Save file involved? Console (F12) output? Browser/OS?
