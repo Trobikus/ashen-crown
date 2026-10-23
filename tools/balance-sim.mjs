@@ -11,6 +11,7 @@
 //   node tools/balance-sim.mjs            → Preset-Kandidaten durchrechnen
 //   node tools/balance-sim.mjs --verify   → gegen die echte src/data.js spielen
 //   node tools/balance-sim.mjs --depths   → Tiefen (Zone 51+) mitprüfen
+//   node tools/balance-sim.mjs --verify --depths --gate → Tiefen als CI-Gate
 //   node tools/balance-sim.mjs --sweep    → Kurvensuche über hp/dmg-Wachstum
 //   node tools/balance-sim.mjs --prestige → Run 2 der Prestige-Balance messen
 //     (gepaart über 120 Seeds, ~20 s; --seeds N ändert die Anzahl,
@@ -719,6 +720,35 @@ if (prestige) {
   const world = worldFromRealData(depths ? 30 : 0);
   const result = simulate(world, { depthTarget: depths ? 30 : 0 });
   printResult(`Echte data.js${depths ? ' inkl. Tiefen-Simulation' : ''}`, result, { verbose });
+  if (gate && depths) {
+    // Tiefen-Gate: Die Tiefen (Zone 51+) sind Endgame-Inhalt — hier schlägt
+    // erst recht zu, was die Basiskampagne kaum berührt: Zahlenwachstum
+    // (2^53!), Grind-Entgleisung, nicht mehr brechbare Wände. Deterministisch
+    // über den Default-Seed. Referenz (Stand v0.21.1): 495,9 h · langsamste
+    // Killzeit 1960 s. Der Korridor hat bewusst Luft (~±35 % bzw. +22 %) —
+    // Tuning-Rauschen soll durchrutschen, Entgleisungen nicht. Bei einem
+    // bewussten Re-Tune der Tiefen sind diese Schranken mitzuziehen.
+    const slowest = Math.max(...result.report.map((r) => r.killTimeNormal));
+    const stalled = result.report.find((r) => r.stalled);
+    const HOURS_MIN = 320;
+    const HOURS_MAX = 670;
+    const KILL_TIME_CAP_S = 2400;
+    const checks = [
+      ['Tiefen-Ziel erreicht (keine Endlos-Wand)', !stalled, stalled ? `Zone ${stalled.zone} (${stalled.name}) nicht gebrochen` : ''],
+      ['Zahlen präzise (2^53 nicht berührt)', result.totals.precisionSafe, `größter Wert ${result.totals.maxTracked.toExponential(1)}`],
+      [`Gesamtzeit ${HOURS_MIN}–${HOURS_MAX} h`, result.totals.hours >= HOURS_MIN && result.totals.hours <= HOURS_MAX, `${result.totals.hours.toFixed(1)} h`],
+      [`langsamste Killzeit unter ${KILL_TIME_CAP_S} s`, slowest < KILL_TIME_CAP_S, `${slowest.toFixed(0)} s`],
+    ];
+    for (const [label, ok, detail] of checks) {
+      console.log(`${ok ? '✓' : '✗'} ${label}${detail ? ` — ${detail}` : ''}`);
+    }
+    if (checks.some(([, ok]) => !ok)) {
+      console.error('✗ Tiefen-Gate verfehlt.');
+      process.exitCode = 1;
+    } else {
+      console.log('✓ Tiefen-Gate bestanden.');
+    }
+  }
 } else {
   const presets = {
     A: {

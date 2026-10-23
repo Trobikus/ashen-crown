@@ -25,6 +25,14 @@ runs:
       shell: bash
       run: pnpm build
 
+    - name: Smoke-Checks (Wirtschaft, Pfad-Bindung, Save-Härtung)
+      shell: bash
+      run: node tools/smoke.mjs
+
+    - name: Storage-Smoke (SecurityError/QuotaExceededError werden abgefangen)
+      shell: bash
+      run: node tools/storage-smoke.mjs
+
     - name: i18n-Audit (alle t-/lname-Schlüssel in den Wörterbüchern)
       shell: bash
       run: node tools/i18n-check.mjs
@@ -36,6 +44,10 @@ runs:
     - name: Balance-Verifikation (Sim gegen echte data.js)
       shell: bash
       run: node tools/balance-sim.mjs --verify
+
+    - name: Tiefen-Balance (Zone 51+ — Ziel erreicht, Zahlen präzise, Zeit im Korridor)
+      shell: bash
+      run: node tools/balance-sim.mjs --verify --depths --gate
 
     - name: Prestige-Balance (gefülltes Vermächtnis im Zielkorridor)
       # Entscheidung 2026-10-16 „Korridor als Sättigungsziel“: Lauf 3+ mit
