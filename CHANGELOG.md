@@ -4,6 +4,40 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.21.3] — 2026-10-23
+
+### Sicherheit / Härtung
+- **Content Security Policy aktiviert (Desktop)**: `app.security.csp` stand auf
+  `null`. Neu: strenge Produktionsschicht (`default-src 'self'`, kein Inline-
+  Script/Style, `object-src 'none'`, `base-uri`/`form-action`/`frame-src`
+  abgesenkt; `img-src 'self' data:` für die SVG-Masken/Rausch-Filter in
+  style.css; `connect-src ipc: http://ipc.localhost` für den Tauri-2-IPC unter
+  Windows/WebView2) plus `devCsp` mit `'unsafe-inline'`-Styles (Vite-Overlay)
+  und `ws://localhost:5173` (HMR). Bewusst kein meta-CSP in index.html: Auf
+  dem Desktop würde die Schnittmenge der Policies Tauris nonce-behaftete
+  Inline-Scripts blockieren. Beweis: `dist/` unter der exakten Policy als
+  Header in headless Edge (Chromium wie WebView2) über das DevTools-Protokoll
+  — vollständiger Boot, 0 Konsolen-/Security-Einträge, Stylesheet angewandt,
+  Animationen laufen.
+
+### Behoben
+- **Update-Fortschritt lokalisiert**: updater.js schrieb rohe englische
+  Strings („Updating 0 %/…/42 %/100 %“) — für deutsch eingestellte Spieler
+  englisch. Neu: `t('Aktualisiere {n} %', { n })` (ein Schlüssel für 0/pct/100)
+  und `t('Aktualisiere …')`; EN-Einträge in en-ui.js. Der Runtime-Check fährt
+  den Updater jetzt in BEIDEN Sprachen (Tauri-Stub, alle vier Textzustände) —
+  der Fehler war für ihn doppelt blind (nur Englisch-Modus, kein `__TAURI__`
+  im Boot).
+- **Offline-Abschluss immer persistiert**: Gespeichert wurde nur bei
+  Kill oder Tod — endete die Simulation mit `'time'` und null Kills (Zeit
+  reichte für keinen Kampf) oder `'boss'` ohne Ausweichgebiet, blieben
+  `inField = false` und der alte `lastSeen` ungeschrieben; ein erneuter
+  Start zöge dieselbe Zeitspanne erneut zur Simulation. Neu: `save()` nach
+  jeder abgeschlossenen Simulation (blockierten Speicher fängt storage.js
+  ab); die Zusammenfassung erscheint weiterhin nur bei Kill/Tod. smoke.mjs
+  deckt den Randfall (31 s offline, Kampf dauert länger) samt Gegenprobe ab
+  — per Stash-Negativ-Beweis verifiziert.
+
 ## [0.21.2] — 2026-10-23
 
 ### Sicherheit / Härtung

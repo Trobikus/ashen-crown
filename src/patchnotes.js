@@ -4,10 +4,19 @@
 import { readStorage, writeStorage } from './storage.js';
 
 export const PATCH_NOTES = {
-  version: '0.21.2',
+  version: '0.21.3',
   date: '23.10.2026',
-  headline: 'Härtung — Ruhm-Käufe, Speicher & Prüfgelände',
+  headline: 'Härtung — Schutzschild, Updates & Offline',
   sections: [
+    {
+      heading: '0.21.3 — Härtung: Schutzschild, Updates & Offline',
+      items: [
+        'Sicherheit: Die Desktop-App trägt jetzt eine Content Security Policy — ein zusätzlicher Schutzschild, der festlegt, welche Skripte und Ressourcen das Spiel laden darf. Falls irgendwann einmal eine Injection-Lücke entstünde, bliebe ihr Schaden begrenzt. Alles Bekannte funktioniert wie zuvor; sollte in der Desktop-App dennoch etwas klemmen, meldet es gern.',
+        'Fix: Der Fortschritt beim Selbst-Update („Aktualisiere 42 %“) spricht jetzt die eingestellte Sprache — zuvor stand er immer auf Englisch, egal was eingestellt war.',
+        'Fix: Der Offline-Fortschritt wird jetzt in jedem Fall gespeichert — auch dann, wenn die Abwesenheit nicht einmal für einen kompletten Kampf reichte. Zuvor konnte dieselbe Zeitspanne beim nächsten Start ein zweites Mal zur Simulation herangezogen werden.',
+        'Unter der Haube: Der automatisierte Sprach-Check fährt den Update-Fortschritt jetzt in beiden Sprachen, und der Smoke-Test deckt den Offline-Randfall ab — beides dauerhaft abgesichert.',
+      ],
+    },
     {
       heading: '0.21.2 — Härtung: Ruhm-Käufe, Speicher & Prüfgelände',
       items: [
