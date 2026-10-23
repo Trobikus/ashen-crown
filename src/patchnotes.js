@@ -3,10 +3,20 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.18.4',
+  version: '0.20.0',
   date: '23.10.2026',
-  headline: 'Hotfix — Die Auto-Tür öffnet wieder',
+  headline: 'Zweisprachig — die Asche spricht jetzt auch Englisch',
   sections: [
+    {
+      heading: '0.20.0 — Zweisprachig: Deutsch & Englisch',
+      items: [
+        'Neu: Ashen Crown spielt auf Deutsch oder Englisch. Frisch installiert folgt das Spiel der Sprache deines Betriebssystems; unter Optionen → Anzeige → Sprache stellst du jederzeit um (Automatisch / Deutsch / English) — live, ohne Neuladen.',
+        'Alles ist übersetzt: die gesamte Bedienoberfläche, Kampf- und Offline-Meldungen, Werkstatt, Runenbaum, Gebiete-Karte, Bestiarium, Errungenschaften, Ruhm-Laden, Thron und Chronik — dazu alle Namen (Kontinente, Gebiete, 150+ Gegner, Items, Runen, Errungenschaften, Titel) und die Lore: Intro, Kontinent-Annalen und sämtliche Boss-Epitaphe. Selbst die Zahlen sprechen mit: Aus dem deutschen Komma wird im Englischen ein Punkt.',
+        'Dein Spielstand bleibt, wie er ist: Gespeicherte Item- und Bestiariumsnamen bleiben deutsch gespeichert und werden nur für die Anzeige übersetzt — Hin- und Herschalten verliert nichts.',
+        'Hinweis: Diese Patchnoten bleiben (als historisches Protokoll, wie das CHANGELOG) auf Deutsch — das Fenster drumherum spricht deine Sprache.',
+        'Unter der Haube: Neues i18n-Audit (tools/i18n-check.mjs, fester CI-Schritt) prüft bei jedem Commit, dass jeder Übersetzungs-Schlüssel im Code und in der Kartei liegt — fehlende Übersetzungen können nicht mehr still durchrutschen.',
+      ],
+    },
     {
       heading: '0.18.4 — Hotfix: Die Auto-Tür öffnet wieder',
       items: [

@@ -4,7 +4,7 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
-## [Nicht veröffentlicht]
+## [0.20.0] — 2026-10-23
 
 ### Neu
 - **Zweisprachigkeit (Deutsch & Englisch)**: Das Spiel erkennt die Sprache des
