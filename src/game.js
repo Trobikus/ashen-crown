@@ -17,7 +17,7 @@ import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, BOSS_AFTER_KILLS, 
 
 import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier, heroLifeleech } from './stats.js';
 
-import { buildSkillTree, renderSkillTree, bindSkillTreeEvents, applySkillView, MAX_SKILL_POINTS } from './skilltree.js';
+import { buildSkillTree, renderSkillTree, bindSkillTreeEvents, applySkillView, refreshSkillLabels, MAX_SKILL_POINTS } from './skilltree.js';
 
 import { buildZoneList, renderZones, resetZoneView, switchZoneView, rebuildZoneList } from './zones.js';
 
@@ -31,7 +31,7 @@ import { INTRO_PAGES, COMBAT_INTRO_PAGES, CONTINENT_LORE, epitaphOf, continentLo
 
 import { initItems, rollDrop, unequipItem, sortInventory, equipBest, exitSellMode, sellButtonAction, selectAllForSale, handleInventoryClick, renderGearIfDirty, buildDepthRelic, grantItem, itemSellValue, markGearDirty } from './items.js';
 
-import { t, lname, fmtDec, onLangChange } from './i18n.js';
+import { t, lname, fmtDec, onLangChange, getLang } from './i18n.js';
 
 import { ACHIEVEMENTS, claimAchievement, evaluateAchievements } from './achievements.js';
 
@@ -341,7 +341,7 @@ function killEnemy() {
     const continentGate = next.continent !== zoneDef(state.zone).continent
       ? t('Neuer Kontinent: {name}. ', { name: lname(next.continent) })
       : '';
-    const epitaph = epitaphOf(state.zone);
+    const epitaph = t(epitaphOf(state.zone));
     // Tiefenrelikt: Der erste Boss einer Aschentiefe hinterlässt garantiert
     // ein Legendärstück mit zwei Meisterschaften und gesicherter Lifeleech.
     let relicLine = '';
@@ -567,7 +567,7 @@ function renderEnemyTooltip() {
   const temperament = enemy.enraged
     ? t('Wütend — greift schneller an')
     : enemy.type === 'boss' ? t('Standard') : t(enemy.profileLabel || 'Standard');
-  const signatur = `${enemy.name}|${enemy.level}|${enemy.type}|${enemy.enraged ? 'wütend' : 'ruhig'}|${reduction.toFixed(3)}`;
+  const signatur = `${getLang()}|${enemy.name}|${enemy.level}|${enemy.type}|${enemy.enraged ? 'wütend' : 'ruhig'}|${reduction.toFixed(3)}`;
   if (signatur === tooltipSignatur) return;
   tooltipSignatur = signatur;
   el.enemyTooltip.innerHTML = `
@@ -1143,6 +1143,7 @@ function ensureInit() {
   // übersetzt, Gear-Tooltips tragen übersetzte Werte im Markup.
   onLangChange(() => {
     rebuildZoneList();
+    refreshSkillLabels();
     markGearDirty();
     render();
   });

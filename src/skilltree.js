@@ -395,4 +395,13 @@ export function bindSkillTreeEvents(hooks) {
 
 
 
-export { skillBonus, MAX_SKILL_POINTS, buildSkillTree, renderSkillTree, attemptAllocate, applySkillView };
+// Sprachwechsel: Die im Baum einmal gebauten Aria-Label tragen den Knoten-
+// Namen — hier nachziehen, ohne den Baum neu zu bauen.
+function refreshSkillLabels() {
+  for (const group of el.skillTree.querySelectorAll('.skill-node')) {
+    const node = SKILL_NODES_BY_ID[group.dataset.id];
+    if (node) group.setAttribute('aria-label', lname(node.name) || t('Rune'));
+  }
+}
+
+export { skillBonus, MAX_SKILL_POINTS, buildSkillTree, renderSkillTree, attemptAllocate, applySkillView, refreshSkillLabels };

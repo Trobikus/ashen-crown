@@ -30,6 +30,9 @@ jobs:
       - name: i18n-Audit (alle t-/lname-Schlüssel in den Wörterbüchern)
         run: node tools/i18n-check.mjs
 
+      - name: i18n-Runtime-Check (echtes Spiel auf Englisch, DOM-Protokoll)
+        run: node tools/i18n-runtime-check.mjs
+
       - name: Balance-Verifikation (Sim gegen echte data.js)
         run: node tools/balance-sim.mjs --verify
 
