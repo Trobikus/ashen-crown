@@ -4,6 +4,12 @@
 //
 //   node tools/smoke.mjs
 
+import { register } from 'node:module';
+
+// Asset-Importe (SVG/PNG/CSS/JSON) auf Stubs mappen — offline.js zieht
+// items.js mit Icon-Importen; derselbe Hook wie im i18n-Runtime-Check.
+register('./i18n-runtime-loader.mjs', import.meta.url);
+
 let failed = 0;
 
 const assert = (cond, label) => {
@@ -148,6 +154,52 @@ S.state.legacy = { aschengeist: 2 };
 assert(Math.abs(S.xpGainFactor() - 1.25) < 1e-9, `xpGainFactor: 1 + 0,03×5 + 0,05×2 = 1,25 (${S.xpGainFactor()})`);
 S.state.kronenascheEarned = 0;
 S.state.legacy = {};
+
+// ——— Offline: Abschluss wird immer persistiert (offline.js) ———
+// Randfall: Die Offline-Zeit reicht für keinen kompletten Kampf (0 Kills,
+// kein Tod) — trotzdem müssen inField=false und der neue lastSeen stehen,
+// sonst zöge ein erneuter Start dieselbe Zeitspanne erneut zur Simulation.
+const BUS = await import('../src/bus.js');
+const backing = new Map();
+globalThis.localStorage = {
+  getItem: (k) => (backing.has(k) ? backing.get(k) : null),
+  setItem: (k, v) => backing.set(k, String(v)),
+  removeItem: (k) => backing.delete(k),
+};
+globalThis.document = { getElementById: () => null };
+globalThis.window = {};
+BUS.provide('heroHp', { get: () => st.hp, set: (v) => { st.hp = v; } });
+BUS.provide('gainXp', (xp) => { st.xp += xp; });
+BUS.provide('takeDeathToll', () => 0);
+const OFF = await import('../src/offline.js');
+S.settings.offlineProgress = true;
+st.inField = true;
+st.zone = 40; // tiefe Zone gegen Schaden 1: Der nächste Kampf dauert Jahrzehnte
+st.zoneKills = 0;
+st.damage = 1;
+st.lastSeen = Date.now() - (D.OFFLINE_MIN_GAP_MS + 1000); // 31 s offline — zu kurz für den Kill
+OFF.applyOfflineProgress();
+const persisted = backing.has(S.SAVE_KEY) ? JSON.parse(backing.get(S.SAVE_KEY)) : null;
+assert(persisted?.inField === false, `Offline-Abschluss ohne Kill wird gespeichert (inField=${persisted?.inField})`);
+assert(persisted?.lastSeen > Date.now() - 60000, 'lastSeen beim Abschluss aktualisiert (keine Doppel-Simulation)');
+assert(OFF.consumeOfflineSummary() === null, 'ohne Kill/Tod gibt es keine Zusammenfassung');
+
+// Gegenprobe: killbarer Fall speichert und zeigt die Zusammenfassung.
+const killsBefore = st.kills;
+st.zone = 0;
+st.zoneKills = 0;
+st.damage = 1000000;
+st.maxHp = 100000;
+st.hp = 100000;
+st.inField = true;
+st.lastSeen = Date.now() - (D.OFFLINE_MIN_GAP_MS + 60000);
+backing.clear();
+OFF.applyOfflineProgress();
+const rich = backing.has(S.SAVE_KEY) ? JSON.parse(backing.get(S.SAVE_KEY)) : null;
+assert(rich?.inField === false && (rich?.kills ?? 0) > killsBefore, `killbarer Fall: gespeichert mit Kills (${(rich?.kills ?? 0) - killsBefore} offline)`);
+assert(typeof OFF.consumeOfflineSummary() === 'string', 'killbarer Fall: Zusammenfassung steht bereit');
+st.inField = false;
+st.damage = 2;
 
 console.log(failed ? `\n${failed} Check(s) fehlgeschlagen.` : '\nAlle Smoke-Checks bestanden.');
 process.exit(failed ? 1 : 0);

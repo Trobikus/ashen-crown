@@ -107,10 +107,13 @@ function applyOfflineProgress() {
   } else {
     summary += '.';
   }
-  if (kills > 0 || result === 'died') {
-    offlineSummary = summary;
-    save();
-  }
+  // Abschluss immer persistieren (save() fängt blockierten Speicher selbst
+  // ab): Auch ohne Kill oder Tod — die Zeit reichte für keinen Kampf, oder
+  // eine Boss-Wand ohne Ausweichgebiet stoppte sofort — muss inField = false
+  // und der neue lastSeen stehen, sonst zöge ein erneuter Start dieselbe
+  // Zeitspanne nochmal zur Simulation heran.
+  if (kills > 0 || result === 'died') offlineSummary = summary;
+  save();
 }
 
 const totalDropCount = () => Object.values(state.drops ?? {}).reduce((sum, n) => sum + (Number.isFinite(n) ? n : 0), 0);
