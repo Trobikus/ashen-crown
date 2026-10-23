@@ -41,6 +41,13 @@ assert(A.ruhmEarned(fake) === 0 && A.ruhmPending(fake) === 77, `ungeholt: Ruhm 0
 for (const id of fresh) A.claimAchievement(fake, id);
 assert(A.ruhmEarned(fake) === 77 && A.ruhmPending(fake) === 0 && A.evaluateAchievements(fake).length === 0, `nach Abholen: 77 gebucht, Regal leer, kein zweites Feuern (${A.ruhmEarned(fake)}/${A.ruhmPending(fake)})`);
 
+// ——— Härtung: vervielfachter Ruhm durch wiederholte IDs (sanitizeAchievements) ———
+// Bearbeitete Stände dürfen Ruhm weder stapeln noch doppelt buchen.
+const canon = A.sanitizeAchievements(['ernte-1', 'ernte-1', 'unbekannt', 'sturz-1'], ['ernte-1', 'ernte-1', 'zeit-1', 'auch-unbekannt']);
+assert(canon.claimed.join(',') === 'ernte-1,sturz-1', `Annalen kanonisch: Duplikate/Unbekanntes raus (${canon.claimed.join(',')})`);
+assert(canon.pending.join(',') === 'zeit-1', `Regal kanonisch: Duplikate/Unbekanntes raus, Eingesammeltes entfernt (${canon.pending.join(',')})`);
+assert(A.ruhmEarned({ achievements: canon.claimed }) === 2 && A.ruhmPending({ achievementsPending: canon.pending }) === 1, `Ruhm aus kanonischen Mengen: gebucht 1+1=2, Regal 1 (${A.ruhmEarned({ achievements: canon.claimed })}/${A.ruhmPending({ achievementsPending: canon.pending })})`);
+
 // Fortschritt der Tiefen-Errungenschaften zählt ab null (nicht negativ):
 const tiefe1 = A.ACHIEVEMENTS.find((a) => a.id === 'tiefe-1');
 const [cur] = tiefe1.progress({ cleared: 20 });
@@ -94,6 +101,16 @@ T.attemptAllocate('ar0', { after: () => {} });
 assert(st.skills.includes('ar0'), 'nach Respec ist jede Farbe wieder offen');
 st.skills = ['start'];
 st.skillPoints = 0;
+
+// ——— Härtung: Doppelte Runen im Spielstand (sanitizeSkills) ———
+// Bearbeitete/beschädigte Stände dürfen Runen nicht mehrfach zählen.
+const kr0 = D.SKILL_NODES_BY_ID['kr0'];
+const deduped = T.sanitizeSkills(['start', 'kr0', 'kr0', 'gr0', 'unbekannt', 'ar0', 'ar0']);
+assert(deduped.join(',') === 'start,kr0,gr0', `Duplikate/Unbekanntes raus, dritte Farbe gekappt (${deduped.join(',')})`);
+assert(T.sanitizeSkills(['kr0', 'kr0']).join(',') === 'start,kr0', 'fehlender Start wird genau einmal ergänzt');
+st.skills = T.sanitizeSkills(['start', 'kr0', 'kr0', 'kr0']);
+assert(T.skillBonus(kr0.effects[0].stat) === kr0.effects[0].value, `skillBonus zählt jede Rune genau einmal (${T.skillBonus(kr0.effects[0].stat)})`);
+st.skills = ['start'];
 
 // ——— Werkstatt-Kosten beachten den Rabatt (crafting.js) ———
 const C = await import('../src/crafting.js');

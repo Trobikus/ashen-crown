@@ -3,9 +3,10 @@
 // dem rohen Spielstand, bevor etwas davon den echten Spielstand berührt —
 // ein böser Spielstand darf nie den Render-Loop crashen.
 import { state, SAVE_KEY, SAVE_VERSION } from './state.js';
-import { GEAR_SLOTS, RARITIES, SKILL_NODES_BY_ID, SKILL_TREE_UNLOCK_LEVEL, MAX_ZONE, sanitizeItem, asCount } from './data.js';
+import { GEAR_SLOTS, RARITIES, SKILL_TREE_UNLOCK_LEVEL, MAX_ZONE, sanitizeItem, asCount } from './data.js';
 import { t } from './i18n.js';
-import { MAX_SKILL_POINTS } from './skilltree.js';
+import { MAX_SKILL_POINTS, sanitizeSkills } from './skilltree.js';
+import { sanitizeAchievements } from './achievements.js';
 import { LEGACY_TITLES } from './prestige.js';
 import { el } from './dom.js';
 import { flashButton } from './domfx.js';
@@ -157,9 +158,9 @@ function prepareSave(data) {
     .map(sanitizeItem)
     .filter(Boolean);
   data.inventory.forEach(ensureId);
-  if (!Array.isArray(data.skills)) data.skills = ['start'];
-  if (!data.skills.includes('start')) data.skills.unshift('start');
-  data.skills = data.skills.filter((id) => SKILL_NODES_BY_ID[id]);
+  // Dedup + Pfad-Bindung: Duplikate würden in skillBonus je Kopie zählen
+  // und die Punktekorrektur unten verfälschen.
+  data.skills = sanitizeSkills(data.skills);
   // Runenpunkte gibt es erst ab SKILL_TREE_UNLOCK_LEVEL, dann alle zwei
   // Stufen einen — geklemmt an die Ertrags-Obergrenze der Pfad-Bindung: Nie
   // mehr unverteilte Punkte, als zwei vollständige Pfade noch aufnehmen.
@@ -200,13 +201,12 @@ function prepareSave(data) {
     if (typeof name === 'string' && name && kills > 0) cleanBestiary[name.slice(0, 60)] = kills;
   }
   data.bestiary = cleanBestiary;
-  data.achievements = Array.isArray(data.achievements)
-    ? data.achievements.filter((id) => typeof id === 'string' && id.length <= 40)
-    : [];
-  // Abhol-Regal: erfüllte, aber noch nicht eingesammelte Errungenschaften.
-  data.achievementsPending = Array.isArray(data.achievementsPending)
-    ? data.achievementsPending.filter((id) => typeof id === 'string' && id.length <= 40)
-    : [];
+  // Errungenschaften & Abhol-Regal: kanonisieren — nur bekannte IDs ohne
+  // Duplikate, denn ruhmEarned/ruhmPending summieren je Eintrag; und nichts
+  // im Regal, was schon eingesammelt ist (sonst buchte der Claim zweimal).
+  const achievements = sanitizeAchievements(data.achievements, data.achievementsPending);
+  data.achievements = achievements.claimed;
+  data.achievementsPending = achievements.pending;
   // Ruhm-Laden: ausgegebener Ruhm und Kaufläufe geklemmt.
   data.ruhmAusgegeben = Math.max(0, asNumber(data.ruhmAusgegeben, 0));
   data.shopPurchases = data.shopPurchases && typeof data.shopPurchases === 'object' && !Array.isArray(data.shopPurchases) ? data.shopPurchases : {};

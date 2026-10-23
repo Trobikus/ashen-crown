@@ -73,6 +73,32 @@ export function ruhmPending(state) {
   return (state.achievementsPending ?? []).reduce((sum, id) => sum + (ACHIEVEMENTS.find((a) => a.id === id)?.ruhm ?? 0), 0);
 }
 
+// Härtung für geladene Spielstände: Ein bearbeiteter oder beschädigter Stand
+// kann IDs wiederholen — ruhmEarned/ruhmPending summieren je Eintrag und
+// würden Ruhm vervielfachen, womit sich der Ruhm-Laden umgehen ließe. Kanonisch
+// heißt: nur bekannte IDs ohne Duplikate, und nichts im Abhol-Regal, was schon
+// eingesammelt ist (sonst buchte das Einsammeln den Ruhm zweimal).
+const ACHIEVEMENT_IDS = new Set(ACHIEVEMENTS.map((a) => a.id));
+
+export function sanitizeAchievements(claimed, pending) {
+  const canonical = (ids) => {
+    const seen = new Set();
+    const clean = [];
+    for (const id of Array.isArray(ids) ? ids : []) {
+      if (!ACHIEVEMENT_IDS.has(id) || seen.has(id)) continue;
+      seen.add(id);
+      clean.push(id);
+    }
+    return clean;
+  };
+  const collected = canonical(claimed);
+  const collectedSet = new Set(collected);
+  return {
+    claimed: collected,
+    pending: canonical(pending).filter((id) => !collectedSet.has(id)),
+  };
+}
+
 // Errungenschaft einsammeln: Sie wandert aus dem Abhol-Regal in die Annalen
 // und bucht ihren Ruhm — Rückgabe ist der Betrag für Toast & Sound.
 export function claimAchievement(state, id) {

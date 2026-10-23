@@ -53,6 +53,34 @@ function branchLocked(branch) {
   return active.size >= BRANCH_LOCK_LIMIT && !active.has(branch);
 }
 
+// Härtung für geladene Spielstände: Ein bearbeiteter oder beschädigter Stand
+// kann Runen mehrfach eintragen — skillBonus würde dann je Kopie addieren
+// und die Punktekorrektur an der Array-Länge wäre ebenso verfälscht. Auf-
+// räumen in Skill-Reihenfolge: unbekannte IDs und Duplikate raus, Start
+// genau einmal (vorn ergänzt, falls er fehlt), und die Pfad-Bindung kappt
+// alles über zwei Farben hinweg — wie beim Skillen zur Laufzeit auch.
+export function sanitizeSkills(ids) {
+  const clean = [];
+  const seen = new Set();
+  for (const id of Array.isArray(ids) ? ids : []) {
+    if (!SKILL_NODES_BY_ID[id] || seen.has(id)) continue;
+    seen.add(id);
+    clean.push(id);
+  }
+  if (!seen.has('start')) clean.unshift('start');
+  const active = new Set();
+  const bounded = [];
+  for (const id of clean) {
+    const branch = SKILL_NODES_BY_ID[id].branch;
+    if (BRANCH_KEYS.includes(branch) && !active.has(branch)) {
+      if (active.size >= BRANCH_LOCK_LIMIT) continue;
+      active.add(branch);
+    }
+    bounded.push(id);
+  }
+  return bounded;
+}
+
 function isSkillable(id) {
   const node = SKILL_NODES_BY_ID[id];
   if (!node || branchLocked(node.branch)) return false;
