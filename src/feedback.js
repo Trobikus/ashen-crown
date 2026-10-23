@@ -1,5 +1,6 @@
 // Kurze Einblendungen: Toasts (rechts unten, für Beute und Hinweise) und
 // der Levelup-Schriftzug über der Heldenfigur.
+import { t } from './i18n.js';
 
 export function toast(text, color = '#8a7f6d') {
   const wrap = document.getElementById('toasts');
@@ -24,7 +25,7 @@ export function levelUpFloat(level) {
   if (!game || game.hidden || !figure) return;
   const span = document.createElement('span');
   span.className = 'level-float';
-  span.textContent = `Stufe ${level}`;
+  span.textContent = t('Stufe {n}', { n: level });
   figure.appendChild(span);
   setTimeout(() => span.remove(), 1300);
 }

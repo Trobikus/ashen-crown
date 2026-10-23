@@ -6,6 +6,7 @@
 import { state } from './state.js';
 import { MAIN_ZONE_COUNT, RARITIES, ZONE_ENEMIES, ZONES, DEPTH_ENEMY_NAMES, CONTINENTS, continentKeyOf, zoneDef, formatNum, formatDuration } from './data.js';
 import { ACHIEVEMENTS, ruhmAvailable, ruhmEarned, RUHM_SHOP } from './achievements.js';
+import { t, lname } from './i18n.js';
 import { el } from './dom.js';
 import { sfx } from './audio.js';
 import { toast } from './feedback.js';
@@ -21,14 +22,14 @@ function renderStats() {
   el.statsPlaytime.textContent = formatDuration(state.playtimeMs);
   el.statsKills.textContent = formatNum(state.kills);
   el.statsDeaths.textContent = formatNum(state.deaths);
-  el.statsCleared.textContent = `${Math.min(state.cleared, MAIN_ZONE_COUNT)} von ${MAIN_ZONE_COUNT}`;
-  el.statsDepth.textContent = state.cleared > 0 ? zoneDef(state.cleared - 1).name : '—';
+  el.statsCleared.textContent = t('{a} von {b}', { a: Math.min(state.cleared, MAIN_ZONE_COUNT), b: MAIN_ZONE_COUNT });
+  el.statsDepth.textContent = state.cleared > 0 ? lname(zoneDef(state.cleared - 1).name) : '—';
   el.statsAsh.textContent = formatNum(state.ash);
   el.statsDrops.replaceChildren();
   for (const rarity of RARITIES) {
     const row = document.createElement('div');
     const label = document.createElement('dt');
-    label.textContent = rarity.label;
+    label.textContent = t(rarity.label);
     label.style.color = rarity.color;
     const value = document.createElement('dd');
     value.textContent = formatNum(state.drops[rarity.key] ?? 0);
@@ -43,7 +44,7 @@ function renderRuhmShop() {
   if (!el.sceneAchievements || el.sceneAchievements.hidden || el.ruhmPage.hidden) return;
   el.ruhmShop.replaceChildren();
   const head = document.createElement('h3');
-  head.textContent = 'Ruhm-Laden';
+  head.textContent = t('Ruhm-Laden');
   el.ruhmShop.appendChild(head);
   const available = ruhmAvailable(state);
   for (const [kind, def] of Object.entries(RUHM_SHOP)) {
@@ -54,18 +55,20 @@ function renderRuhmShop() {
     row.className = 'chronicle-entry';
     const who = document.createElement('div');
     who.className = 'chronicle-who';
-    who.textContent = `${def.name}${maxed ? ' — vollständig' : ` · Stufe ${level + 1}/${def.levels.length}`}`;
+    who.textContent = maxed
+      ? t('{name} — vollständig', { name: t(def.name) })
+      : t('{name} · Stufe {a}/{b}', { name: t(def.name), a: level + 1, b: def.levels.length });
     const text = document.createElement('div');
     text.className = 'chronicle-text';
-    text.textContent = def.desc + (level > 0 ? ` (Aktuell: Stufe ${level})` : '');
+    text.textContent = t(def.desc) + (level > 0 ? t(' (Aktuell: Stufe {n})', { n: level }) : '');
     const buy = document.createElement('button');
     buy.className = 'btn-small';
     buy.dataset.buy = kind;
     if (maxed) {
-      buy.textContent = 'Ausgeschöpft';
+      buy.textContent = t('Ausgeschöpft');
       buy.disabled = true;
     } else {
-      buy.textContent = `Kaufen · ${cost} Ruhm`;
+      buy.textContent = t('Kaufen · {n} Ruhm', { n: cost });
       buy.disabled = available < cost;
     }
     row.append(who, text, buy);
@@ -81,7 +84,7 @@ function buyRuhmUpgrade(kind) {
   if (ruhmAvailable(state) < cost) return;
   state.ruhmAusgegeben += cost;
   state.shopPurchases[kind] = level + 1;
-  toast(`${def.name} erworben — Stufe ${level + 1}.`, '#c1663a');
+  toast(t('{name} erworben — Stufe {n}.', { name: t(def.name), n: level + 1 }), '#c1663a');
   sfx.unlock();
   save();
   renderRuhmShop();
@@ -95,7 +98,7 @@ function renderBestiary() {
   const killsOf = (name) => state.bestiary[name] ?? 0;
   const types = [['normal', 'Normal'], ['elite', 'Elite'], ['boss', 'Boss']];
   let known = 0;
-  el.bestiarySummary.textContent = 'Erlege Kreaturen, um ihre Einträge zu entschleiern.';
+  el.bestiarySummary.textContent = t('Erlege Kreaturen, um ihre Einträge zu entschleiern.');
   el.bestiaryList.replaceChildren();
   const entry = (name, kind, zoneName, continentKey) => {
     const kills = killsOf(name);
@@ -111,36 +114,39 @@ function renderBestiary() {
     body.className = 'chronicle-entry-body';
     const who = document.createElement('div');
     who.className = 'chronicle-who';
-    who.textContent = (kills > 0 ? '' : '??? ') + name + (kind === 'boss' ? ' — Boss' : kind === 'elite' ? ' — Elite' : '');
+    who.textContent = (kills > 0 ? '' : '??? ') + lname(name) + (kind === 'boss' ? ` — ${t('Boss')}` : kind === 'elite' ? ` — ${t('Elite')}` : '');
     if (kind === 'boss') who.style.color = '#c1663a';
     const text = document.createElement('div');
     text.className = 'chronicle-text';
-    text.textContent = kills > 0 ? `${zoneName} · ${kills} erlegt` : `${zoneName} · Noch nie erlegt.`;
+    text.textContent = kills > 0 ? t('{zone} · {n} erlegt', { zone: zoneName, n: formatNum(kills) }) : t('{zone} · Noch nie erlegt.', { zone: zoneName });
     body.append(who, text);
     row.append(icon, body);
     el.bestiaryList.appendChild(row);
   };
   for (const [ci, continent] of CONTINENTS.entries()) {
     const head = document.createElement('h3');
-    head.textContent = continent.name;
+    head.textContent = lname(continent.name);
     el.bestiaryList.appendChild(head);
     const key = continentKeyOf(ci * 10);
     for (let z = ci * 10; z < ci * 10 + 10; z += 1) {
       for (const [kind] of types) {
-        entry(ZONE_ENEMIES[z][kind].name, kind, ZONES[z].name, key);
+        entry(ZONE_ENEMIES[z][kind].name, kind, lname(ZONES[z].name), key);
       }
     }
   }
   const head = document.createElement('h3');
-  head.textContent = 'Die Tiefen';
+  head.textContent = lname('Die Tiefen');
   el.bestiaryList.appendChild(head);
   for (const [kind, label] of types) {
     const labelMap = { normal: 'Normal', elite: 'Elite', boss: 'Boss' };
     for (const name of DEPTH_ENEMY_NAMES[kind]) {
-      entry(name, kind, `Aschentiefe · ${labelMap[kind]}`, 'tiefen');
+      entry(name, kind, `${t('Aschentiefe')} · ${t(labelMap[kind])}`, 'tiefen');
     }
   }
-  el.bestiarySummary.textContent = `${known} von ${ZONE_ENEMIES.length * 3 + DEPTH_ENEMY_NAMES.normal.length + DEPTH_ENEMY_NAMES.elite.length + DEPTH_ENEMY_NAMES.boss.length} Kreaturen erlegt.`;
+  el.bestiarySummary.textContent = t('{known} von {total} Kreaturen erlegt.', {
+    known,
+    total: ZONE_ENEMIES.length * 3 + DEPTH_ENEMY_NAMES.normal.length + DEPTH_ENEMY_NAMES.elite.length + DEPTH_ENEMY_NAMES.boss.length,
+  });
 }
 
 // Errungenschaften: Gesperrte Einträge zeigen ihren Fortschritt, errungene
@@ -152,9 +158,9 @@ function renderAchievements() {
   const earned = new Set(state.achievements);
   const pendingIds = state.achievementsPending ?? [];
   const pendingSet = new Set(pendingIds);
-  el.achievementsSummary.textContent = `${earned.size} von ${ACHIEVEMENTS.length} errungen`
-    + (pendingIds.length ? ` · ${pendingIds.length} bereit zum Abholen` : '')
-    + ` · Ruhm: ${formatNum(ruhmAvailable(state))} verfügbar (${ruhmEarned(state)} verdient)`;
+  el.achievementsSummary.textContent = t('{earned} von {total} errungen', { earned: earned.size, total: ACHIEVEMENTS.length })
+    + (pendingIds.length ? t(' · {n} bereit zum Abholen', { n: pendingIds.length }) : '')
+    + t(' · Ruhm: {a} verfügbar ({b} verdient)', { a: formatNum(ruhmAvailable(state)), b: formatNum(ruhmEarned(state)) });
   if (el.achievementsPage.hidden) return;
   el.achievementsList.replaceChildren();
   for (const achievement of ACHIEVEMENTS) {
@@ -165,23 +171,23 @@ function renderAchievements() {
       + (done ? '' : ready ? ' chronicle-entry-ready' : ' entry-locked');
     const who = document.createElement('div');
     who.className = 'chronicle-who';
-    who.textContent = (done || ready ? '◆ ' : '◇ ') + achievement.name;
+    who.textContent = (done || ready ? '◆ ' : '◇ ') + t(achievement.name);
     who.style.color = done || ready ? '#c1663a' : '';
     const text = document.createElement('div');
     text.className = 'chronicle-text';
-    let line = achievement.desc;
+    let line = t(achievement.desc);
     if (achievement.progress) {
       const [cur, target] = achievement.progress(state);
       line += achievement.format === 'zeit'
         ? ` (${formatDuration(cur)} / ${formatDuration(target)})`
         : ` (${formatNum(cur)} / ${formatNum(target)})`;
     }
-    text.textContent = done ? `${line} — errungen.` : ready ? `${line} — bereit.` : line;
+    text.textContent = done ? t('{line} — errungen.', { line }) : ready ? t('{line} — bereit.', { line }) : line;
     if (ready) {
       const claim = document.createElement('button');
       claim.className = 'btn-small';
       claim.dataset.claim = achievement.id;
-      claim.textContent = `Abholen · +${formatNum(achievement.ruhm)} Ruhm`;
+      claim.textContent = t('Abholen · +{n} Ruhm', { n: formatNum(achievement.ruhm) });
       row.append(who, text, claim);
     } else {
       row.append(who, text);

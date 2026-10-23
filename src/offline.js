@@ -4,6 +4,7 @@
 // deine Anwesenheit) oder beim Tod. Rückgabe: 'time' | 'boss' | 'died'.
 import { state, settings, offlineCapMs, ashGainFactor, deathReviveShare } from './state.js';
 import { ATTACK_INTERVAL_MS, ENEMY_RESPAWN_S, OFFLINE_MIN_GAP_MS, ELITE_EVERY_KILLS, HERO_MISS_CHANCE, ENEMY_MISS_CHANCE, ARMOR_RESISTANCE, BOSS_AFTER_KILLS, enemyXpMultiplier, zoneDef, formatNum, formatDuration } from './data.js';
+import { t, lname } from './i18n.js';
 import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier, heroLifeleech } from './stats.js';
 import { rollDrop } from './items.js';
 import { save } from './saveio.js';
@@ -29,7 +30,7 @@ function simulateKills(seconds, heroHpService) {
       if (state.cleared <= 0) return 'boss';
       state.zone = state.cleared - 1;
       state.zoneKills = 0;
-      offlineDiversion = zoneDef(state.zone).name;
+      offlineDiversion = lname(zoneDef(state.zone).name);
     }
     const isElite = state.zoneKills > 0 && state.zoneKills % ELITE_EVERY_KILLS === 0;
     const def = scaledEnemy(isElite ? 'elite' : 'normal');
@@ -85,18 +86,24 @@ function applyOfflineProgress() {
   const levels = state.level - levelBefore;
   const kills = state.kills - killsBefore;
   const found = totalDropCount() - dropsBefore;
-  const levelsPart = levels > 0 ? `, +${levels} ${levels === 1 ? 'Stufe' : 'Stufen'}` : '';
-  const dropsPart = found > 0 ? `, ${found} ${found === 1 ? 'Beutestück gefunden' : 'Beutestücke gefunden'}` : '';
-  let summary = `Während du fort warst (${formatDuration(capped)}): ${kills} Kämpfe, +${formatNum(ash)} Asche${levelsPart}${dropsPart}`;
+  const levelsPart = levels > 0 ? t(', +{n} {word}', { n: levels, word: levels === 1 ? t('Stufe') : t('Stufen') }) : '';
+  const dropsPart = found > 0 ? t(', {n} {word}', { n: found, word: found === 1 ? t('Beutestück gefunden') : t('Beutestücke gefunden') }) : '';
+  let summary = t('Während du fort warst ({dur}): {kills} Kämpfe, +{ash} Asche{levels}{drops}', {
+    dur: formatDuration(capped),
+    kills,
+    ash: formatNum(ash),
+    levels: levelsPart,
+    drops: dropsPart,
+  });
   if (result === 'died') {
     state.deaths += 1;
     const toll = use('takeDeathToll')();
     heroHpService.set(Math.round(heroMaxHp() * deathReviveShare()));
-    summary += ` — gefallen. Die Asche nahm ${formatNum(toll)} Asche.`;
+    summary += t(' — gefallen. Die Asche nahm {n} Asche.', { n: formatNum(toll) });
   } else if (result === 'boss') {
-    summary += '. Ein Boss versperrt den Weg.';
+    summary += t('. Ein Boss versperrt den Weg.');
   } else if (offlineDiversion) {
-    summary += `. Ein Boss versperrte den Weg — ausgewichen auf ${offlineDiversion} und weitergefarmt.`;
+    summary += t('. Ein Boss versperrte den Weg — ausgewichen auf {name} und weitergefarmt.', { name: offlineDiversion });
   } else {
     summary += '.';
   }

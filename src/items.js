@@ -4,9 +4,11 @@ import helmIcon from './assets/icons/helm.svg';
 import hoseIcon from './assets/icons/hose.svg';
 import schuheIcon from './assets/icons/schuhe.svg';
 import handIcon from './assets/icons/hand.svg';
-import { GEAR_SLOTS, RARITIES, DROP_CHANCES, LIFELEECH_PCT_BY_RARITY, zoneDef, gearSlotOf, rarityOf, rollRarity, pickBase, rollItemValues, itemStats, itemStatRanges, itemIlvl, itemScore, rollMastery, rollRangesVisible, setRollRanges, SKILL_EFFECT_LABELS, formatNum, pairedSlotsOf } from './data.js';
+import { GEAR_SLOTS, RARITIES, DROP_CHANCES, LIFELEECH_PCT_BY_RARITY, zoneDef, gearSlotOf, rarityOf, rollRarity, pickBase, rollItemValues, itemStats, itemStatRanges, itemIlvl, itemScore, rollMastery, rollRangesVisible, setRollRanges, SKILL_EFFECT_LABELS, formatNum, pairedSlotsOf, itemNameOf } from './data.js';
 
 import { state, settings, inventoryCap } from './state.js';
+
+import { t } from './i18n.js';
 
 import { LEGACY_TITLES, legacyLevel } from './prestige.js';
 
@@ -27,6 +29,13 @@ const SLOT_ICONS = {
 };
 
 const iconOf = (slotKey) => SLOT_ICONS[slotKey].replace(/'/g, '%27');
+
+// Sprachwechsel: Getragenes und Inventar zeigen übersetzte Namen und Werte in
+// ihrem Markup — der Dirty-Marker zwingt das nächste renderGearIfDirty() zum
+// Neuaufbau.
+function markGearDirty() {
+  gearDirty = true;
+}
 
 
 
@@ -136,11 +145,11 @@ export function renderGearIfDirty() {
 
     ? selectedForSale.size
 
-      ? `${selectedForSale.size} verkaufen · ${formatNum(saleAsh)} Asche`
+      ? t('{n} verkaufen · {n2} Asche', { n: selectedForSale.size, n2: formatNum(saleAsh) })
 
-      : 'Abbrechen'
+      : t('Abbrechen')
 
-    : 'Verkaufen';
+    : t('Verkaufen');
 
   gearDirty = false;
 
@@ -197,11 +206,11 @@ const autoSellThreshold = () => {
     if (autoSold) {
       if (Date.now() - lastAutoSellNotice > 30000) {
         lastAutoSellNotice = Date.now();
-        toast(`Auto-Verkauf: ${item.name} — +${formatNum(ash)} Asche.`);
+        toast(t('Auto-Verkauf: {name} — +{n} Asche.', { name: itemNameOf(item), n: formatNum(ash) }));
       }
     } else if (Date.now() - lastFullNotice > 30000) {
       lastFullNotice = Date.now();
-      toast(`Inventar voll — Beute sofort verkauft: +${formatNum(ash)} Asche.`);
+      toast(t('Inventar voll — Beute sofort verkauft: +{n} Asche.', { n: formatNum(ash) }));
     }
     return;
   }
@@ -210,13 +219,13 @@ const autoSellThreshold = () => {
   spawnLootPulse(rarityOf(item.rarity).color);
   if (item.rarity === 'legendär') {
     sfx.legendary();
-    toast(`Legendär: ${item.name}`, rarityOf('legendär').color);
+    toast(t('Legendär: {name}', { name: itemNameOf(item) }), rarityOf('legendär').color);
   } else if (item.rarity === 'episch') {
     sfx.epic();
-    toast(`Episch: ${item.name}`, rarityOf('episch').color);
+    toast(t('Episch: {name}', { name: itemNameOf(item) }), rarityOf('episch').color);
   } else if (item.rarity === 'selten') {
     sfx.rare();
-    toast(`Selten: ${item.name}`, rarityOf('selten').color);
+    toast(t('Selten: {name}', { name: itemNameOf(item) }), rarityOf('selten').color);
   }
 }
 
@@ -273,7 +282,7 @@ function unequipItem(slotKey) {
   const item = state.equipment[slotKey];
   if (!item) return;
   if (state.inventory.length >= inventoryCap()) {
-    toast('Inventar voll — erst Platz schaffen.');
+    toast(t('Inventar voll — erst Platz schaffen.'));
     return;
   }
   state.equipment[slotKey] = null;
@@ -375,7 +384,7 @@ function comparisonHtml(item) {
     const diff = (now[key] ?? 0) - (worn[key] ?? 0);
     if (diff === 0) continue;
     const cls = diff > 0 ? 'delta-up' : 'delta-down';
-    rows.push(`<div class="${cls}">${diff > 0 ? '+' : '−'}${formatNum(Math.abs(diff))} ${label}</div>`);
+    rows.push(`<div class="${cls}">${diff > 0 ? '+' : '−'}${formatNum(Math.abs(diff))} ${t(label)}</div>`);
   }
   // Meisterschaft: nur andeuten, wenn sie sich unterscheidet — Werte sind
   // im Tooltip des Stücks selbst zu lesen.
@@ -383,18 +392,18 @@ function comparisonHtml(item) {
   const mWorn = equipped.mastery ? SKILL_EFFECT_LABELS[equipped.mastery.stat](equipped.mastery.value) : null;
   let mastery = '';
   if (mNow !== mWorn) {
-    if (mNow && mWorn) mastery = `<div class="delta-up">Meisterschaft: ${mWorn} → ${mNow}</div>`;
-    else if (mNow) mastery = `<div class="delta-up">Neue Meisterschaft: ${mNow}</div>`;
-    else mastery = `<div class="delta-down">Meisterschaft entfällt: ${mWorn}</div>`;
+    if (mNow && mWorn) mastery = `<div class="delta-up">${t('Meisterschaft: {a} → {b}', { a: mWorn, b: mNow })}</div>`;
+    else if (mNow) mastery = `<div class="delta-up">${t('Neue Meisterschaft: {m}', { m: mNow })}</div>`;
+    else mastery = `<div class="delta-down">${t('Meisterschaft entfällt: {m}', { m: mWorn })}</div>`;
   }
   const body = rows.length || mastery
     ? rows.join('') + mastery
-    : '<div class="delta-equal">Gleiche Werte wie getragen.</div>';
-  return `<div class="tt-compare"><div class="tt-compare-head">Getragen: ${equipped.name}${equipped.enhance ? ` +${equipped.enhance}` : ''}</div>${body}</div>`;
+    : `<div class="delta-equal">${t('Gleiche Werte wie getragen.')}</div>`;
+  return `<div class="tt-compare"><div class="tt-compare-head">${t('Getragen: {name}', { name: itemNameOf(equipped) })}${equipped.enhance ? ` +${equipped.enhance}` : ''}</div>${body}</div>`;
 }
 
 function tooltipHtml(item, action, showValue = false) {
-  if (!item) return '<span class="tt-empty">Leer</span>';
+  if (!item) return `<span class="tt-empty">${t('Leer')}</span>`;
   const rarity = rarityOf(item.rarity);
   const stats = itemStats(item);
   const ranges = rollRangesVisible ? itemStatRanges(item) : null;
@@ -403,29 +412,29 @@ function tooltipHtml(item, action, showValue = false) {
     return range ? ` <span class="tt-range">[${range[0]} – ${range[1]}]</span>` : '';
   };
   const rows = [
-    stats.damage ? `<div class="tt-stat">+${formatNum(stats.damage)} Schaden${rangeTag('damage')}</div>` : null,
-    stats.damagePct ? `<div class="tt-stat">+${stats.damagePct} % Schaden${rangeTag('damagePct')}</div>` : null,
-    stats.hp ? `<div class="tt-stat">+${formatNum(stats.hp)} Lebenskraft${rangeTag('hp')}</div>` : null,
-    stats.hpPct ? `<div class="tt-stat">+${stats.hpPct} % Lebenskraft${rangeTag('hpPct')}</div>` : null,
-    stats.armor ? `<div class="tt-stat">+${formatNum(stats.armor)} Rüstung${rangeTag('armor')}</div>` : null,
-    stats.armorPct ? `<div class="tt-stat">+${stats.armorPct} % Rüstung${rangeTag('armorPct')}</div>` : null,
-    stats.critChance ? `<div class="tt-stat">+${stats.critChance} % Kritchance${rangeTag('critChance')}</div>` : null,
-    stats.critDmg ? `<div class="tt-stat">+${stats.critDmg} % Kritschaden${rangeTag('critDmg')}</div>` : null,
-    stats.lifeleech ? `<div class="tt-leech">+${stats.lifeleech} % Lifeleech${rangeTag('lifeleech')}</div>` : null,
-    stats.lifeleechFlat ? `<div class="tt-leech">+${formatNum(stats.lifeleechFlat)} Lifeleech pro Treffer${rangeTag('lifeleechFlat')}</div>` : null,
-    item.enhance ? `<div class="tt-enhance">Verstärkt +${item.enhance}</div>` : null,
-    item.mastery ? `<div class="tt-mastery">Meisterschaft: ${SKILL_EFFECT_LABELS[item.mastery.stat](item.mastery.value)}</div>` : null,
-    item.mastery2 ? `<div class="tt-mastery">Tiefen-Meisterschaft: ${SKILL_EFFECT_LABELS[item.mastery2.stat](item.mastery2.value)}</div>` : null,
+    stats.damage ? `<div class="tt-stat">${t('+{n} Schaden', { n: formatNum(stats.damage) })}${rangeTag('damage')}</div>` : null,
+    stats.damagePct ? `<div class="tt-stat">${t('+{n} % Schaden', { n: stats.damagePct })}${rangeTag('damagePct')}</div>` : null,
+    stats.hp ? `<div class="tt-stat">${t('+{n} Lebenskraft', { n: formatNum(stats.hp) })}${rangeTag('hp')}</div>` : null,
+    stats.hpPct ? `<div class="tt-stat">${t('+{n} % Lebenskraft', { n: stats.hpPct })}${rangeTag('hpPct')}</div>` : null,
+    stats.armor ? `<div class="tt-stat">${t('+{n} Rüstung', { n: formatNum(stats.armor) })}${rangeTag('armor')}</div>` : null,
+    stats.armorPct ? `<div class="tt-stat">${t('+{n} % Rüstung', { n: stats.armorPct })}${rangeTag('armorPct')}</div>` : null,
+    stats.critChance ? `<div class="tt-stat">${t('+{n} % Kritchance', { n: stats.critChance })}${rangeTag('critChance')}</div>` : null,
+    stats.critDmg ? `<div class="tt-stat">${t('+{n} % Kritschaden', { n: stats.critDmg })}${rangeTag('critDmg')}</div>` : null,
+    stats.lifeleech ? `<div class="tt-leech">${t('+{n} % Lifeleech', { n: stats.lifeleech })}${rangeTag('lifeleech')}</div>` : null,
+    stats.lifeleechFlat ? `<div class="tt-leech">${t('+{n} Lifeleech pro Treffer', { n: formatNum(stats.lifeleechFlat) })}${rangeTag('lifeleechFlat')}</div>` : null,
+    item.enhance ? `<div class="tt-enhance">${t('Verstärkt +{n}', { n: item.enhance })}</div>` : null,
+    item.mastery ? `<div class="tt-mastery">${t('Meisterschaft: {m}', { m: SKILL_EFFECT_LABELS[item.mastery.stat](item.mastery.value) })}</div>` : null,
+    item.mastery2 ? `<div class="tt-mastery">${t('Tiefen-Meisterschaft: {m}', { m: SKILL_EFFECT_LABELS[item.mastery2.stat](item.mastery2.value) })}</div>` : null,
   ]
     .filter(Boolean)
     .join('');
   return `
-    <div class="tt-name" style="color:${rarity.color}">${item.name}</div>
-    <div class="tt-rarity" style="color:${rarity.color}">${rarity.label} · Ilvl ${formatNum(itemIlvl(item))}</div>
+    <div class="tt-name" style="color:${rarity.color}">${itemNameOf(item)}</div>
+    <div class="tt-rarity" style="color:${rarity.color}">${t(rarity.label)} · Ilvl ${formatNum(itemIlvl(item))}</div>
     ${rows}
-    ${showValue ? `<div class="tt-stat">Wert: ${formatNum(itemSellValue(item))} Asche</div>` : ''}
+    ${showValue ? `<div class="tt-stat">${t('Wert: {n} Asche', { n: formatNum(itemSellValue(item)) })}</div>` : ''}
     ${comparisonHtml(item)}
-    <div class="tt-hint">Klicken zum ${action}</div>`;
+    <div class="tt-hint">${t('Klicken zum {action}', { action: t(action) })}</div>`;
 }
 
 function renderGear() {
@@ -444,7 +453,7 @@ function renderInventory() {
   if (!state.inventory.length) {
     const note = document.createElement('div');
     note.className = 'inventory-empty';
-    note.textContent = 'Die Asche hat noch nichts für dich.';
+    note.textContent = t('Die Asche hat noch nichts für dich.');
     el.inventoryGrid.appendChild(note);
     return;
   }
@@ -456,7 +465,7 @@ function renderInventory() {
     if (selectedForSale.has(item.id)) cell.classList.add('selected');
     cell.dataset.id = item.id;
     cell.style.borderColor = rarity.color;
-    cell.setAttribute('aria-label', `${item.name} — ${rarity.label}`);
+    cell.setAttribute('aria-label', `${itemNameOf(item)} — ${t(rarity.label)}`);
     cell.innerHTML = `
       <span class="slot-icon inv-icon" style="--icon: url('${iconOf(item.slot)}'); color:${rarity.color}"></span>
       <div class="tooltip">${tooltipHtml(item, sellMode ? 'Auswählen' : 'Anlegen', true)}</div>`;
@@ -531,4 +540,4 @@ function grantItem(item) {
   gearDirty = true;
 }
 
-export { rollDrop, equipItem, unequipItem, sortInventory, equipBest, sellSelected, toggleSellMode, exitSellMode, buildDepthRelic, grantItem, itemSellValue };
+export { rollDrop, equipItem, unequipItem, sortInventory, equipBest, sellSelected, toggleSellMode, exitSellMode, buildDepthRelic, grantItem, itemSellValue, itemNameOf, markGearDirty };

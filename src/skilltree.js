@@ -2,6 +2,8 @@ import { SKILL_NODES, SKILL_EDGES, SKILL_NODES_BY_ID, SKILL_NODE_RADIUS, SKILL_E
 
 import { state } from './state.js';
 
+import { t, lname } from './i18n.js';
+
 import { el } from './dom.js';
 
 
@@ -89,7 +91,7 @@ function buildSkillTree() {
     const group = document.createElementNS(ns, 'g');
     group.classList.add('skill-node', `branch-${node.branch}`, `type-${node.type}`);
     group.dataset.id = node.id;
-    group.setAttribute('aria-label', node.name || 'Rune');
+    group.setAttribute('aria-label', lname(node.name) || t('Rune'));
     group.setAttribute('role', 'button');
     const circle = document.createElementNS(ns, 'circle');
     circle.setAttribute('cx', x);
@@ -125,8 +127,8 @@ function renderSkillTree() {
   el.respecCost.textContent = formatNum(cost);
   el.respecButton.disabled = state.ash < cost || state.skills.length <= 1;
   el.respecButton.textContent = respecArmed
-    ? 'Wirklich? Die Runen brechen.'
-    : `Runen neu schneiden · ${formatNum(cost)} Asche`;
+    ? t('Wirklich? Die Runen brechen.')
+    : t('Runen neu schneiden · {n} Asche', { n: formatNum(cost) });
 }
 
 function attemptAllocate(id, hooks) {
@@ -180,14 +182,14 @@ function skillTooltipHtml(node) {
     .map((effect) => `<div class="tt-stat">${SKILL_EFFECT_LABELS[effect.stat](effect.value)}</div>`)
     .join('');
   let status;
-  if (allocated) status = 'Geskillt.';
-  else if (branchLocked(node.branch)) status = 'Versiegelt — maximal zwei Pfade erwachen gleichzeitig.';
-  else if (!isSkillable(node.id)) status = 'Benötigt einen benachbarten geskillten Punkt.';
-  else if (state.skillPoints > 0) status = 'Klicken zum Freischalten.';
-  else status = 'Keine Skillpunkte.';
+  if (allocated) status = t('Geskillt.');
+  else if (branchLocked(node.branch)) status = t('Versiegelt — maximal zwei Pfade erwachen gleichzeitig.');
+  else if (!isSkillable(node.id)) status = t('Benötigt einen benachbarten geskillten Punkt.');
+  else if (state.skillPoints > 0) status = t('Klicken zum Freischalten.');
+  else status = t('Keine Skillpunkte.');
   return `
-    ${node.name ? `<div class="tt-name">${node.name}</div>` : ''}
-    ${node.desc ? `<div class="tt-desc">${node.desc}</div>` : ''}
+    ${node.name ? `<div class="tt-name">${lname(node.name)}</div>` : ''}
+    ${node.desc ? `<div class="tt-desc">${t(node.desc)}</div>` : ''}
     ${effects}
     <div class="tt-hint">${status}</div>`;
 }

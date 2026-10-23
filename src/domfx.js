@@ -3,6 +3,7 @@
 // Partikel der Arena. Reines Anzeige-Handwerk — kein Spielzustand.
 import { state, settings } from './state.js';
 import { el } from './dom.js';
+import { t } from './i18n.js';
 import { continentKeyOf, CONTINENTS, formatNum } from './data.js';
 
 function flash(figure) {
@@ -96,7 +97,7 @@ function spawnMissFloat(fighter) {
   if (!settings.damageNumbers || effekteVoll(fighter)) return;
   const span = document.createElement('span');
   span.className = 'dmg-float miss';
-  span.textContent = 'Verfehlt';
+  span.textContent = t('Verfehlt');
   span.style.left = `${30 + Math.random() * 40}%`;
   effektAnhängen(fighter, span, 900);
 }

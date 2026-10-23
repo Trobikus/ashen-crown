@@ -4,6 +4,7 @@
 // ein böser Spielstand darf nie den Render-Loop crashen.
 import { state, SAVE_KEY, SAVE_VERSION } from './state.js';
 import { GEAR_SLOTS, RARITIES, SKILL_NODES_BY_ID, SKILL_TREE_UNLOCK_LEVEL, MAX_ZONE, sanitizeItem, asCount } from './data.js';
+import { t } from './i18n.js';
 import { MAX_SKILL_POINTS } from './skilltree.js';
 import { LEGACY_TITLES } from './prestige.js';
 import { el } from './dom.js';
@@ -30,7 +31,7 @@ let lastStorageWarning = 0;
 function warnStorageBroken() {
   if (Date.now() - lastStorageWarning < 30000) return;
   lastStorageWarning = Date.now();
-  toast('Spielstand konnte nicht gespeichert werden — der Speicher blockiert Schreibzugriffe.', '#c1663a');
+  toast(t('Spielstand konnte nicht gespeichert werden — der Speicher blockiert Schreibzugriffe.'), '#c1663a');
 }
 
 function save() {
@@ -259,7 +260,7 @@ function loadSave() {
       continue; // unerwartet Böses → nächste Backup-Generation probieren
     }
     Object.assign(state, data);
-    if (attempt > 0) saveNotice = `Hauptspielstand war beschädigt — Backup ${attempt} geladen.`;
+    if (attempt > 0) saveNotice = t('Hauptspielstand war beschädigt — Backup {n} geladen.', { n: attempt });
     return true;
   }
   return false;
@@ -338,18 +339,18 @@ async function importSave() {
   if (!importArmed) {
     importArmed = true;
     button.classList.add('armed');
-    button.textContent = 'Wirklich? Überschreibt den Spielstand.';
+    button.textContent = t('Wirklich? Überschreibt den Spielstand.');
     importTimer = setTimeout(() => {
       importArmed = false;
       button.classList.remove('armed');
-      button.textContent = 'Importieren';
+      button.textContent = t('Importieren');
     }, 4000);
     return;
   }
   clearTimeout(importTimer);
   importArmed = false;
   button.classList.remove('armed');
-  button.textContent = 'Importieren';
+  button.textContent = t('Importieren');
   const tauri = tauriSaveApi();
   let text = null;
   if (tauri) {
@@ -365,7 +366,7 @@ async function importSave() {
   if (!text) return;
   const data = unwrapSave(text);
   if (!data) {
-    flashButton(button, 'Ungültige Datei');
+    flashButton(button, t('Ungültige Datei'));
     return;
   }
   rotateBackups(true);

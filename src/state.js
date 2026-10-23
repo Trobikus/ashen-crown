@@ -9,6 +9,7 @@ const SETTINGS_KEY = 'ashen-crown-settings';
 const SAVE_VERSION = 9;
 
 const DEFAULT_SETTINGS = {
+  lang: 'auto',
   damageNumbers: true,
   hitFlash: true,
   skillPulse: true,

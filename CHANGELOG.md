@@ -4,6 +4,28 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Nicht veröffentlicht]
+
+### Neu
+- **Zweisprachigkeit (Deutsch & Englisch)**: Das Spiel erkennt die Sprache des
+  Betriebssystems (`auto`, Standard) und lässt sich jederzeit unter Optionen →
+  Anzeige auf Deutsch oder Englisch umschalten — live, ohne Neuladen. Übersetzt
+  sind die gesamte Bedienoberfläche, alle Meldungen und Hinweise, Gegner-, Gebiets-,
+  Item-, Runen- und Errungenschaftsnamen, die Lore (Intro, Annalen, Epitaphe) sowie
+  die Zahlenformate (Dezimaltrennzeichen). Architektur: Deutsch bleibt Quellsprache
+  im Code und HTML (`data-i18n`-Attribute, deutsche Texte als Schlüssel), Englisch
+  liegt als Wörterbuch daneben (`src/locales/en-ui.js` für UI, `en-content.js` für
+  Inhaltsnamen; `src/i18n.js` mit `t()`/`lname()`). Spielstände bleiben kompatibel —
+  gespeicherte Item- und Bestiariumsnamen bleiben deutsch und werden bei der Anzeige
+  übersetzt. Die Patchnoten-Inhalte selbst bleiben (als historisches Protokoll wie
+  das CHANGELOG) deutsch, das Fensterglas ist übersetzt.
+
+### Werkzeug
+- **tools/i18n-check.mjs** (und neuer CI-Schritt): prüft, dass jeder im Code und
+  HTML verwendete Übersetzungs-Schlüssel sowie jeder dynamische Inhaltsname
+  (580 Namen/Texte aus den Daten-Modulen) in den Wörterbüchern liegt — ein
+  fehlender Schlüssel würde im Englischen still auf Deutsch fallen.
+
 ## [0.18.4] — 2026-10-23
 
 ### Behoben

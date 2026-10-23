@@ -13,13 +13,13 @@ import { state, settings, inventoryCap, deathPenalty, ashGainFactor, xpGainFacto
 
 import { loadSettings, saveSettings, applySettings } from './settings.js';
 
-import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, GEAR_SLOTS, ARMOR_RESISTANCE, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, formatNum } from './data.js';
+import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, GEAR_SLOTS, ARMOR_RESISTANCE, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, formatNum, itemNameOf } from './data.js';
 
 import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier, heroLifeleech } from './stats.js';
 
 import { buildSkillTree, renderSkillTree, bindSkillTreeEvents, applySkillView, MAX_SKILL_POINTS } from './skilltree.js';
 
-import { buildZoneList, renderZones, resetZoneView, switchZoneView } from './zones.js';
+import { buildZoneList, renderZones, resetZoneView, switchZoneView, rebuildZoneList } from './zones.js';
 
 import { sfx, setLowHp, setBossFight, setCombatIntensity } from './audio.js';
 
@@ -29,7 +29,9 @@ import { buildCraftSlots, renderCrafting, bindCraftEvents } from './crafting.js'
 
 import { INTRO_PAGES, COMBAT_INTRO_PAGES, CONTINENT_LORE, epitaphOf, continentLoreKeyOf, renderChronicle } from './lore.js';
 
-import { initItems, rollDrop, unequipItem, sortInventory, equipBest, exitSellMode, sellButtonAction, selectAllForSale, handleInventoryClick, renderGearIfDirty, buildDepthRelic, grantItem, itemSellValue } from './items.js';
+import { initItems, rollDrop, unequipItem, sortInventory, equipBest, exitSellMode, sellButtonAction, selectAllForSale, handleInventoryClick, renderGearIfDirty, buildDepthRelic, grantItem, itemSellValue, markGearDirty } from './items.js';
+
+import { t, lname, fmtDec, onLangChange } from './i18n.js';
 
 import { ACHIEVEMENTS, claimAchievement, evaluateAchievements } from './achievements.js';
 
@@ -90,6 +92,9 @@ const escapeHtml = (text) => text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<
 // Der Stat-Respec erscheint erst, wenn genug verteilt wurde — darunter gäbe
 // es nichts zurückzuholen und die Zeile wäre nur Deko.
 const STAT_RESPEC_MIN_SPENT = 5;
+
+// Gegner-Typ als Wort (Boss/Elite/Normal — in beiden Sprachen gleich).
+const typeLabelOf = (type) => t(type === 'boss' ? 'Boss' : type === 'elite' ? 'Elite' : 'Normal');
 
 // Die Bus-Anmeldung: Kern-Dienste für die Fach-Module. Funktionsdeklarationen
 // sind gehoistet — die Closures dürfen sich auf weiter unten stehende
@@ -166,17 +171,16 @@ function spawnEnemy() {
     sfx.rare();
   }
   refreshArenaParticles();
-  el.enemyName.textContent = def.name;
-  const typeLabel = type === 'boss' ? 'Boss' : type === 'elite' ? 'Elite' : 'Normal';
-  el.enemyLevel.textContent = `Lv ${def.level} · ${typeLabel}`;
+  el.enemyName.textContent = lname(def.name);
+  el.enemyLevel.textContent = `Lv ${def.level} · ${typeLabelOf(type)}`;
   // Beim Boss zeigt die Level-Zeile den Typ; die Profil-Zeile bleibt der Wut
   // vorbehalten, damit nicht zweimal „Boss" steht.
-  el.enemyProfile.textContent = def.boss ? '' : def.profileLabel;
+  el.enemyProfile.textContent = def.boss ? '' : t(def.profileLabel);
   el.enemyProfile.classList.remove('enraged-label');
   enemyAttackProgress = 0;
   if (def.boss) {
     sfx.boss();
-    hintOnce('hint-boss', 'Ein Boss hütet den Ausgang — zäh und unerbittlich. Kehr notfalls zum Schrein zurück, heile, und stelle ihn vorbereitet.', { pauseCombat: true });
+    hintOnce('hint-boss', t('Ein Boss hütet den Ausgang — zäh und unerbittlich. Kehr notfalls zum Schrein zurück, heile, und stelle ihn vorbereitet.'), { pauseCombat: true });
   }
   render();
 }
@@ -193,7 +197,7 @@ function gainXp(amount) {
     if (state.level >= SKILL_TREE_UNLOCK_LEVEL && (state.level - SKILL_TREE_UNLOCK_LEVEL) % 2 === 0) {
       if (state.skills.length - 1 + state.skillPoints < MAX_SKILL_POINTS) {
         state.skillPoints += 1;
-        if (state.level === SKILL_TREE_UNLOCK_LEVEL) toast('Stufe 20 — die Runen erwachen: Die Fertigkeiten-Kachel ist im Schrein erschienen.', '#c1663a');
+        if (state.level === SKILL_TREE_UNLOCK_LEVEL) toast(t('Stufe 20 — die Runen erwachen: Die Fertigkeiten-Kachel ist im Schrein erschienen.'), '#c1663a');
       }
     }
     heroHp = heroMaxHp();
@@ -313,7 +317,7 @@ function killEnemy() {
   // einer Art wird gefeiert — sonst füllt sich das Bestiarium unsichtbar.
   const firstOfKind = !state.bestiary[def.name];
   state.bestiary[def.name] = (state.bestiary[def.name] ?? 0) + 1;
-  if (firstOfKind) toast(`Neue Kreatur erlegt: ${def.name}`, '#c1663a');
+  if (firstOfKind) toast(t('Neue Kreatur erlegt: {name}', { name: lname(def.name) }), '#c1663a');
   // Safedrop: Der erste Elite-Kill eines Gebiets garantiert ein Stück.
   const eliteSafedrop = enemy.type === 'elite' && !state.safedropZones[state.zone];
   if (eliteSafedrop) state.safedropZones[state.zone] = 1;
@@ -335,7 +339,7 @@ function killEnemy() {
     }
     const next = zoneDef(state.zone + 1);
     const continentGate = next.continent !== zoneDef(state.zone).continent
-      ? `Neuer Kontinent: ${next.continent}. `
+      ? t('Neuer Kontinent: {name}. ', { name: lname(next.continent) })
       : '';
     const epitaph = epitaphOf(state.zone);
     // Tiefenrelikt: Der erste Boss einer Aschentiefe hinterlässt garantiert
@@ -345,17 +349,17 @@ function killEnemy() {
       const relic = buildDepthRelic(zoneDef(state.zone).ilvl);
       if (state.inventory.length < inventoryCap()) {
         grantItem(relic);
-        toast(`Tiefenrelikt erbeutet: ${relic.name}`, '#c1663a');
-        relicLine = `<br><br>Tiefenrelikt erbeutet: <strong>${relic.name}</strong> — Legendär mit zwei Meisterschaften und gesicherter Lifeleech.`;
+        toast(t('Tiefenrelikt erbeutet: {name}', { name: itemNameOf(relic) }), '#c1663a');
+        relicLine = t('<br><br>Tiefenrelikt erbeutet: <strong>{name}</strong> — Legendär mit zwei Meisterschaften und gesicherter Lifeleech.', { name: itemNameOf(relic) });
       } else {
         const ash = itemSellValue(relic);
         state.ash += ash;
-        toast(`Tiefenrelikt — Inventar voll: +${formatNum(ash)} Asche`, '#c1663a');
-        relicLine = `<br><br>Tiefenrelikt erbeutet — das Inventar war voll: +${formatNum(ash)} Asche.`;
+        toast(t('Tiefenrelikt — Inventar voll: +{n} Asche', { n: formatNum(ash) }), '#c1663a');
+        relicLine = t('<br><br>Tiefenrelikt erbeutet — das Inventar war voll: +{n} Asche.', { n: formatNum(ash) });
       }
     }
     showDismissibleOverlay(
-      `${epitaph}<br><br>${def.name} bezwungen — ${continentGate}${next.name} ist jetzt offen.${relicLine}`,
+      `${epitaph}<br><br>${t('{boss} bezwungen — {gate}{zone} ist jetzt offen.{relic}', { boss: lname(def.name), gate: continentGate, zone: lname(next.name), relic: relicLine })}`,
       5000,
       true,
     );
@@ -461,14 +465,17 @@ function die() {
   // Dieses Gebiet spawnt bis zur Befreiung nur noch den Boss — Farmen
   // läuft über die Gebiete-Reise (erneutes Betreten setzt das Zählwerk).
   const wallHint = enemy?.type === 'boss' && state.cleared <= state.zone
-    ? '<br><br>Wand erreicht: In diesem Gebiet wartet jetzt nur noch der Boss. Reise über die Gebiete zurück — erneutes Betreten setzt das Zählwerk zurück und stellt sichere Gegner zum Farmen. Komm stärker zurück.'
+    ? t('<br><br>Wand erreicht: In diesem Gebiet wartet jetzt nur noch der Boss. Reise über die Gebiete zurück — erneutes Betreten setzt das Zählwerk zurück und stellt sichere Gegner zum Farmen. Komm stärker zurück.')
     : '';
   // Todesrückblick: Wer nicht versteht, warum er starb, kann nicht dazulernen —
   // das Overlay nennt den Bezwinger und die eingesteckte Summe.
   const recap = enemy
-    ? `<br><br>Gefallen gegen <strong>${enemy.name}</strong> (Lv ${enemy.level}): ${enemy.hitsOnHero} Treffer, ${formatNum(enemy.damageToHero)} Schaden insgesamt.`
+    ? t('<br><br>Gefallen gegen <strong>{name}</strong> (Lv {level}): {hits} Treffer, {damage} Schaden insgesamt.', { name: lname(enemy.name), level: enemy.level, hits: enemy.hitsOnHero, damage: formatNum(enemy.damageToHero) })
     : '';
-  showOverlay(`<strong>${escapeHtml(state.heroName)}</strong> ist gefallen — die Asche nimmt dich zurück${toll > 0 ? `, und ihren Zoll: ${formatNum(toll)} Asche` : ''}. Am Schrein erwachst du mit einem Viertel deiner Lebenskraft.` + recap + wallHint, true);
+  showOverlay(t('<strong>{name}</strong> ist gefallen — die Asche nimmt dich zurück{toll}. Am Schrein erwachst du mit einem Viertel deiner Lebenskraft.', {
+    name: escapeHtml(lname(state.heroName)),
+    toll: toll > 0 ? t(', und ihren Zoll: {n} Asche', { n: formatNum(toll) }) : '',
+  }) + recap + wallHint, true);
   render();
   save();
   scheduleScene(() => {
@@ -487,7 +494,7 @@ function updateEnrage() {
   if (enraged === enemy.enraged) return;
   enemy.enraged = enraged;
   el.enemyFigure.classList.toggle('enraged', enraged);
-  el.enemyProfile.textContent = enraged ? 'Wütend' : '';
+  el.enemyProfile.textContent = enraged ? t('Wütend') : '';
   el.enemyProfile.classList.toggle('enraged-label', enraged);
   if (enraged) sfx.enrage();
 }
@@ -523,7 +530,7 @@ function hubTick() {
 
 function renderHubHero() {
   const max = heroMaxHp();
-  setText(el.heroNameText, state.heroName);
+  setText(el.heroNameText, lname(state.heroName));
   setText(el.hubHeroLevel, state.level);
   setHpBar(el.hubHeroHp, el.hubHeroHpGhost, (heroHp / max) * 100);
   setText(el.hubHeroHpText, `${formatNum(Math.ceil(Math.max(0, heroHp)))} / ${formatNum(max)}`);
@@ -535,7 +542,7 @@ function renderHubHero() {
     const regen = HUB_REGEN_PER_SECOND * hubRegenFactor();
     const seconds = Math.ceil((max - heroHp) / (max * regen));
     setHidden(el.hubHeroRegen, false);
-    setText(el.hubHeroRegen, seconds === 1 ? 'voll in 1 s' : `voll in ${seconds} s`);
+    setText(el.hubHeroRegen, t('voll in {n} s', { n: seconds }));
   } else {
     setHidden(el.hubHeroRegen, true);
   }
@@ -556,20 +563,20 @@ function renderEnemyTooltip() {
   }
   const armor = heroArmor();
   const reduction = Math.min(0.5, armor / (armor + ARMOR_RESISTANCE * enemy.damage));
-  const speed = (1000 / enemyAttackInterval()).toFixed(1).replace('.', ',');
+  const speed = fmtDec(1000 / enemyAttackInterval());
   const temperament = enemy.enraged
-    ? 'Wütend — greift schneller an'
-    : enemy.type === 'boss' ? 'Standard' : (enemy.profileLabel || 'Standard');
+    ? t('Wütend — greift schneller an')
+    : enemy.type === 'boss' ? t('Standard') : t(enemy.profileLabel || 'Standard');
   const signatur = `${enemy.name}|${enemy.level}|${enemy.type}|${enemy.enraged ? 'wütend' : 'ruhig'}|${reduction.toFixed(3)}`;
   if (signatur === tooltipSignatur) return;
   tooltipSignatur = signatur;
   el.enemyTooltip.innerHTML = `
-    <div class="tt-name">${enemy.name}</div>
-    <div class="tt-rarity">${enemy.type === 'boss' ? 'Boss' : enemy.type === 'elite' ? 'Elite' : 'Normal'} · Lv ${enemy.level}</div>
-    <div class="tt-stat">Schlag: bis zu ${formatNum(enemy.damage)} Schaden</div>
-    <div class="tt-stat">Angriffstempo: ${speed} / s</div>
-    <div class="tt-stat">Temperament: ${temperament}</div>
-    <div class="tt-stat">Deine Rüstung mindert: ${Math.round(reduction * 100)} %</div>`;
+    <div class="tt-name">${lname(enemy.name)}</div>
+    <div class="tt-rarity">${typeLabelOf(enemy.type)} · Lv ${enemy.level}</div>
+    <div class="tt-stat">${t('Schlag: bis zu {n} Schaden', { n: formatNum(enemy.damage) })}</div>
+    <div class="tt-stat">${t('Angriffstempo: {s} / s', { s: speed })}</div>
+    <div class="tt-stat">${t('Temperament: {t}', { t: temperament })}</div>
+    <div class="tt-stat">${t('Deine Rüstung mindert: {p} %', { p: Math.round(reduction * 100) })}</div>`;
 }
 
 function render() {
@@ -594,8 +601,8 @@ function render() {
   setText(el.statRespecCost, formatNum(statCost));
   el.statRespecButton.disabled = statSpent <= 0 || state.ash < statCost;
   setText(el.statRespecButton, statRespecArmed
-    ? 'Wirklich? Die Werte fallen.'
-    : `Punkte neu verteilen · ${formatNum(statCost)} Asche`);
+    ? t('Wirklich? Die Werte fallen.')
+    : t('Punkte neu verteilen · {n} Asche', { n: formatNum(statCost) }));
   setText(el.skillPointsHud, state.skillPoints);
   el.skillPointsHud.classList.toggle('has-points', state.skillPoints > 0);
   const skillsLocked = state.level < SKILL_TREE_UNLOCK_LEVEL;
@@ -604,29 +611,29 @@ function render() {
   // mit der ersten Beute — hint-drop hält sie dauerhaft sichtbar, sobald
   // einmal etwas gefunden wurde.
   setHidden(el.tileSkills, skillsLocked);
-  setText(el.tileSkillsSub, state.skillPoints > 0 ? `${state.skillPoints} Punkte frei` : 'Wähle weise');
+  setText(el.tileSkillsSub, state.skillPoints > 0 ? t('{n} Punkte frei', { n: state.skillPoints }) : t('Wähle weise'));
   setHidden(el.tileCrafting, !(state.inventory.length > 0 || state.hints['hint-drop']));
   setHidden(el.tileThrone, !state.crownWon);
   setText(el.tileThroneSub, state.crownWon && state.cleared >= MAIN_ZONE_COUNT
-    ? `Erneut erwachen · ${formatNum(kronenascheReward(state.cleared))} Kronenasche`
-    : state.crownWon ? 'Die Krone dieses Laufs fehlt' : 'Nach der Krone');
+    ? t('Erneut erwachen · {n} Kronenasche', { n: formatNum(kronenascheReward(state.cleared)) })
+    : state.crownWon ? t('Die Krone dieses Laufs fehlt') : t('Nach der Krone'));
   const zone = zoneDef(state.zone);
-  setText(el.hudZone, `${zone.continent} · ${zone.name}`);
+  setText(el.hudZone, `${lname(zone.continent)} · ${lname(zone.name)}`);
   const showProgress = state.cleared <= state.zone;
   setHidden(el.hudProgress, !showProgress);
   if (showProgress) {
     const bossPhase = state.zoneKills >= BOSS_AFTER_KILLS;
-    setText(el.hudProgressText, bossPhase ? 'Boss!' : `${Math.min(state.zoneKills, BOSS_AFTER_KILLS)} / ${BOSS_AFTER_KILLS}`);
+    setText(el.hudProgressText, bossPhase ? t('Boss!') : `${Math.min(state.zoneKills, BOSS_AFTER_KILLS)} / ${BOSS_AFTER_KILLS}`);
     el.hudProgressText.classList.toggle('gold', bossPhase);
     setWidth(el.hudProgressFill, Math.min(100, (state.zoneKills / BOSS_AFTER_KILLS) * 100));
   }
   setText(el.tileMapSub, state.cleared < MAIN_ZONE_COUNT
-    ? `${Math.min(state.cleared + 1, MAIN_ZONE_COUNT)} von ${MAIN_ZONE_COUNT} Gebieten offen`
-    : `Tiefe ${state.cleared + 1 - MAIN_ZONE_COUNT} erreicht`);
+    ? t('{a} von {b} Gebieten offen', { a: Math.min(state.cleared + 1, MAIN_ZONE_COUNT), b: MAIN_ZONE_COUNT })
+    : t('Tiefe {n} erreicht', { n: state.cleared + 1 - MAIN_ZONE_COUNT }));
   renderZones();
   renderCrafting();
   setHidden(el.doorButton, !(state.zone + 1 <= state.cleared));
-  setText(el.doorButton, state.zone + 1 === MAIN_ZONE_COUNT ? 'In die Tiefen hinabsteigen' : 'Durch die Tür gehen');
+  setText(el.doorButton, state.zone + 1 === MAIN_ZONE_COUNT ? t('In die Tiefen hinabsteigen') : t('Durch die Tür gehen'));
   checkOnboardingHints();
   renderSkillTree();
   setText(el.modalHeroLevel, state.level);
@@ -641,11 +648,11 @@ function render() {
   setText(el.modalHeroLeech, leech.pct && leech.flat
     ? `${leech.pct} % · +${formatNum(leech.flat)}`
     : leech.pct ? `${leech.pct} %`
-    : leech.flat ? `+${formatNum(leech.flat)} / Treffer`
+    : leech.flat ? t('+{n} / Treffer', { n: formatNum(leech.flat) })
     : '0 %');
-  setText(el.modalHeroSpeed, `${heroAttackSpeed().toFixed(1).replace('.', ',')} / s`);
+  setText(el.modalHeroSpeed, `${fmtDec(heroAttackSpeed())} / s`);
   setText(el.modalHeroKills, formatNum(state.kills));
-  setText(el.heroLevel, `Lv ${state.level} · Held`);
+  setText(el.heroLevel, t('Lv {n} · Held', { n: state.level }));
   el.game.classList.toggle('low-hp', state.inField && !paused && heroHp / heroMaxHp() <= 0.25);
   setHpBar(el.heroHp, el.heroHpGhost, (heroHp / heroMaxHp()) * 100);
   setText(el.heroHpText, `${formatNum(Math.max(0, heroHp))} / ${formatNum(heroMaxHp())}`);
@@ -654,8 +661,8 @@ function render() {
   setWidth(el.heroXpFill, Math.min(100, (state.xp / xpNeed) * 100));
   setText(el.heroXpText, `${formatNum(state.xp)} / ${formatNum(xpNeed)}`);
   if (enemy) {
-    setText(el.enemyName, enemy.name);
-    setText(el.enemyLevel, `Lv ${enemy.level} · ${enemy.type === 'boss' ? 'Boss' : enemy.type === 'elite' ? 'Elite' : 'Normal'}`);
+    setText(el.enemyName, lname(enemy.name));
+    setText(el.enemyLevel, `Lv ${enemy.level} · ${typeLabelOf(enemy.type)}`);
     setHpBar(el.enemyHp, el.enemyHpGhost, (enemy.hp / enemy.maxHp) * 100);
     setText(el.enemyHpText, `${formatNum(Math.max(0, enemy.hp))} / ${formatNum(enemy.maxHp)}`);
     renderEnemyTooltip();
@@ -681,7 +688,7 @@ function checkAchievements() {
   if (!fresh.length) return;
   for (const id of fresh) {
     const achievement = ACHIEVEMENTS.find((a) => a.id === id);
-    toast(`Errungenschaft erfüllt: ${achievement.name} — bereit zum Abholen.`, '#c1663a');
+    toast(t('Errungenschaft erfüllt: {name} — bereit zum Abholen.', { name: t(achievement.name) }), '#c1663a');
   }
   sfx.unlock();
   save();
@@ -708,16 +715,16 @@ function hintOnce(key, text, { duration = 4400, pauseCombat = false } = {}) {
 function checkOnboardingHints() {
   if (state.hints['hint-levelup'] && state.hints['hint-drop'] && state.hints['hint-epic'] && state.hints['hint-leech']) return;
   if (state.level >= 2) {
-    hintOnce('hint-levelup', 'Jede Stufe bringt 2 Statpunkte (Held-Screen). Ab Stufe 20 erwacht der Fertigkeitenbaum — danach kommt alle zwei Stufen ein Runenpunkt dazu.');
+    hintOnce('hint-levelup', t('Jede Stufe bringt 2 Statpunkte (Held-Screen). Ab Stufe 20 erwacht der Fertigkeitenbaum — danach kommt alle zwei Stufen ein Runenpunkt dazu.'));
   }
   if (state.inventory.length > 0) {
-    hintOnce('hint-drop', 'Beute landet im Inventar deines Helden — „Bestes anlegen" rüstet das Stärkste in einem Klick an.');
+    hintOnce('hint-drop', t('Beute landet im Inventar deines Helden — „Bestes anlegen" rüstet das Stärkste in einem Klick an.'));
   }
   if (ownsEpic()) {
-    hintOnce('hint-epic', 'Legendäre Stücke (orange) tragen eine goldene Meisterschaft — einen Prozentbonus, den es sonst nirgends gibt. Halte ihn in Ehren.');
+    hintOnce('hint-epic', t('Legendäre Stücke (orange) tragen eine goldene Meisterschaft — einen Prozentbonus, den es sonst nirgends gibt. Halte ihn in Ehren.'));
   }
   if (ownsLifeleech()) {
-    hintOnce('hint-leech', 'Lifeleech sitzt selten auf epischen und legendären Waffen — als Prozente deines Schadens oder als feste Zahl pro Treffer. Ein netter Bonus, der dich im Feld länger auf die Beine hält.');
+    hintOnce('hint-leech', t('Lifeleech sitzt selten auf epischen und legendären Waffen — als Prozente deines Schadens oder als feste Zahl pro Treffer. Ein netter Bonus, der dich im Feld länger auf die Beine hält.'));
   }
 }
 
@@ -743,10 +750,10 @@ function playCombatIntro() {
     if (tickTimer) paused = false;
   };
   const page = (i) => () => (i + 1 < COMBAT_INTRO_PAGES.length
-    ? showDismissibleOverlay(COMBAT_INTRO_PAGES[i + 1], 4400, false, page(i + 1))
+    ? showDismissibleOverlay(t(COMBAT_INTRO_PAGES[i + 1]), 4400, false, page(i + 1))
     : resume());
   paused = true;
-  showDismissibleOverlay(COMBAT_INTRO_PAGES[0], 4400, false, page(0));
+  showDismissibleOverlay(t(COMBAT_INTRO_PAGES[0]), 4400, false, page(0));
   save();
 }
 
@@ -789,7 +796,7 @@ function announceContinent(index) {
   const lore = CONTINENT_LORE[key];
   if (!lore) return;
   state.seenContinents.push(key);
-  showDismissibleOverlay(lore, 6800, true);
+  showDismissibleOverlay(t(lore), 6800, true);
 }
 
 function enterZone(index) {
@@ -807,7 +814,7 @@ function playIntro() {
   const next = () => {
     if (!pages.length) return askHeroName();
     const page = pages.shift();
-    showDismissibleOverlay(`<em>${page}</em>`, pages.length ? 4200 : 3400, true, next);
+    showDismissibleOverlay(`<em>${t(page)}</em>`, pages.length ? 4200 : 3400, true, next);
   };
   next();
 }
@@ -818,17 +825,17 @@ function playIntro() {
 // bleibt schlicht „Held".
 function askHeroName() {
   showOverlay(`
-    <h3>Wie nennst du dich?</h3>
-    <p>Die Asche wird dich so erinnern — Lauf für Lauf, bis du selbst vergisst.</p>
-    <input id="hero-name-input" class="hero-name-input" maxlength="24" autocomplete="off" spellcheck="false" placeholder="Held">
-    <button id="hero-name-confirm" class="btn-small hero-name-confirm">Erwache</button>
+    <h3>${t('Wie nennst du dich?')}</h3>
+    <p>${t('Die Asche wird dich so erinnern — Lauf für Lauf, bis du selbst vergisst.')}</p>
+    <input id="hero-name-input" class="hero-name-input" maxlength="24" autocomplete="off" spellcheck="false" placeholder="${t('Held')}">
+    <button id="hero-name-confirm" class="btn-small hero-name-confirm">${t('Erwache')}</button>
   `, true);
   const input = document.getElementById('hero-name-input');
   const confirm = () => {
     state.heroName = (input.value || '').replace(/\s+/g, ' ').trim().slice(0, 24) || 'Held';
     save();
     hideOverlay();
-    showDismissibleOverlay(`So sei gegrüßt, <strong>${escapeHtml(state.heroName)}</strong> — die Asche erinnert sich an dich.`, 4400, true);
+    showDismissibleOverlay(t('So sei gegrüßt, <strong>{name}</strong> — die Asche erinnert sich an dich.', { name: escapeHtml(lname(state.heroName)) }), 4400, true);
     render();
   };
   const onKey = (e) => {
@@ -856,7 +863,7 @@ function showVictory() {
   el.victoryKills.textContent = formatNum(state.kills);
   el.victoryLevel.textContent = formatNum(state.level);
   el.victoryAsh.textContent = formatNum(state.ash);
-  setText(el.victoryHeroName, `${state.heroName} trägt die Krone.`);
+  setText(el.victoryHeroName, t('{name} trägt die Krone.', { name: escapeHtml(lname(state.heroName)) }));
   showScreen(el.sceneVictory);
   // Kronen-Settle: Der Titel senkt sich einmal glühend auf den Sieg-Screen.
   pulseClass(el.sceneVictory.querySelector('h2'), 'crown-settle', 1600);
@@ -910,7 +917,7 @@ function bindSceneTabs(nav, panel, onPage) {
 function bindEvents() {
   el.shrineButton.addEventListener('click', () => {
     // Der Schrein verwirft den laufenden Kampf — Bosse heilen sich voll.
-    if (enemy?.type === 'boss') toast('Der Boss heilt sich beim Verlassen vollständig.');
+    if (enemy?.type === 'boss') toast(t('Der Boss heilt sich beim Verlassen vollständig.'));
     returnToHub();
   });
   el.btnDescend.addEventListener('click', descend);
@@ -959,11 +966,11 @@ function bindEvents() {
     if (!resetArmed) {
       resetArmed = true;
       el.resetButton.classList.add('armed');
-      el.resetButton.textContent = 'Wirklich? Erneut klicken';
+      el.resetButton.textContent = t('Wirklich? Erneut klicken');
       resetTimer = setTimeout(() => {
         resetArmed = false;
         el.resetButton.classList.remove('armed');
-        el.resetButton.textContent = 'Zurücksetzen';
+        el.resetButton.textContent = t('Zurücksetzen');
       }, 4000);
       return;
     }
@@ -976,8 +983,8 @@ function bindEvents() {
   });
   el.exportButton.addEventListener('click', () => {
     exportSave()
-      .then((ok) => flashButton(el.exportButton, ok ? 'Exportiert ✓' : 'Abgebrochen'))
-      .catch(() => flashButton(el.exportButton, 'Fehlgeschlagen'));
+      .then((ok) => flashButton(el.exportButton, ok ? t('Exportiert ✓') : t('Abgebrochen')))
+      .catch(() => flashButton(el.exportButton, t('Fehlgeschlagen')));
   });
   el.importButton.addEventListener('click', importSave);
   el.feedbackButton.addEventListener('click', () => {
@@ -988,7 +995,7 @@ function bindEvents() {
     } catch {
       // Desktop-Webview blockt evtl. Pop-ups — die Zwischenablage reicht.
     }
-    flashButton(el.feedbackButton, 'Adresse kopiert ✓');
+    flashButton(el.feedbackButton, t('Adresse kopiert ✓'));
   });
   document.getElementById('btn-options-back').addEventListener('click', () => {
     showScreen(optionsReturnScreen ?? el.hub);
@@ -1001,20 +1008,20 @@ function bindEvents() {
     // solange sie verborgen ist; ohne diesen Aufruf bliebe sie bis zum
     // nächsten 3-Sekunden-Tick im alten Zustand.
     renderSkillTree();
-    hintOnce('hint-skills', 'Benachbarte Runen schalten andere frei — klicke verfügbare an. Maximal zwei Pfade erwachen gleichzeitig; „Runen neu schneiden“ bricht alles zurück und erstattet die Punkte.');
+    hintOnce('hint-skills', t('Benachbarte Runen schalten andere frei — klicke verfügbare an. Maximal zwei Pfade erwachen gleichzeitig; „Runen neu schneiden“ bricht alles zurück und erstattet die Punkte.'));
   });
   el.tileMap.addEventListener('click', () => {
     resetZoneView();
     showScreen(el.sceneMap);
     renderZones();
-    hintOnce('hint-map', 'Errungene Ebenen bleiben offen — reise zurück, um sicher Asche und Beute zu farmen.');
+    hintOnce('hint-map', t('Errungene Ebenen bleiben offen — reise zurück, um sicher Asche und Beute zu farmen.'));
   });
   el.tileCrafting.addEventListener('click', () => {
     showScreen(el.sceneCrafting);
     // Sofort rendern — sonst bleiben die Slots leer, bis der 3-Sekunden-Tick
     // die Szene das nächste Mal streift.
     renderCrafting();
-    hintOnce('hint-crafting', 'Die Werkstatt stärkt getragene Ausrüstung: Verstärken hebt die Werte, Umschmieden die Seltenheit. Beides kostet Asche.');
+    hintOnce('hint-crafting', t('Die Werkstatt stärkt getragene Ausrüstung: Verstärken hebt die Werte, Umschmieden die Seltenheit. Beides kostet Asche.'));
   });
   el.tileChronik.addEventListener('click', () => {
     renderChronicle();
@@ -1033,7 +1040,7 @@ function bindEvents() {
     if (!claim) return;
     const reward = claimAchievement(state, claim.dataset.claim);
     if (!reward) return;
-    toast(`Ruhm eingeheimst: +${formatNum(reward)} Ruhm.`, '#c1663a');
+    toast(t('Ruhm eingeheimst: +{n} Ruhm.', { n: formatNum(reward) }), '#c1663a');
     sfx.unlock();
     save();
     renderAchievements();
@@ -1131,6 +1138,14 @@ function ensureInit() {
   }
   setInterval(idleTick, STATS_SYNC_INTERVAL_MS);
   setInterval(hubTick, TICK_MS);
+  // Sprachwechsel: statische Texte übernimmt applyStaticI18n (settings.js),
+  // hier laufen die dynamischen Ansichten neu — Gebiete-Zeilen sind beim Bau
+  // übersetzt, Gear-Tooltips tragen übersetzte Werte im Markup.
+  onLangChange(() => {
+    rebuildZoneList();
+    markGearDirty();
+    render();
+  });
 }
 
 export function startGame() {

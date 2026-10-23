@@ -3,9 +3,11 @@
 // Freischaltung leitet sich aus dem Fortschritt ab (state.cleared), damit
 // keine eigene Speicherlogik nötig ist.
 
-import { CONTINENTS, MAIN_ZONE_COUNT, MAX_ZONE, ZONES, ZONE_ENEMIES } from './data.js';
+import { CONTINENTS, MAIN_ZONE_COUNT, MAX_ZONE, ZONES, ZONE_ENEMIES, formatNum } from './data.js';
 
 import { state } from './state.js';
+
+import { t, lname } from './i18n.js';
 
 import { el } from './dom.js';
 
@@ -144,47 +146,47 @@ export function renderChronicle() {
   const list = el.chronicleList;
   list.replaceChildren();
 
-  const awakening = chronicleSection('Die Erweckung');
+  const awakening = chronicleSection(t('Die Erweckung'));
   for (const page of INTRO_PAGES) {
-    awakening.appendChild(chronicleEntry('Der Erweckte', page));
+    awakening.appendChild(chronicleEntry(lname('Der Erweckte'), t(page)));
   }
   list.appendChild(awakening);
 
   CONTINENTS.forEach((continent, ci) => {
     const start = ci * 10;
-    const section = chronicleSection(continent.name);
+    const section = chronicleSection(lname(continent.name));
     if (state.cleared >= start) {
-      section.appendChild(chronicleEntry('Annale', CONTINENT_LORE[continent.key]));
+      section.appendChild(chronicleEntry(t('Annale'), t(CONTINENT_LORE[continent.key])));
       for (let z = start; z < start + 10; z += 1) {
         if (state.cleared <= z) continue;
         const boss = ZONE_ENEMIES[z].boss;
-        section.appendChild(chronicleEntry(`${ZONES[z].name} · ${boss.name}`, BOSS_EPITAPHS[z]));
+        section.appendChild(chronicleEntry(`${lname(ZONES[z].name)} · ${lname(boss.name)}`, t(BOSS_EPITAPHS[z])));
       }
     } else {
       const sealed = document.createElement('div');
       sealed.className = 'chronicle-sealed';
-      sealed.textContent = 'Noch versiegelt. Die Asche gibt erst her, was errungen wurde.';
+      sealed.textContent = t('Noch versiegelt. Die Asche gibt erst her, was errungen wurde.');
       section.appendChild(sealed);
     }
     list.appendChild(section);
   });
 
-  const depths = chronicleSection('Die Tiefen');
+  const depths = chronicleSection(lname('Die Tiefen'));
   if (state.cleared >= MAIN_ZONE_COUNT) {
-    depths.appendChild(chronicleEntry('Annale', CONTINENT_LORE[TIEFEN_KEY]));
+    depths.appendChild(chronicleEntry(t('Annale'), t(CONTINENT_LORE[TIEFEN_KEY])));
     const clearedDepths = state.cleared - MAIN_ZONE_COUNT + 1;
-    depths.appendChild(chronicleEntry('Zählwerk', `Bislang errungene Tiefe: ${clearedDepths}. Unten zählt niemand mit — nur die Asche.`));
+    depths.appendChild(chronicleEntry(t('Zählwerk'), t('Bislang errungene Tiefe: {n}. Unten zählt niemand mit — nur die Asche.', { n: formatNum(clearedDepths) })));
   } else {
     const sealed = document.createElement('div');
     sealed.className = 'chronicle-sealed';
-    sealed.textContent = 'Unter dem Thron verschlossen. Hebe die Krone, und die Tiefen öffnen sich.';
+    sealed.textContent = t('Unter dem Thron verschlossen. Hebe die Krone, und die Tiefen öffnen sich.');
     depths.appendChild(sealed);
   }
   list.appendChild(depths);
 
   if (state.crownWon) {
-    const throne = chronicleSection('Der Thron');
-    throne.appendChild(chronicleEntry('Die Aschenkrone', 'Du hast sie gehoben — die Krone, aus der die Asche kam. Sie ist leicht. Sie ist kalt. Sie ist dein. Vier Reiche sind auf dem Weg hierher verbrannt. Hüte dein Haupt.'));
+    const throne = chronicleSection(t('Der Thron'));
+    throne.appendChild(chronicleEntry(t('Die Aschenkrone'), t('Du hast sie gehoben — die Krone, aus der die Asche kam. Sie ist leicht. Sie ist kalt. Sie ist dein. Vier Reiche sind auf dem Weg hierher verbrannt. Hüte dein Haupt.')));
     list.appendChild(throne);
   }
 }

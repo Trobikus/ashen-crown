@@ -23,9 +23,11 @@
 
 ---
 
-> **Note:** Ashen Crown is a closed alpha and currently **German-language only** —
-> the UI, lore and this game's world names are German. The sections below describe
-> the game in English and keep proper nouns as they appear in-game.
+> **Note:** Ashen Crown is a closed alpha, playable in **German and English** —
+> the game follows your operating system's language and can be switched any time
+> under options → display (English localization includes all UI text, enemy names,
+> areas, items and lore). The sections below describe the game in English and keep
+> German proper nouns where they carry flavor.
 
 ## 🖼️ Screenshots
 
@@ -80,8 +82,9 @@ the ash remembers — every realm that tried to escape it before you.
   none at all 20 levels down. And some bosses are genuine **walls**: then it's
   back to farm ash and loot, forge better gear — and show them again. Your hero
   grows along the way: he stays permanently just a few levels below his enemies.
-- **(German UI note)** Fight text, enemy names and areas are German — *Grabwächter*
-  is a grave warden, *Die Aschenkrone* is the Ashen Crown.
+- **(Languages)** Play in German or English — the game starts in your system's
+  language (option: auto/de/en under options → display), and everything translates
+  live: UI, enemy names, areas, items, skills, lore and number formats.
 
 ### 🌳 Skill tree
 
@@ -226,8 +229,6 @@ deeper the level, the better the loot and the workshop.
   epitaphs per chapter, riding the existing depth curve.
 - **QoL & hardening** — workshop forging on hold-to-repeat, keyboard shortcuts
   beyond the tooltips, and more automated tests for saves and formulas.
-- **English localization** — the UI is German today; an English language option
-  is on the radar.
 
 ## 🧪 Closed alpha
 
@@ -241,7 +242,7 @@ Ashen Crown is in a closed alpha stage:
   options → play it can be exported and re-imported as JSON (e.g. before
   experiments). In the web build it lives in the page's browser storage.
 - **Feedback:** Best as an [issue](issues) — the button for it also lives in the
-  game under options → play (German UI). Three questions interest us most:
+  game under options → play. Three questions interest us most:
   1. Where do you get stuck or lost?
   2. Where does it bore you?
   3. When did you die without understanding why?
@@ -270,6 +271,8 @@ node tools/smoke.mjs                  # smoke checks for core modules
 ├── src/
 │   ├── main.js           # entry point: menu and game start
 │   ├── data.js           # game data: continents, enemies, loot, skill tree
+│   ├── i18n.js           # language runtime: t(), names, OS detection, live switching
+│   ├── locales/          # English dictionaries (en-ui.js, en-content.js)
 │   ├── game.js           # app core: combat, hero progress, render path, scene flow
 │   ├── bus.js            # manager bus: game.js provides services, modules consume them
 │   ├── domfx.js          # DOM write helpers & combat effects (particles, numbers, arcs)
@@ -304,7 +307,7 @@ node tools/smoke.mjs                  # smoke checks for core modules
 └── src-tauri/            # Tauri-2 desktop shell (Rust)
 ```
 
-The codebase itself (comments, identifiers, UI text) is German.
+The codebase itself (comments, identifiers) is German; in-game text exists in German and English.
 
 </details>
 

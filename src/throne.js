@@ -5,6 +5,7 @@
 // Lebenskraft) zieht er sich vom Bus.
 import { state } from './state.js';
 import { MAIN_ZONE_COUNT, GEAR_SLOTS, formatNum } from './data.js';
+import { t, lname } from './i18n.js';
 import { heroMaxHp } from './stats.js';
 import { LEGACY_TITLES, kronenascheAvailable, kronenascheEarnedOf, kronenascheReward, legacyLevel } from './prestige.js';
 import { el } from './dom.js';
@@ -18,10 +19,14 @@ import { use } from './bus.js';
 
 function renderThrone() {
   if (el.sceneThrone.hidden) return;
-  el.throneSummary.textContent = `${formatNum(kronenascheAvailable(state))} Kronenasche verfügbar · ${formatNum(kronenascheEarnedOf(state))} erworben · ${formatNum(state.prestigeRuns)} ${state.prestigeRuns === 1 ? 'Lauf' : 'Läufe'} hinter dir`;
+  el.throneSummary.textContent = t('{a} Kronenasche verfügbar · {b} erworben · {c} hinter dir', {
+    a: formatNum(kronenascheAvailable(state)),
+    b: formatNum(kronenascheEarnedOf(state)),
+    c: `${formatNum(state.prestigeRuns)} ${state.prestigeRuns === 1 ? t('Lauf') : t('Läufe')}`,
+  });
   el.legacyShop.replaceChildren();
   const head = document.createElement('h3');
-  head.textContent = 'Das Vermächtnis';
+  head.textContent = t('Das Vermächtnis');
   el.legacyShop.appendChild(head);
   const available = kronenascheAvailable(state);
   for (const [title, def] of Object.entries(LEGACY_TITLES)) {
@@ -34,18 +39,20 @@ function renderThrone() {
     row.className = 'chronicle-entry chronicle-entry-legacy';
     const who = document.createElement('div');
     who.className = 'chronicle-who';
-    who.textContent = `${def.name}${maxed ? ' — vollständig' : ` · Stufe ${level + 1}/${def.levels.length}`}`;
+    who.textContent = maxed
+      ? t('{name} — vollständig', { name: t(def.name) })
+      : t('{name} · Stufe {a}/{b}', { name: t(def.name), a: level + 1, b: def.levels.length });
     const text = document.createElement('div');
     text.className = 'chronicle-text';
-    text.textContent = def.desc + (level > 0 ? ` (Aktuell: Stufe ${level})` : '');
+    text.textContent = t(def.desc) + (level > 0 ? t(' (Aktuell: Stufe {n})', { n: level }) : '');
     const buy = document.createElement('button');
     buy.className = 'btn-small';
     buy.dataset.legacy = title;
     if (maxed) {
-      buy.textContent = 'Ausgeschöpft';
+      buy.textContent = t('Ausgeschöpft');
       buy.disabled = true;
     } else {
-      buy.textContent = `Kaufen · ${cost} Kronenasche`;
+      buy.textContent = t('Kaufen · {n} Kronenasche', { n: cost });
       buy.disabled = available < cost;
     }
     row.append(who, text, buy);
@@ -56,17 +63,17 @@ function renderThrone() {
   // Vorschau als Zwei-Spalten: Was verfällt, was bleibt — der größte Moment
   // des Spiels verdient eine klare Abbildung statt Fließtext.
   el.prestigePreview.innerHTML = ready
-    ? `<div class="prestige-reward">Der Lauf zahlt <strong>${reward} Kronenasche</strong>.</div>
+    ? `<div class="prestige-reward">${t('Der Lauf zahlt <strong>{n} Kronenasche</strong>.', { n: reward })}</div>
       <div class="prestige-columns">
-        <div class="prestige-col"><h4>Verfällt</h4><ul><li>Zone &amp; Gebiete</li><li>Held — Stufe, EP, Punkte</li><li>Asche</li><li>Ausrüstung &amp; Inventar</li><li>Runen &amp; Pfad-Bindung</li></ul></div>
-        <div class="prestige-col prestige-col-kept"><h4>Bleibt</h4><ul><li>Ruhm — Errungenschaften &amp; Laden</li><li>Kronenasche &amp; Vermächtnis</li><li>Bestiarium</li><li>Chronik &amp; Statistik</li></ul></div>
+        <div class="prestige-col"><h4>${t('Verfällt')}</h4><ul><li>${t('Zone & Gebiete')}</li><li>${t('Held — Stufe, EP, Punkte')}</li><li>${t('Asche')}</li><li>${t('Ausrüstung & Inventar')}</li><li>${t('Runen & Pfad-Bindung')}</li></ul></div>
+        <div class="prestige-col prestige-col-kept"><h4>${t('Bleibt')}</h4><ul><li>${t('Ruhm — Errungenschaften & Laden')}</li><li>${t('Kronenasche & Vermächtnis')}</li><li>${t('Bestiarium')}</li><li>${t('Chronik & Statistik')}</li></ul></div>
       </div>`
-    : 'Der Thron verlangt die Krone dieses Laufs — hebe sie zuerst erneut.';
+    : t('Der Thron verlangt die Krone dieses Laufs — hebe sie zuerst erneut.');
   el.prestigeButton.disabled = !ready;
   el.prestigeButton.classList.toggle('armed', prestigeArmed);
   el.prestigeButton.textContent = prestigeArmed
-    ? 'Wirklich? Erwache erneut.'
-    : ready ? `Erneut erwachen · ${reward} Kronenasche` : 'Die Krone dieses Laufs fehlt';
+    ? t('Wirklich? Erwache erneut.')
+    : ready ? t('Erneut erwachen · {n} Kronenasche', { n: reward }) : t('Die Krone dieses Laufs fehlt');
 }
 
 function buyLegacy(title) {
@@ -77,7 +84,7 @@ function buyLegacy(title) {
   if (kronenascheAvailable(state) < cost) return;
   state.kronenascheAusgegeben += cost;
   state.legacy[title] = level + 1;
-  toast(`${def.name} — Stufe ${level + 1}.`, '#c1663a');
+  toast(t('{name} — Stufe {n}.', { name: t(def.name), n: level + 1 }), '#c1663a');
   sfx.unlock();
   save();
   renderThrone();
@@ -141,7 +148,7 @@ function attemptPrestige() {
   // neue Lauf beginnt.
   pulseClass(el.hub, 'ash-rebirth', 1800);
   use('render')();
-  showDismissibleOverlay(`Du erwachst erneut — der Lauf zahlt <strong>${reward} Kronenasche</strong>. Die Asche erinnert sich an alles andere.`, 5500, true);
+  showDismissibleOverlay(t('Du erwachst erneut — der Lauf zahlt <strong>{n} Kronenasche</strong>. Die Asche erinnert sich an alles andere.', { n: reward }), 5500, true);
 }
 
 export { renderThrone, buyLegacy, attemptPrestige };

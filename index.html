@@ -14,20 +14,20 @@
       <div id="menu-embers" aria-hidden="true"></div>
       <div id="menu-crown" aria-hidden="true"></div>
       <h1>Ashen Crown</h1>
-      <p class="tagline">Die Asche erinnert sich. Der Thron wartet.</p>
+      <p class="tagline" data-i18n>Die Asche erinnert sich. Der Thron wartet.</p>
       <nav>
-        <button id="btn-start">Start</button>
-        <button id="btn-options">Optionen</button>
-        <button id="btn-quit">Beenden</button>
+        <button id="btn-start" data-i18n>Start</button>
+        <button id="btn-options" data-i18n>Optionen</button>
+        <button id="btn-quit" data-i18n>Beenden</button>
       </nav>
       <p id="notice" hidden></p>
       <div id="update-banner" hidden>
         <p id="update-text"></p>
         <div id="update-progress"><div id="update-bar"></div></div>
-        <button id="btn-update-skip" class="btn-small">Überspringen</button>
+        <button id="btn-update-skip" class="btn-small" data-i18n>Überspringen</button>
       </div>
       <p id="version-tag" hidden></p>
-      <p id="alpha-tag">Closed Alpha — alles Ungewöhnliche gern auf GitHub melden.</p>
+      <p id="alpha-tag" data-i18n>Closed Alpha — alles Ungewöhnliche gern auf GitHub melden.</p>
     </main>
     <div id="hub" hidden>
       <div id="hub-hero">
@@ -42,68 +42,68 @@
           <span id="hub-hero-regen" hidden></span>
         </div>
       </div>
-      <button id="hub-menu" class="btn-small">Hauptmenü</button>
-      <button id="hub-options" class="btn-small">Optionen</button>
+      <button id="hub-menu" class="btn-small" data-i18n>Hauptmenü</button>
+      <button id="hub-options" class="btn-small" data-i18n>Optionen</button>
       <div id="hub-hud">
-        <span>Stufe <strong id="hub-level">1</strong></span>
-        <span>Asche <strong id="hub-ash">0</strong></span>
+        <span><span data-i18n>Stufe</span> <strong id="hub-level">1</strong></span>
+        <span><span data-i18n>Asche</span> <strong id="hub-ash">0</strong></span>
       </div>
-      <h2>Der Schrein</h2>
-      <p class="tagline">Hier beginnt und endet jeder Weg in die Asche.</p>
+      <h2 data-i18n>Der Schrein</h2>
+      <p class="tagline" data-i18n>Hier beginnt und endet jeder Weg in die Asche.</p>
       <div id="hub-tiles">
         <button class="tile" id="tile-hero">
-          <span class="tile-name">Held</span>
-          <span class="tile-sub">Der Erweckte</span>
+          <span class="tile-name" data-i18n>Held</span>
+          <span class="tile-sub" data-i18n>Der Erweckte</span>
         </button>
         <button class="tile" id="tile-skills" hidden>
-          <span class="tile-name">Fertigkeiten</span>
+          <span class="tile-name" data-i18n>Fertigkeiten</span>
           <span class="tile-sub" id="tile-skills-sub">Wähle weise</span>
         </button>
         <button class="tile tile-descend" id="btn-descend">
-          <span class="tile-name">In die Krypta hinabsteigen</span>
-          <span class="tile-sub">Der Kampf ruft</span>
+          <span class="tile-name" data-i18n>In die Krypta hinabsteigen</span>
+          <span class="tile-sub" data-i18n>Der Kampf ruft</span>
         </button>
         <button class="tile" id="tile-map">
-          <span class="tile-name">Gebiete</span>
+          <span class="tile-name" data-i18n>Gebiete</span>
           <span class="tile-sub" id="tile-map-sub">1 von 50 Gebieten offen</span>
         </button>
         <button class="tile" id="tile-crafting" hidden>
-          <span class="tile-name">Crafting</span>
-          <span class="tile-sub">Die Werkstatt wartet</span>
+          <span class="tile-name" data-i18n>Crafting</span>
+          <span class="tile-sub" data-i18n>Die Werkstatt wartet</span>
         </button>
         <button class="tile" id="tile-throne" hidden>
-          <span class="tile-name">Der Thron</span>
+          <span class="tile-name" data-i18n>Der Thron</span>
           <span class="tile-sub" id="tile-throne-sub">Nach der Krone</span>
         </button>
       </div>
       <div id="hub-annals">
-        <p class="annals-label">Die Annalen</p>
+        <p class="annals-label" data-i18n>Die Annalen</p>
         <div class="annals-row">
           <button class="annal" id="tile-bestiary">
-            <span class="annal-name">Bestiarium</span>
-            <span class="annal-sub">150 Kreaturen warten</span>
+            <span class="annal-name" data-i18n>Bestiarium</span>
+            <span class="annal-sub" data-i18n>150 Kreaturen warten</span>
           </button>
           <button class="annal" id="tile-achievements">
-            <span class="annal-name">Errungenschaften</span>
-            <span class="annal-sub">Ruhm wird gezählt</span>
+            <span class="annal-name" data-i18n>Errungenschaften</span>
+            <span class="annal-sub" data-i18n>Ruhm wird gezählt</span>
           </button>
           <button class="annal" id="tile-chronik">
-            <span class="annal-name">Chronik</span>
-            <span class="annal-sub">Die Asche erinnert sich</span>
+            <span class="annal-name" data-i18n>Chronik</span>
+            <span class="annal-sub" data-i18n>Die Asche erinnert sich</span>
           </button>
         </div>
       </div>
     </div>
     <section class="scene" id="scene-hero" hidden>
       <header class="scene-header">
-        <button class="btn-small" data-back>Zurück</button>
+        <button class="btn-small" data-back data-i18n>Zurück</button>
       </header>
-      <h2>Held</h2>
+      <h2 data-i18n>Held</h2>
       <div class="character-layout">
         <div class="stats-panel">
           <dl class="stat-list">
             <div id="stat-points-row" hidden>
-              <dt>Statpunkte</dt><dd id="hero-stat-points">0</dd>
+              <dt data-i18n>Statpunkte</dt><dd id="hero-stat-points">0</dd>
               <div class="spend-amount">
                 <button class="active" data-amount="1">×1</button>
                 <button data-amount="5">×5</button>
@@ -111,72 +111,72 @@
               </div>
             </div>
             <div class="has-tooltip">
-              <dt>Stufe</dt><dd id="hero-modal-level">1</dd>
-              <div class="tooltip">Jede Stufe gewährt 2 Statpunkte zur freien Verteilung.</div>
+              <dt data-i18n>Stufe</dt><dd id="hero-modal-level">1</dd>
+              <div class="tooltip" data-i18n>Jede Stufe gewährt 2 Statpunkte zur freien Verteilung.</div>
             </div>
             <div class="has-tooltip">
-              <dt>Erfahrung</dt><dd id="hero-modal-xp">0 / 10</dd>
-              <div class="tooltip">Sammelt sich durch erlegte Kreaturen. Ist der Bedarf voll, steigst du eine Stufe auf.</div>
+              <dt data-i18n>Erfahrung</dt><dd id="hero-modal-xp">0 / 10</dd>
+              <div class="tooltip" data-i18n>Sammelt sich durch erlegte Kreaturen. Ist der Bedarf voll, steigst du eine Stufe auf.</div>
             </div>
             <div class="has-tooltip">
-              <dt>Lebenskraft</dt><dd id="hero-modal-hp">20</dd>
-              <button class="stat-plus" data-stat="hp" hidden aria-label="Lebenskraft erhöhen">+</button>
-              <div class="tooltip">Dein gesamtes Leben. Fällt es auf null, erwachst du am Schrein. Ein Punkt: +5.</div>
+              <dt data-i18n>Lebenskraft</dt><dd id="hero-modal-hp">20</dd>
+              <button class="stat-plus" data-stat="hp" hidden aria-label="Lebenskraft erhöhen" data-i18n-aria="Lebenskraft erhöhen">+</button>
+              <div class="tooltip" data-i18n>Dein gesamtes Leben. Fällt es auf null, erwachst du am Schrein. Ein Punkt: +5.</div>
             </div>
             <div class="has-tooltip">
-              <dt>Schaden</dt><dd id="hero-modal-damage">2</dd>
-              <button class="stat-plus" data-stat="damage" hidden aria-label="Schaden erhöhen">+</button>
-              <div class="tooltip">Dein Schaden pro Schlag rollt in dieser Spanne — aus Stufe, Statpunkten, Ausrüstung und Runen. Ein Punkt: +1 auf beide Enden.</div>
+              <dt data-i18n>Schaden</dt><dd id="hero-modal-damage">2</dd>
+              <button class="stat-plus" data-stat="damage" hidden aria-label="Schaden erhöhen" data-i18n-aria="Schaden erhöhen">+</button>
+              <div class="tooltip" data-i18n>Dein Schaden pro Schlag rollt in dieser Spanne — aus Stufe, Statpunkten, Ausrüstung und Runen. Ein Punkt: +1 auf beide Enden.</div>
             </div>
             <div class="has-tooltip">
-              <dt>Rüstung</dt><dd id="hero-modal-armor">0</dd>
-              <button class="stat-plus" data-stat="armor" hidden aria-label="Rüstung erhöhen">+</button>
-              <div class="tooltip">Wandelt Rüstung in Schadensminderung um — der Schutz wächst mit der Rüstung, aber schwindende Zuwächse: starke Gegner durchdringen mehr. Und egal wie viel Rüstung du stapelst: Mehr als die Hälfte des Schadens kommt immer durch. Mindestens 1 Schaden trifft sowieso. Ein Punkt: +1.</div>
+              <dt data-i18n>Rüstung</dt><dd id="hero-modal-armor">0</dd>
+              <button class="stat-plus" data-stat="armor" hidden aria-label="Rüstung erhöhen" data-i18n-aria="Rüstung erhöhen">+</button>
+              <div class="tooltip" data-i18n>Wandelt Rüstung in Schadensminderung um — der Schutz wächst mit der Rüstung, aber schwindende Zuwächse: starke Gegner durchdringen mehr. Und egal wie viel Rüstung du stapelst: Mehr als die Hälfte des Schadens kommt immer durch. Mindestens 1 Schaden trifft sowieso. Ein Punkt: +1.</div>
             </div>
             <div class="has-tooltip">
-              <dt>Kritische Chance</dt><dd id="hero-modal-crit">5 %</dd>
-              <button class="stat-plus" data-stat="crit" hidden aria-label="Kritchance erhöhen">+</button>
-              <div class="tooltip">Chance, einen Schlag für doppelten Schaden zu treffen. Ein Punkt: +1 %.</div>
+              <dt data-i18n>Kritische Chance</dt><dd id="hero-modal-crit">5 %</dd>
+              <button class="stat-plus" data-stat="crit" hidden aria-label="Kritchance erhöhen" data-i18n-aria="Kritchance erhöhen">+</button>
+              <div class="tooltip" data-i18n>Chance, einen Schlag für doppelten Schaden zu treffen. Ein Punkt: +1 %.</div>
             </div>
             <div class="has-tooltip">
-              <dt>Kritischer Schaden</dt><dd id="hero-modal-critdmg">200 %</dd>
-              <div class="tooltip">Multiplikator eines kritischen Treffers.</div>
+              <dt data-i18n>Kritischer Schaden</dt><dd id="hero-modal-critdmg">200 %</dd>
+              <div class="tooltip" data-i18n>Multiplikator eines kritischen Treffers.</div>
             </div>
             <div class="has-tooltip">
-              <dt>Lifeleech</dt><dd id="hero-modal-leech">0 %</dd>
-              <div class="tooltip">Heilt dir anteilig zum verursachten Schaden. Kommt nur als seltenes Affix auf Beute vor — auf dem Feld heilt sonst nichts.</div>
+              <dt data-i18n>Lifeleech</dt><dd id="hero-modal-leech">0 %</dd>
+              <div class="tooltip" data-i18n>Heilt dir anteilig zum verursachten Schaden. Kommt nur als seltenes Affix auf Beute vor — auf dem Feld heilt sonst nichts.</div>
             </div>
             <div class="has-tooltip">
-              <dt>Angriffstempo</dt><dd id="hero-modal-speed">1,0 / s</dd>
-              <div class="tooltip">Schläge pro Sekunde. 1,0 entspricht einem Schlag alle 1,5 Sekunden.</div>
+              <dt data-i18n>Angriffstempo</dt><dd id="hero-modal-speed">1,0 / s</dd>
+              <div class="tooltip" data-i18n>Schläge pro Sekunde. 1,0 entspricht einem Schlag alle 1,5 Sekunden.</div>
             </div>
             <div class="has-tooltip">
-              <dt>Erlegte Kreaturen</dt><dd id="hero-modal-kills">0</dd>
-              <div class="tooltip">Zählt jedes erschlagene Wesen seit deiner Erweckung.</div>
+              <dt data-i18n>Erlegte Kreaturen</dt><dd id="hero-modal-kills">0</dd>
+              <div class="tooltip" data-i18n>Zählt jedes erschlagene Wesen seit deiner Erweckung.</div>
             </div>
           </dl>
           <div class="skill-respec" id="stat-respec-row">
             <button class="btn-small" id="btn-stat-respec">Punkte neu verteilen · <span id="stat-respec-cost">0</span> Asche</button>
-            <span class="skill-respec-hint">Setzt Schaden, Lebenskraft, Rüstung und Kritchance zurück und erstattet alle Statpunkte.</span>
+            <span class="skill-respec-hint" data-i18n>Setzt Schaden, Lebenskraft, Rüstung und Kritchance zurück und erstattet alle Statpunkte.</span>
           </div>
         </div>
         <div class="gear-panel">
           <div class="gear-slots">
-            <div class="gear-slot has-tooltip" data-slot="waffe" tabindex="0" role="button" aria-label="Waffe ablegen"><span class="slot-name">Waffe</span><span class="slot-value">—</span><div class="tooltip"></div></div>
-            <div class="gear-slot has-tooltip" data-slot="brust" tabindex="0" role="button" aria-label="Brust ablegen"><span class="slot-name">Brust</span><span class="slot-value">—</span><div class="tooltip"></div></div>
-            <div class="gear-slot has-tooltip" data-slot="helm" tabindex="0" role="button" aria-label="Helm ablegen"><span class="slot-name">Helm</span><span class="slot-value">—</span><div class="tooltip"></div></div>
-            <div class="gear-slot has-tooltip" data-slot="hose" tabindex="0" role="button" aria-label="Hose ablegen"><span class="slot-name">Hose</span><span class="slot-value">—</span><div class="tooltip"></div></div>
-            <div class="gear-slot has-tooltip" data-slot="schuhe" tabindex="0" role="button" aria-label="Schuhe ablegen"><span class="slot-name">Schuhe</span><span class="slot-value">—</span><div class="tooltip"></div></div>
-            <div class="gear-slot has-tooltip" data-slot="hand-links" tabindex="0" role="button" aria-label="Handschuh Links ablegen"><span class="slot-name">Handschuh Links</span><span class="slot-value">—</span><div class="tooltip"></div></div>
-            <div class="gear-slot has-tooltip" data-slot="hand-rechts" tabindex="0" role="button" aria-label="Handschuh Rechts ablegen"><span class="slot-name">Handschuh Rechts</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="waffe" tabindex="0" role="button" aria-label="Waffe ablegen" data-i18n-aria="Waffe ablegen"><span class="slot-name" data-i18n>Waffe</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="brust" tabindex="0" role="button" aria-label="Brust ablegen" data-i18n-aria="Brust ablegen"><span class="slot-name" data-i18n>Brust</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="helm" tabindex="0" role="button" aria-label="Helm ablegen" data-i18n-aria="Helm ablegen"><span class="slot-name" data-i18n>Helm</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="hose" tabindex="0" role="button" aria-label="Hose ablegen" data-i18n-aria="Hose ablegen"><span class="slot-name" data-i18n>Hose</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="schuhe" tabindex="0" role="button" aria-label="Schuhe ablegen" data-i18n-aria="Schuhe ablegen"><span class="slot-name" data-i18n>Schuhe</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="hand-links" tabindex="0" role="button" aria-label="Handschuh Links ablegen" data-i18n-aria="Handschuh Links ablegen"><span class="slot-name" data-i18n>Handschuh Links</span><span class="slot-value">—</span><div class="tooltip"></div></div>
+            <div class="gear-slot has-tooltip" data-slot="hand-rechts" tabindex="0" role="button" aria-label="Handschuh Rechts ablegen" data-i18n-aria="Handschuh Rechts ablegen"><span class="slot-name" data-i18n>Handschuh Rechts</span><span class="slot-value">—</span><div class="tooltip"></div></div>
           </div>
           <div class="inventory-bar">
-            <span class="inventory-label">Inventar <span class="inventory-count" id="inventory-count">0 / 40</span></span>
+            <span class="inventory-label"><span data-i18n>Inventar</span> <span class="inventory-count" id="inventory-count">0 / 40</span></span>
             <div class="inventory-tools">
-              <button class="btn-small" id="btn-sell">Verkaufen</button>
-              <button class="btn-small" id="btn-sell-all" hidden>Alles auswählen</button>
-              <button class="btn-small" id="btn-sort-inventory">Sortieren</button>
-              <button class="btn-small" id="btn-equip-best">Bestes anlegen</button>
+              <button class="btn-small" id="btn-sell" data-i18n>Verkaufen</button>
+              <button class="btn-small" id="btn-sell-all" hidden data-i18n>Alles auswählen</button>
+              <button class="btn-small" id="btn-sort-inventory" data-i18n>Sortieren</button>
+              <button class="btn-small" id="btn-equip-best" data-i18n>Bestes anlegen</button>
             </div>
           </div>
           <div id="inventory-grid"></div>
@@ -185,165 +185,173 @@
     </section>
     <section class="scene" id="scene-skills" hidden>
       <header class="scene-header">
-        <button class="btn-small" data-back>Zurück</button>
+        <button class="btn-small" data-back data-i18n>Zurück</button>
       </header>
-      <h2>Fertigkeiten</h2>
-      <p class="skill-hud">Skillpunkte: <strong id="skill-points-hud">0</strong></p>
+      <h2 data-i18n>Fertigkeiten</h2>
+      <p class="skill-hud"><span data-i18n>Skillpunkte:</span> <strong id="skill-points-hud">0</strong></p>
       <div class="skill-respec">
         <button class="btn-small" id="btn-respec">Runen neu schneiden · <span id="respec-cost">0</span> Asche</button>
-        <span class="skill-respec-hint">Bricht alle Fertigkeiten und erstattet alle Punkte.</span>
+        <span class="skill-respec-hint" data-i18n>Bricht alle Fertigkeiten und erstattet alle Punkte.</span>
       </div>
       <div id="skill-tree-wrap">
         <svg id="skill-tree" viewBox="-300 -300 600 600"></svg>
         <div class="skill-tooltip" id="skill-tooltip" hidden></div>
       </div>
-      <p class="tagline">Geschnittene Runen heilen nicht.</p>
+      <p class="tagline" data-i18n>Geschnittene Runen heilen nicht.</p>
     </section>
     <section class="scene" id="scene-options" hidden>
       <header class="scene-header">
-        <button class="btn-small" id="btn-options-back">Zurück</button>
+        <button class="btn-small" id="btn-options-back" data-i18n>Zurück</button>
       </header>
-      <h2>Optionen</h2>
+      <h2 data-i18n>Optionen</h2>
       <nav id="options-tabs">
-        <button class="options-tab active" data-tab="display">Anzeige</button>
-        <button class="options-tab" data-tab="game">Spiel</button>
-        <button class="options-tab" data-tab="audio">Audio</button>
-        <button class="options-tab" data-tab="stats">Statistik</button>
+        <button class="options-tab active" data-tab="display" data-i18n>Anzeige</button>
+        <button class="options-tab" data-tab="game" data-i18n>Spiel</button>
+        <button class="options-tab" data-tab="audio" data-i18n>Audio</button>
+        <button class="options-tab" data-tab="stats" data-i18n>Statistik</button>
       </nav>
       <div id="options-panel">
         <div class="options-page" data-page="display">
+          <div class="option-row">
+            <span class="option-label"><span data-i18n>Sprache</span><span class="option-desc" data-i18n>Auto folgt der Sprache des Betriebssystems — jederzeit umschaltbar.</span></span>
+            <select class="option-select" data-choicesetting="lang">
+              <option value="auto" data-i18n>Automatisch (Betriebssystem)</option>
+              <option value="de">Deutsch</option>
+              <option value="en">English</option>
+            </select>
+          </div>
           <label class="option-row">
-            <span class="option-label">Vollbild<span class="option-desc">Gesamter Bildschirm — im Fenstermodus bleibt das Spiel Handarbeit</span></span>
+            <span class="option-label"><span data-i18n>Vollbild</span><span class="option-desc" data-i18n>Gesamter Bildschirm — im Fenstermodus bleibt das Spiel Handarbeit</span></span>
             <span class="toggle"><input type="checkbox" data-setting="displayFullscreen"><span class="toggle-slider"></span></span>
           </label>
           <label class="option-row">
-            <span class="option-label">Schadenszahlen<span class="option-desc">Fliegende Zahlen für jeden Treffer</span></span>
+            <span class="option-label"><span data-i18n>Schadenszahlen</span><span class="option-desc" data-i18n>Fliegende Zahlen für jeden Treffer</span></span>
             <span class="toggle"><input type="checkbox" data-setting="damageNumbers" checked><span class="toggle-slider"></span></span>
           </label>
           <label class="option-row">
-            <span class="option-label">Treffer-Effekte<span class="option-desc">Aufblitzen, Funken und Hieb-Bogen bei Treffern</span></span>
+            <span class="option-label"><span data-i18n>Treffer-Effekte</span><span class="option-desc" data-i18n>Aufblitzen, Funken und Hieb-Bogen bei Treffern</span></span>
             <span class="toggle"><input type="checkbox" data-setting="hitFlash" checked><span class="toggle-slider"></span></span>
           </label>
           <label class="option-row">
-            <span class="option-label">Pulsierende Fertigkeiten<span class="option-desc">Verfügbare Skillpunkte pulsieren im Baum</span></span>
+            <span class="option-label"><span data-i18n>Pulsierende Fertigkeiten</span><span class="option-desc" data-i18n>Verfügbare Skillpunkte pulsieren im Baum</span></span>
             <span class="toggle"><input type="checkbox" data-setting="skillPulse" checked><span class="toggle-slider"></span></span>
           </label>
           <label class="option-row">
-            <span class="option-label">Screenshake<span class="option-desc">Die Arena wackelt bei kritischen Treffern und Boss-Schlägen</span></span>
+            <span class="option-label"><span data-i18n>Screenshake</span><span class="option-desc" data-i18n>Die Arena wackelt bei kritischen Treffern und Boss-Schlägen</span></span>
             <span class="toggle"><input type="checkbox" data-setting="screenshake" checked><span class="toggle-slider"></span></span>
           </label>
         </div>
         <div class="options-page" data-page="audio" hidden>
           <label class="option-row">
-            <span class="option-label">Gesamtlautstärke<span class="option-desc">Master-Regler — auf 0 ist alles stumm</span></span>
+            <span class="option-label"><span data-i18n>Gesamtlautstärke</span><span class="option-desc" data-i18n>Master-Regler — auf 0 ist alles stumm</span></span>
             <input type="range" min="0" max="100" step="1" data-volume="volumeMaster">
           </label>
           <label class="option-row">
-            <span class="option-label">Effekte<span class="option-desc">Treffer, Beute, Stufenaufstiege, Bosse</span></span>
+            <span class="option-label"><span data-i18n>Effekte</span><span class="option-desc" data-i18n>Treffer, Beute, Stufenaufstiege, Bosse</span></span>
             <input type="range" min="0" max="100" step="1" data-volume="volumeSfx">
           </label>
           <label class="option-row">
-            <span class="option-label">Musik<span class="option-desc">Dunkler Ambient-Drone</span></span>
+            <span class="option-label"><span data-i18n>Musik</span><span class="option-desc" data-i18n>Dunkler Ambient-Drone</span></span>
             <input type="range" min="0" max="100" step="1" data-volume="volumeMusic">
           </label>
         </div>
         <div class="options-page" data-page="game" hidden>
           <label class="option-row">
-            <span class="option-label">Offline-Fortschritt<span class="option-desc">Kämpft bis zu 8 Stunden im Feld weiter (mit Tiefenkunde bis 20) — an einer Boss-Wand wird aufs beste Gebiet ausgewichen</span></span>
+            <span class="option-label"><span data-i18n>Offline-Fortschritt</span><span class="option-desc" data-i18n>Kämpft bis zu 8 Stunden im Feld weiter (mit Tiefenkunde bis 20) — an einer Boss-Wand wird aufs beste Gebiet ausgewichen</span></span>
             <span class="toggle"><input type="checkbox" data-setting="offlineProgress" checked><span class="toggle-slider"></span></span>
           </label>
           <label class="option-row">
-            <span class="option-label">Offline-Zusammenfassung<span class="option-desc">Beim Start anzeigen, was offline passiert ist</span></span>
+            <span class="option-label"><span data-i18n>Offline-Zusammenfassung</span><span class="option-desc" data-i18n>Beim Start anzeigen, was offline passiert ist</span></span>
             <span class="toggle"><input type="checkbox" data-setting="offlineSummary" checked><span class="toggle-slider"></span></span>
           </label>
           <label class="option-row">
-            <span class="option-label">Auto-Tür<span class="option-desc">Nach einem besiegten Boss geht die Tür von allein weiter — der Eintritt heilt voll</span></span>
+            <span class="option-label"><span data-i18n>Auto-Tür</span><span class="option-desc" data-i18n>Nach einem besiegten Boss geht die Tür von allein weiter — der Eintritt heilt voll</span></span>
             <span class="toggle"><input type="checkbox" data-setting="autoDoor" checked><span class="toggle-slider"></span></span>
           </label>
           <label class="option-row">
-            <span class="option-label">Auto-Verkauf<span class="option-desc">Schlechtere Beute wird beim Fund sofort in Asche umgetauscht — das Inventar bleibt für Funde</span></span>
+            <span class="option-label"><span data-i18n>Auto-Verkauf</span><span class="option-desc" data-i18n>Schlechtere Beute wird beim Fund sofort in Asche umgetauscht — das Inventar bleibt für Funde</span></span>
             <select class="option-select" data-choicesetting="autoSell">
-              <option value="aus">Aus — alles ins Inventar</option>
-              <option value="unter-selten">Alles unter Selten</option>
-              <option value="unter-episch">Alles unter Episch</option>
+              <option value="aus" data-i18n>Aus — alles ins Inventar</option>
+              <option value="unter-selten" data-i18n>Alles unter Selten</option>
+              <option value="unter-episch" data-i18n>Alles unter Episch</option>
             </select>
           </label>
           <div class="option-row">
-            <span class="option-label">Spielstand exportieren<span class="option-desc">Fortschritt als JSON-Datei sichern</span></span>
-            <button class="btn-small" id="btn-export-save">Exportieren</button>
+            <span class="option-label"><span data-i18n>Spielstand exportieren</span><span class="option-desc" data-i18n>Fortschritt als JSON-Datei sichern</span></span>
+            <button class="btn-small" id="btn-export-save" data-i18n>Exportieren</button>
           </div>
           <div class="option-row">
-            <span class="option-label">Spielstand importieren<span class="option-desc">Überschreibt den aktuellen Spielstand — vorher wird automatisch ein Backup erstellt</span></span>
-            <button class="btn-small btn-danger" id="btn-import-save">Importieren</button>
+            <span class="option-label"><span data-i18n>Spielstand importieren</span><span class="option-desc" data-i18n>Überschreibt den aktuellen Spielstand — vorher wird automatisch ein Backup erstellt</span></span>
+            <button class="btn-small btn-danger" id="btn-import-save" data-i18n>Importieren</button>
           </div>
           <div class="option-row">
-            <span class="option-label">Feedback & Fehler<span class="option-desc">Fehler gefunden? Melde sie auf GitHub — jeder Bericht hilft.</span></span>
-            <button class="btn-small" id="btn-feedback">GitHub Issues</button>
+            <span class="option-label"><span data-i18n>Feedback & Fehler</span><span class="option-desc" data-i18n>Fehler gefunden? Melde sie auf GitHub — jeder Bericht hilft.</span></span>
+            <button class="btn-small" id="btn-feedback" data-i18n>GitHub Issues</button>
           </div>
           <div class="option-row danger-row">
-            <span class="option-label">Spielstand zurücksetzen<span class="option-desc">Löscht Helden, Ausrüstung und Skillpunkte endgültig</span></span>
-            <button class="btn-small btn-danger" id="btn-reset-save">Zurücksetzen</button>
+            <span class="option-label"><span data-i18n>Spielstand zurücksetzen</span><span class="option-desc" data-i18n>Löscht Helden, Ausrüstung und Skillpunkte endgültig</span></span>
+            <button class="btn-small btn-danger" id="btn-reset-save" data-i18n>Zurücksetzen</button>
           </div>
         </div>
         <div class="options-page" data-page="stats" id="scene-stats" hidden>
           <div class="character-layout">
             <div class="stats-panel">
               <dl class="stat-list">
-                <div><dt>Spielzeit</dt><dd id="stats-playtime">0 min</dd></div>
-                <div><dt>Erlegte Kreaturen</dt><dd id="stats-kills">0</dd></div>
-                <div><dt>Tode</dt><dd id="stats-deaths">0</dd></div>
-                <div><dt>Befreite Gebiete</dt><dd id="stats-cleared">0 von 50</dd></div>
-                <div><dt>Höchst errungenes Gebiet</dt><dd id="stats-depth">—</dd></div>
-                <div><dt>Asche</dt><dd id="stats-ash">0</dd></div>
+                <div><dt data-i18n>Spielzeit</dt><dd id="stats-playtime">0 min</dd></div>
+                <div><dt data-i18n>Erlegte Kreaturen</dt><dd id="stats-kills">0</dd></div>
+                <div><dt data-i18n>Tode</dt><dd id="stats-deaths">0</dd></div>
+                <div><dt data-i18n>Befreite Gebiete</dt><dd id="stats-cleared">0 von 50</dd></div>
+                <div><dt data-i18n>Höchst errungenes Gebiet</dt><dd id="stats-depth">—</dd></div>
+                <div><dt data-i18n>Asche</dt><dd id="stats-ash">0</dd></div>
               </dl>
             </div>
             <div class="stats-panel">
               <dl class="stat-list" id="stats-drops"></dl>
             </div>
           </div>
-          <p class="tagline">Die Asche zählt. Sie vergisst nicht.</p>
+          <p class="tagline" data-i18n>Die Asche zählt. Sie vergisst nicht.</p>
         </div>
       </div>
-      <p class="tagline">Wer die Asche formt, formt sich selbst.</p>
+      <p class="tagline" data-i18n>Wer die Asche formt, formt sich selbst.</p>
     </section>
     <section class="scene" id="scene-map" hidden>
       <header class="scene-header">
-        <button class="btn-small" data-back>Zurück</button>
+        <button class="btn-small" data-back data-i18n>Zurück</button>
       </header>
-      <h2>Gebiete</h2>
+      <h2 data-i18n>Gebiete</h2>
       <div id="zone-list"></div>
-      <p class="tagline">Jede Ebene tiefer verlangt mehr, als die Asche zurückgibt.</p>
+      <p class="tagline" data-i18n>Jede Ebene tiefer verlangt mehr, als die Asche zurückgibt.</p>
     </section>
     <section class="scene" id="scene-crafting" hidden>
       <header class="scene-header">
-        <button class="btn-small" data-back>Zurück</button>
+        <button class="btn-small" data-back data-i18n>Zurück</button>
       </header>
-      <h2>Crafting</h2>
-      <p class="skill-hud">Asche: <strong id="craft-ash">0</strong></p>
+      <h2 data-i18n>Crafting</h2>
+      <p class="skill-hud"><span data-i18n>Asche:</span> <strong id="craft-ash">0</strong></p>
       <div id="craft-layout">
         <div id="craft-slots"></div>
         <div id="craft-detail"></div>
       </div>
-      <p class="tagline">Aus Asche wird Form. Oder Staub.</p>
+      <p class="tagline" data-i18n>Aus Asche wird Form. Oder Staub.</p>
     </section>
     <section class="scene" id="scene-bestiary" hidden>
       <header class="scene-header">
-        <button class="btn-small" data-back>Zurück</button>
+        <button class="btn-small" data-back data-i18n>Zurück</button>
       </header>
-      <h2>Bestiarium</h2>
+      <h2 data-i18n>Bestiarium</h2>
       <p class="skill-hud" id="bestiary-summary"></p>
       <div id="bestiary-list"></div>
-      <p class="tagline">Wer sie kennt, fürchtet sie weniger.</p>
+      <p class="tagline" data-i18n>Wer sie kennt, fürchtet sie weniger.</p>
     </section>
     <section class="scene" id="scene-achievements" hidden>
       <header class="scene-header">
-        <button class="btn-small" data-back>Zurück</button>
+        <button class="btn-small" data-back data-i18n>Zurück</button>
       </header>
-      <h2>Errungenschaften</h2>
+      <h2 data-i18n>Errungenschaften</h2>
       <p class="skill-hud" id="achievements-summary"></p>
       <nav id="achievements-tabs">
-        <button class="options-tab active" data-tab="achievements">Errungenschaften</button>
-        <button class="options-tab" data-tab="ruhm">Ruhm-Laden</button>
+        <button class="options-tab active" data-tab="achievements" data-i18n>Errungenschaften</button>
+        <button class="options-tab" data-tab="ruhm" data-i18n>Ruhm-Laden</button>
       </nav>
       <div id="achievements-panel">
         <div class="options-page" data-page="achievements" id="achievements-page">
@@ -353,59 +361,59 @@
           <div id="ruhm-shop"></div>
         </div>
       </div>
-      <p class="tagline">Ruhm wird gezählt, nicht geschenkt.</p>
+      <p class="tagline" data-i18n>Ruhm wird gezählt, nicht geschenkt.</p>
     </section>
     <section class="scene" id="scene-throne" hidden>
       <header class="scene-header">
-        <button class="btn-small" data-back>Zurück</button>
+        <button class="btn-small" data-back data-i18n>Zurück</button>
       </header>
-      <h2>Der Thron</h2>
+      <h2 data-i18n>Der Thron</h2>
       <p class="skill-hud" id="throne-summary"></p>
       <div id="legacy-shop"></div>
       <div class="prestige-action">
         <div id="prestige-preview"></div>
-        <button class="btn-small btn-danger" id="btn-prestige">Erneut erwachen</button>
+        <button class="btn-small btn-danger" id="btn-prestige" data-i18n>Erneut erwachen</button>
       </div>
-      <p class="tagline">Die Krone ist leicht. Sie ist kalt. Sie ist dein.</p>
+      <p class="tagline" data-i18n>Die Krone ist leicht. Sie ist kalt. Sie ist dein.</p>
     </section>
     <section class="scene" id="scene-chronik" hidden>
       <header class="scene-header">
-        <button class="btn-small" data-back>Zurück</button>
+        <button class="btn-small" data-back data-i18n>Zurück</button>
       </header>
-      <h2>Chronik</h2>
+      <h2 data-i18n>Chronik</h2>
       <div id="chronicle-list"></div>
-      <p class="tagline">Was die Asche weiß, vergisst sie nicht.</p>
+      <p class="tagline" data-i18n>Was die Asche weiß, vergisst sie nicht.</p>
     </section>
     <section class="scene" id="scene-victory" hidden>
-      <h2>Die Aschenkrone</h2>
-      <p class="victory-text">Du hast sie gehoben — die Krone, aus der die Asche kam.<br>
-      Sie ist leicht. Sie ist kalt. Sie ist dein.<br>
-      Vier Reiche sind auf dem Weg hierher verbrannt. Hüte dein Haupt.</p>
+      <h2 data-i18n>Die Aschenkrone</h2>
+      <p class="victory-text"><span data-i18n>Du hast sie gehoben — die Krone, aus der die Asche kam.</span><br>
+      <span data-i18n>Sie ist leicht. Sie ist kalt. Sie ist dein.</span><br>
+      <span data-i18n>Vier Reiche sind auf dem Weg hierher verbrannt. Hüte dein Haupt.</span></p>
       <p class="victory-hero" id="victory-hero-name"></p>
       <dl class="stat-list">
-        <div><dt>Erlegte Kreaturen</dt><dd id="victory-kills">0</dd></div>
-        <div><dt>Stufe</dt><dd id="victory-level">1</dd></div>
-        <div><dt>Asche</dt><dd id="victory-ash">0</dd></div>
+        <div><dt data-i18n>Erlegte Kreaturen</dt><dd id="victory-kills">0</dd></div>
+        <div><dt data-i18n>Stufe</dt><dd id="victory-level">1</dd></div>
+        <div><dt data-i18n>Asche</dt><dd id="victory-ash">0</dd></div>
       </dl>
-      <p class="tagline">Unter dir warten die Tiefen. Die Asche erinnert sich an jeden, der kam.</p>
+      <p class="tagline" data-i18n>Unter dir warten die Tiefen. Die Asche erinnert sich an jeden, der kam.</p>
       <div class="victory-actions">
-        <button id="btn-victory-continue">Weiterspielen</button>
-        <button id="btn-victory-throne">Auf den Thron</button>
+        <button id="btn-victory-continue" data-i18n>Weiterspielen</button>
+        <button id="btn-victory-throne" data-i18n>Auf den Thron</button>
       </div>
     </section>
     <div id="game" hidden>
       <header id="hud">
-        <span>Bereich <strong id="hud-zone">Aschenkrypta</strong></span>
-        <span id="hud-progress" hidden>Siege <strong id="hud-progress-text">0 / 30</strong><span class="hud-progress-bar"><span id="hud-progress-fill"></span></span></span>
-        <span>Stufe <strong id="hud-level">1</strong></span>
-        <span>Asche <strong id="hud-ash">0</strong></span>
-        <button id="btn-shrine" class="btn-small">Schrein</button>
+        <span><span data-i18n>Bereich</span> <strong id="hud-zone">Aschenkrypta</strong></span>
+        <span id="hud-progress" hidden><span data-i18n>Siege</span> <strong id="hud-progress-text">0 / 30</strong><span class="hud-progress-bar"><span id="hud-progress-fill"></span></span></span>
+        <span><span data-i18n>Stufe</span> <strong id="hud-level">1</strong></span>
+        <span><span data-i18n>Asche</span> <strong id="hud-ash">0</strong></span>
+        <button id="btn-shrine" class="btn-small" data-i18n>Schrein</button>
       </header>
       <div id="arena">
         <div class="fighter" id="hero-fighter">
           <div class="figure" id="hero-figure"></div>
           <div class="fighter-level" id="hero-level">—</div>
-          <div class="fighter-name">Der Erweckte</div>
+          <div class="fighter-name" data-i18n>Der Erweckte</div>
           <div class="hp-bar hero-hp-bar"><div class="hp-ghost" id="hero-hp-ghost"></div><div class="hp-fill hero-fill" id="hero-hp"></div><div class="bar-value" id="hero-hp-text">—</div></div>
           <div class="xp-bar" id="hero-xp-bar"><div class="xp-fill" id="hero-xp-fill"></div><div class="bar-value" id="hero-xp-text"></div></div>
         </div>
@@ -430,13 +438,13 @@
     <div id="patchnotes" hidden>
       <div class="patch-window">
         <div class="patch-head">
-          <span class="patch-title">Patchnotes <span id="patch-version"></span></span>
+          <span class="patch-title"><span data-i18n>Patchnotes</span> <span id="patch-version"></span></span>
           <span class="patch-date" id="patch-date"></span>
         </div>
         <div class="patch-body" id="patch-body"></div>
         <div class="patch-foot">
-          <label class="patch-skip"><input type="checkbox" id="patch-skip-checkbox"> Heute nicht mehr anzeigen</label>
-          <button id="patch-close">Los geht's</button>
+          <label class="patch-skip"><input type="checkbox" id="patch-skip-checkbox"> <span data-i18n>Heute nicht mehr anzeigen</span></label>
+          <button id="patch-close" data-i18n>Los geht's</button>
         </div>
       </div>
     </div>

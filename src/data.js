@@ -1,5 +1,9 @@
 const TICK_MS = 100;
 
+// Anzeige-Sprache: Dezimaltrennzeichen und Übersetzungen kommen aus i18n.js —
+// data.js bleibt Daten-Modul, übersetzt nur, was es selbst zusammensetzt
+// (Tiefen-Namen, Effekt-Labels, Zahlenformate).
+import { t, lname, decimalSep } from './i18n.js';
 const ATTACK_INTERVAL_MS = 1500;
 
 const STATS_SYNC_INTERVAL_MS = 3000;
@@ -362,9 +366,9 @@ function zoneDef(index) {
   if (i < MAIN_ZONE_COUNT) return ZONES[i];
   const depth = i - MAIN_ZONE_COUNT + 1;
   return {
-    name: `Aschentiefe ${romanize(depth)}`,
+    name: t('Aschentiefe {r}', { r: romanize(depth) }),
     ilvl: Math.max(1, Math.min(VALUE_CEILING, Math.round(ZONES[LAST_ZONE_INDEX].ilvl * ILVL_GROWTH ** depth))),
-    continent: 'Die Tiefen',
+    continent: lname('Die Tiefen'),
   };
 }
 
@@ -878,17 +882,17 @@ const SKILL_NODES_BY_ID = Object.fromEntries(SKILL_NODES.map((node) => [node.id,
 const skillSigned = (v) => (v > 0 ? `+${v}` : `${v}`);
 
 const SKILL_EFFECT_LABELS = {
-  damage: (v) => `${skillSigned(v)} Schaden`,
-  damagePct: (v) => `${skillSigned(v)} % Schaden`,
-  hp: (v) => `${skillSigned(v)} Lebenskraft`,
-  hpPct: (v) => `${skillSigned(v)} % Lebenskraft`,
-  armor: (v) => `${skillSigned(v)} Rüstung`,
-  armorPct: (v) => `${skillSigned(v)} % Rüstung`,
-  crit: (v) => `${skillSigned(v)} % Kritchance`,
-  critDmg: (v) => `${skillSigned(v)} % Kritschaden`,
-  speed: (v) => `${skillSigned(v)} % Angriffstempo`,
-  ash: (v) => `${skillSigned(v)} % Asche`,
-  xp: (v) => `${skillSigned(v)} % Erfahrung`,
+  damage: (v) => t('{n} Schaden', { n: skillSigned(v) }),
+  damagePct: (v) => t('{n} % Schaden', { n: skillSigned(v) }),
+  hp: (v) => t('{n} Lebenskraft', { n: skillSigned(v) }),
+  hpPct: (v) => t('{n} % Lebenskraft', { n: skillSigned(v) }),
+  armor: (v) => t('{n} Rüstung', { n: skillSigned(v) }),
+  armorPct: (v) => t('{n} % Rüstung', { n: skillSigned(v) }),
+  crit: (v) => t('{n} % Kritchance', { n: skillSigned(v) }),
+  critDmg: (v) => t('{n} % Kritschaden', { n: skillSigned(v) }),
+  speed: (v) => t('{n} % Angriffstempo', { n: skillSigned(v) }),
+  ash: (v) => t('{n} % Asche', { n: skillSigned(v) }),
+  xp: (v) => t('{n} % Erfahrung', { n: skillSigned(v) }),
 };
 
 const NUM_SUFFIXES = ['', 'k', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No'];
@@ -901,7 +905,7 @@ function formatNum(value) {
   const scaled = abs / 1000 ** tier;
   let text = scaled.toFixed(scaled >= 100 ? 0 : scaled >= 10 ? 1 : 2);
   if (text.includes('.')) text = text.replace(/0+$/, '').replace(/\.$/, '');
-  return `${sign}${text.replace('.', ',')}${NUM_SUFFIXES[tier]}`;
+  return `${sign}${text.replace('.', decimalSep())}${NUM_SUFFIXES[tier]}`;
 }
 
 // Minuten-Genauigkeit reicht — Spielzeit und Offline-Zeilen sprechen „h/min".
@@ -1181,6 +1185,19 @@ let rollRangesVisible = false;
 
 const setRollRanges = (on) => { rollRangesVisible = !!on; };
 
+// Anzeige-Name eines Stücks: Gespeichert wird der deutsche Kanonename
+// („<Basis> <Seltenheits-Suffix>", Tiefenrelikt mit Präfix) — angezeigt wird
+// er in der eingestellten Sprache, zusammengesetzt aus Basis und Suffix.
+// Freitext-Namen (alte oder importierte Spielstände) fallen durch.
+function itemNameOf(item) {
+  const rarity = rarityOf(item.rarity);
+  const plain = `${item.base} ${rarity.suffix}`;
+  const localized = `${lname(item.base)} ${t(rarity.suffix)}`;
+  if (item.name === plain) return localized;
+  if (item.name === `Tiefenrelikt: ${plain}`) return `${t('Tiefenrelikt')}: ${localized}`;
+  return item.name;
+}
+
 function itemStatsText(item) {
   const s = itemStats(item);
   const ranges = rollRangesVisible ? itemStatRanges(item) : null;
@@ -1190,20 +1207,20 @@ function itemStatsText(item) {
   };
   return (
     [
-      s.damage ? `+${formatNum(s.damage)} Schaden${tag('damage')}` : null,
-      s.damagePct ? `+${s.damagePct} % Schaden${tag('damagePct')}` : null,
-      s.hp ? `+${formatNum(s.hp)} Lebenskraft${tag('hp')}` : null,
-      s.hpPct ? `+${s.hpPct} % Lebenskraft${tag('hpPct')}` : null,
-      s.armor ? `+${formatNum(s.armor)} Rüstung${tag('armor')}` : null,
-      s.armorPct ? `+${s.armorPct} % Rüstung${tag('armorPct')}` : null,
-      s.critChance ? `+${s.critChance} % Kritchance${tag('critChance')}` : null,
-      s.critDmg ? `+${s.critDmg} % Kritschaden${tag('critDmg')}` : null,
-      s.lifeleech ? `+${s.lifeleech} % Lifeleech${tag('lifeleech')}` : null,
-      s.lifeleechFlat ? `+${formatNum(s.lifeleechFlat)} Lifeleech pro Treffer${tag('lifeleechFlat')}` : null,
+      s.damage ? t('+{n} Schaden', { n: formatNum(s.damage) }) + tag('damage') : null,
+      s.damagePct ? t('+{n} % Schaden', { n: s.damagePct }) + tag('damagePct') : null,
+      s.hp ? t('+{n} Lebenskraft', { n: formatNum(s.hp) }) + tag('hp') : null,
+      s.hpPct ? t('+{n} % Lebenskraft', { n: s.hpPct }) + tag('hpPct') : null,
+      s.armor ? t('+{n} Rüstung', { n: formatNum(s.armor) }) + tag('armor') : null,
+      s.armorPct ? t('+{n} % Rüstung', { n: s.armorPct }) + tag('armorPct') : null,
+      s.critChance ? t('+{n} % Kritchance', { n: s.critChance }) + tag('critChance') : null,
+      s.critDmg ? t('+{n} % Kritschaden', { n: s.critDmg }) + tag('critDmg') : null,
+      s.lifeleech ? t('+{n} % Lifeleech', { n: s.lifeleech }) + tag('lifeleech') : null,
+      s.lifeleechFlat ? t('+{n} Lifeleech pro Treffer', { n: formatNum(s.lifeleechFlat) }) + tag('lifeleechFlat') : null,
     ]
       .filter(Boolean)
-      .join(' · ') || 'Keine Werte'
-  ) + (item.mastery2 ? ` · Tiefen-Meisterschaft: ${SKILL_EFFECT_LABELS[item.mastery2.stat](item.mastery2.value)}` : '');
+      .join(' · ') || t('Keine Werte')
+  ) + (item.mastery2 ? ` · ${t('Tiefen-Meisterschaft: {m}', { m: SKILL_EFFECT_LABELS[item.mastery2.stat](item.mastery2.value) })}` : '');
 }
 
 export {
@@ -1222,7 +1239,7 @@ export {
 
   rollMastery, xpNeeded, rarityOf, gearSlotOf, pickBase, baseOf, zoneDef, enemyDef, rollRarity, rollItemValues,
 
-  itemStats, itemScore, itemStatsText, itemIlvl, itemStatRanges, rollRangesVisible, setRollRanges, normalizeItem, sanitizeItem, asCount,
+  itemStats, itemScore, itemStatsText, itemIlvl, itemStatRanges, rollRangesVisible, setRollRanges, normalizeItem, sanitizeItem, asCount, itemNameOf,
 
   DEATH_ASH_PENALTY, DEATH_REVIVE_SHARE, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND,
 

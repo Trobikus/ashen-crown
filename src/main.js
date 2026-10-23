@@ -4,11 +4,16 @@ import { initAudio } from './audio.js';
 import { loadSettings } from './settings.js';
 import { applyFullscreenSetting } from './display.js';
 import { initPatchNotes } from './patchnotes.js';
+import { settings } from './state.js';
+import { t, setLangPreference, applyStaticI18n } from './i18n.js';
 import { version as appVersion } from '../package.json';
 
 // Vollbild-Wunsch aus den Settings früh anwenden, damit nicht erst der
-// Start-Klick den Modus wechselt.
+// Start-Klick den Modus wechselt. Die Sprache ebenso — das Hauptmenü steht
+// vor ensureInit und lokalisiert sich hier (Betriebssystem-Sprache bei 'auto').
 loadSettings();
+setLangPreference(settings.lang ?? 'auto');
+applyStaticI18n();
 applyFullscreenSetting();
 
 const notice = document.getElementById('notice');
@@ -31,10 +36,10 @@ document.getElementById('btn-options').addEventListener('click', () => {
 document.getElementById('btn-quit').addEventListener('click', () => {
   const tauriWindow = window.__TAURI__?.window?.getCurrentWindow?.();
   if (!tauriWindow) {
-    showNotice('Beenden ist nur in der Desktop-App möglich.');
+    showNotice(t('Beenden ist nur in der Desktop-App möglich.'));
     return;
   }
-  tauriWindow.close().catch(() => showNotice('Beenden fehlgeschlagen.'));
+  tauriWindow.close().catch(() => showNotice(t('Beenden fehlgeschlagen.')));
 });
 
 initUpdater();
@@ -76,7 +81,7 @@ async function showVersion() {
       // statischer Fallback unten (Web-Build)
     }
   }
-  el.textContent = `Version ${version ?? appVersion}`;
+  el.textContent = t('Version {v}', { v: version ?? appVersion });
   el.hidden = false;
 }
 

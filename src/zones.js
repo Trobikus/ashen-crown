@@ -1,5 +1,6 @@
 import { CONTINENTS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, zoneDef, enemyLevelOf } from './data.js';
 import { state } from './state.js';
+import { t, lname } from './i18n.js';
 import { el } from './dom.js';
 
 // Levelrange eines Gebiets: von der Normal-Kreatur bis zum Boss.
@@ -48,7 +49,7 @@ function buildHead(nameText) {
   const prev = document.createElement('button');
   prev.className = 'zone-pager';
   prev.dataset.dir = '-1';
-  prev.setAttribute('aria-label', 'Vorheriger Kontinent');
+  prev.setAttribute('aria-label', t('Vorheriger Kontinent'));
   prev.textContent = '‹';
   const nameCol = document.createElement('div');
   nameCol.className = 'zone-name-col';
@@ -62,7 +63,7 @@ function buildHead(nameText) {
   const next = document.createElement('button');
   next.className = 'zone-pager';
   next.dataset.dir = '1';
-  next.setAttribute('aria-label', 'Nächster Kontinent');
+  next.setAttribute('aria-label', t('Nächster Kontinent'));
   next.textContent = '›';
   const right = document.createElement('div');
   right.className = 'zone-head-right';
@@ -75,7 +76,7 @@ function buildDepthPanel() {
   const panel = document.createElement('div');
   panel.className = 'zone-continent-panel';
   panel.dataset.continent = CONTINENTS.length;
-  const { head } = buildHead('Die Tiefen');
+  const { head } = buildHead(lname('Die Tiefen'));
   panel.appendChild(head);
   const group = document.createElement('div');
   group.className = 'zone-group';
@@ -92,8 +93,8 @@ function syncDepthRows() {
     const row = document.createElement('button');
     row.className = 'zone-row';
     row.dataset.zone = index;
-    row.title = zoneDef(index).name;
-    row.innerHTML = `<span class="zone-level">${zoneLevelRange(index)}</span><span class="zone-name">${zoneDef(index).name}</span><span class="zone-status"></span>`;
+    row.title = lname(zoneDef(index).name);
+    row.innerHTML = `<span class="zone-level">${zoneLevelRange(index)}</span><span class="zone-name">${lname(zoneDef(index).name)}</span><span class="zone-status"></span>`;
     group.appendChild(row);
   }
 }
@@ -104,7 +105,7 @@ export function buildZoneList() {
     const panel = document.createElement('div');
     panel.className = 'zone-continent-panel';
     panel.dataset.continent = ci;
-    const { head } = buildHead(continent.name);
+    const { head } = buildHead(lname(continent.name));
     panel.appendChild(head);
     const group = document.createElement('div');
     group.className = 'zone-group';
@@ -112,8 +113,8 @@ export function buildZoneList() {
       const row = document.createElement('button');
       row.className = 'zone-row';
       row.dataset.zone = index;
-      row.title = zone.name;
-      row.innerHTML = `<span class="zone-level">${zoneLevelRange(index)}</span><span class="zone-name">${zone.name}</span><span class="zone-status"></span>`;
+      row.title = lname(zone.name);
+      row.innerHTML = `<span class="zone-level">${zoneLevelRange(index)}</span><span class="zone-name">${lname(zone.name)}</span><span class="zone-status"></span>`;
       group.appendChild(row);
       index += 1;
     }
@@ -121,6 +122,14 @@ export function buildZoneList() {
     el.zoneList.appendChild(panel);
   }
   buildDepthPanel();
+}
+
+// Sprachwechsel: Die Zeilen tragen ihren Namen beim Bau — besser neu bauen
+// als jede Zeile anzufassen. Der Zustand (aktiv/versiegelt) folgt im
+// nächsten renderZones.
+export function rebuildZoneList() {
+  el.zoneList.replaceChildren();
+  buildZoneList();
 }
 
 export function renderZones() {
@@ -142,7 +151,7 @@ export function renderZones() {
     if (ci === CONTINENTS.length) {
       // Kopf-Fortschritt der Tiefen: die erreichte Tiefe statt des Balkens.
       const depth = Math.max(0, state.cleared - MAIN_ZONE_COUNT);
-      progressText.textContent = depth > 0 ? `Tiefe ${depth}` : '';
+      progressText.textContent = depth > 0 ? t('Tiefe {n}', { n: depth }) : '';
       progressMin.hidden = true;
       progressBar.hidden = true;
       progressMax.hidden = true;
@@ -153,7 +162,7 @@ export function renderZones() {
         row.disabled = !open;
         row.classList.toggle('current', index === state.zone);
         row.classList.toggle('locked', !open);
-      row.querySelector('.zone-status').textContent = index === state.zone ? 'Aufenthalt' : open ? 'Eröffnet' : 'Versiegelt';
+      row.querySelector('.zone-status').textContent = index === state.zone ? t('Aufenthalt') : open ? t('Eröffnet') : t('Versiegelt');
     }
     continue;
   }
@@ -174,7 +183,7 @@ export function renderZones() {
       row.disabled = !open;
       row.classList.toggle('current', index === state.zone);
       row.classList.toggle('locked', !open);
-      row.querySelector('.zone-status').textContent = index === state.zone ? 'Aufenthalt' : open ? 'Eröffnet' : 'Versiegelt';
+      row.querySelector('.zone-status').textContent = index === state.zone ? t('Aufenthalt') : open ? t('Eröffnet') : t('Versiegelt');
     }
   }
 }

@@ -27,6 +27,9 @@ jobs:
       - name: Produktions-Build
         run: pnpm build
 
+      - name: i18n-Audit (alle t-/lname-Schlüssel in den Wörterbüchern)
+        run: node tools/i18n-check.mjs
+
       - name: Balance-Verifikation (Sim gegen echte data.js)
         run: node tools/balance-sim.mjs --verify
 

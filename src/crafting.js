@@ -1,6 +1,8 @@
-import { GEAR_SLOTS, RARITIES, LAST_ZONE_INDEX, SKILL_EFFECT_LABELS, gearSlotOf, baseOf, rarityOf, zoneDef, rollItemValues, itemStatsText, itemIlvl, rollMastery, formatNum } from './data.js';
+import { GEAR_SLOTS, RARITIES, LAST_ZONE_INDEX, SKILL_EFFECT_LABELS, gearSlotOf, baseOf, rarityOf, zoneDef, rollItemValues, itemStatsText, itemIlvl, rollMastery, formatNum, itemNameOf } from './data.js';
 
 import { state, craftCostFactor } from './state.js';
+
+import { t } from './i18n.js';
 
 import { ruhmAvailable, RUHM_RELIC_REROLL_COST } from './achievements.js';
 
@@ -153,8 +155,8 @@ function renderCrafting() {
     const rarity = item ? rarityOf(item.rarity) : null;
     row.classList.toggle('selected', slotKey === selectedCraftSlot);
     row.classList.toggle('empty', !item);
-    row.innerHTML = `<span class="craft-slot-name">${gearSlotOf(slotKey).label}</span>
-      <span class="craft-slot-item" style="color:${rarity?.color ?? '#5f584e'}">${item ? `${item.name}${item.enhance ? ` +${item.enhance}` : ''}` : 'Leer'}</span>`;
+    row.innerHTML = `<span class="craft-slot-name">${t(gearSlotOf(slotKey).label)}</span>
+      <span class="craft-slot-item" style="color:${rarity?.color ?? '#5f584e'}">${item ? `${itemNameOf(item)}${item.enhance ? ` +${item.enhance}` : ''}` : t('Leer')}</span>`;
   }
   renderCraftDetail();
 }
@@ -162,7 +164,7 @@ function renderCrafting() {
 function renderCraftDetail() {
   const item = state.equipment[selectedCraftSlot];
   if (!item) {
-    el.craftDetail.innerHTML = '<p class="craft-hint">Wähle links einen besetzten Ausrüstungsslot, den du schmieden willst.</p>';
+    el.craftDetail.innerHTML = `<p class="craft-hint">${t('Wähle links einen besetzten Ausrüstungsslot, den du schmieden willst.')}</p>`;
     return;
   }
   const rarity = rarityOf(item.rarity);
@@ -171,44 +173,44 @@ function renderCraftDetail() {
   const curBonus = enhanceBonusValue(selectedCraftSlot, item.enhance);
   const nextBonus = enhanceBonusValue(selectedCraftSlot, item.enhance + 1);
   const enhancePreview = slot.stat === 'damage'
-    ? `+${formatNum(nextBonus - curBonus)} Schaden`
-    : `+${formatNum(nextBonus - curBonus)} Lebenskraft · +${formatNum(Math.max(1, Math.round((nextBonus - curBonus) * 0.4)))} Rüstung`;
+    ? t('+{n} Schaden', { n: formatNum(nextBonus - curBonus) })
+    : `${t('+{n} Lebenskraft', { n: formatNum(nextBonus - curBonus) })} · ${t('+{n} Rüstung', { n: formatNum(Math.max(1, Math.round((nextBonus - curBonus) * 0.4))) })}`;
   const nextRarity = RARITIES[RARITIES.findIndex((rarity) => rarity.key === item.rarity) + 1] ?? null;
   const rCost = nextRarity ? reforgeCost(item) : 0;
-  const masteryHint = nextRarity?.key === 'legendär' ? 'Rollt eine Meisterschaft' : nextRarity ? 'Werte werden neu gewürfelt' : '';
+  const masteryHint = nextRarity?.key === 'legendär' ? t('Rollt eine Meisterschaft') : nextRarity ? t('Werte werden neu gewürfelt') : '';
   const mCost = masteryRerollCost();
   const masteryAction = item.mastery
     ? `
     <div class="craft-action">
-      <div class="craft-action-head">Meisterschaft neu schmieden<span>Würfelt den goldenen Bonus neu — der alte Wurf verfällt</span></div>
-      <button class="btn-small ${masteryArmed ? 'armed' : ''}" data-craft="mastery" ${state.ash < mCost ? 'disabled' : ''}>${masteryArmed ? 'Wirklich? Neu würfeln.' : state.ash < mCost ? `Zu wenig Asche — du hast ${formatNum(state.ash)}` : `Neu schmieden · ${formatNum(mCost)} Asche`}</button>
+      <div class="craft-action-head">${t('Meisterschaft neu schmieden')}<span>${t('Würfelt den goldenen Bonus neu — der alte Wurf verfällt')}</span></div>
+      <button class="btn-small ${masteryArmed ? 'armed' : ''}" data-craft="mastery" ${state.ash < mCost ? 'disabled' : ''}>${masteryArmed ? t('Wirklich? Neu würfeln.') : state.ash < mCost ? t('Zu wenig Asche — du hast {n}', { n: formatNum(state.ash) }) : t('Neu schmieden · {n} Asche', { n: formatNum(mCost) })}</button>
     </div>`
     : '';
   const relicMasteryAction = item.mastery2
     ? `
     <div class="craft-action">
-      <div class="craft-action-head">Tiefen-Meisterschaft neu schmieden<span>Würfelt die zweite Meisterschaft neu · kostet Ruhm statt Asche</span></div>
-      <button class="btn-small" data-craft="relicmastery" ${ruhmAvailable(state) < RUHM_RELIC_REROLL_COST ? 'disabled' : ''}>${ruhmAvailable(state) < RUHM_RELIC_REROLL_COST ? `Zu wenig Ruhm — du hast ${ruhmAvailable(state)}` : `Neu schmieden · ${RUHM_RELIC_REROLL_COST} Ruhm`}</button>
+      <div class="craft-action-head">${t('Tiefen-Meisterschaft neu schmieden')}<span>${t('Würfelt die zweite Meisterschaft neu · kostet Ruhm statt Asche')}</span></div>
+      <button class="btn-small" data-craft="relicmastery" ${ruhmAvailable(state) < RUHM_RELIC_REROLL_COST ? 'disabled' : ''}>${ruhmAvailable(state) < RUHM_RELIC_REROLL_COST ? t('Zu wenig Ruhm — du hast {n}', { n: ruhmAvailable(state) }) : t('Neu schmieden · {n} Ruhm', { n: RUHM_RELIC_REROLL_COST })}</button>
     </div>`
     : '';
   el.craftDetail.innerHTML = `
     <div class="craft-item">
-      <div class="tt-name" style="color:${rarity.color}">${item.name}${item.enhance ? ` +${item.enhance}` : ''}</div>
-      <div class="tt-rarity" style="color:${rarity.color}">${rarity.label} · Ilvl ${formatNum(itemIlvl(item))}</div>
+      <div class="tt-name" style="color:${rarity.color}">${itemNameOf(item)}${item.enhance ? ` +${item.enhance}` : ''}</div>
+      <div class="tt-rarity" style="color:${rarity.color}">${t(rarity.label)} · Ilvl ${formatNum(itemIlvl(item))}</div>
       <div class="tt-stat">${itemStatsText(item)}</div>
-      ${item.enhanceBonus ? '<div class="tt-enhance">Verstärkt durch die Werkstatt</div>' : ''}
-      ${item.mastery ? `<div class="tt-mastery">Meisterschaft: ${SKILL_EFFECT_LABELS[item.mastery.stat](item.mastery.value)}</div>` : ''}
-      ${item.mastery2 ? `<div class="tt-mastery">Tiefen-Meisterschaft: ${SKILL_EFFECT_LABELS[item.mastery2.stat](item.mastery2.value)}</div>` : ''}
+      ${item.enhanceBonus ? `<div class="tt-enhance">${t('Verstärkt durch die Werkstatt')}</div>` : ''}
+      ${item.mastery ? `<div class="tt-mastery">${t('Meisterschaft: {m}', { m: SKILL_EFFECT_LABELS[item.mastery.stat](item.mastery.value) })}</div>` : ''}
+      ${item.mastery2 ? `<div class="tt-mastery">${t('Tiefen-Meisterschaft: {m}', { m: SKILL_EFFECT_LABELS[item.mastery2.stat](item.mastery2.value) })}</div>` : ''}
     </div>
     <div class="craft-action">
-      <div class="craft-action-head">Verstärken auf +${item.enhance + 1}<span>${enhancePreview}</span></div>
-      <button class="btn-small" data-craft="enhance" ${state.ash < eCost ? 'disabled' : ''}>Schmieden · ${formatNum(eCost)} Asche</button>
+      <div class="craft-action-head">${t('Verstärken auf +{n}', { n: item.enhance + 1 })}<span>${enhancePreview}</span></div>
+      <button class="btn-small" data-craft="enhance" ${state.ash < eCost ? 'disabled' : ''}>${t('Schmieden · {n} Asche', { n: formatNum(eCost) })}</button>
     </div>
     <div class="craft-action">
-      <div class="craft-action-head">Umschmieden auf ${nextRarity ? nextRarity.label : '—'}<span>${nextRarity ? masteryHint : ''}</span></div>
+      <div class="craft-action-head">${t('Umschmieden auf {r}', { r: nextRarity ? t(nextRarity.label) : '—' })}<span>${nextRarity ? masteryHint : ''}</span></div>
       ${nextRarity
-        ? `<button class="btn-small" data-craft="reforge" ${state.ash < rCost ? 'disabled' : ''}>Umschmieden · ${formatNum(rCost)} Asche</button>`
-        : '<span class="craft-hint">Maximale Seltenheit erreicht.</span>'}
+        ? `<button class="btn-small" data-craft="reforge" ${state.ash < rCost ? 'disabled' : ''}>${t('Umschmieden · {n} Asche', { n: formatNum(rCost) })}</button>`
+        : `<span class="craft-hint">${t('Maximale Seltenheit erreicht.')}</span>`}
     </div>
     ${masteryAction}
     ${relicMasteryAction}`;
