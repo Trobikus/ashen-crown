@@ -27,9 +27,17 @@ const noThrow = (fn, label) => {
 };
 
 // Stubs: Der Warn-Toast steigt früh aus, wenn 'toasts' fehlt; die Tauri-
-// Erkennung liest window.__TAURI__ (hier: leer).
-globalThis.document = { getElementById: () => null };
+// Erkennung liest window.__TAURI__ (hier: leer). Für den Export-Pfad kommen
+// Blob-URL und Anker-Download dazu (Web-Build-Pfad ohne Tauri).
+let lastExportBlob = null;
+let downloadClicks = 0;
+globalThis.document = {
+  getElementById: () => null,
+  createElement: () => ({ href: '', download: '', click() { downloadClicks += 1; } }),
+};
 globalThis.window = {};
+URL.createObjectURL = (blob) => { lastExportBlob = blob; return 'blob:stub'; };
+URL.revokeObjectURL = () => {};
 
 class StorageError extends Error {
   constructor(name) {
@@ -96,7 +104,27 @@ assert(backing.has(SETTINGS_KEY), 'Erholung: saveSettings() persistiert wieder')
 SV.save(); // zweiter Zug: die Backup-Rotation schiebt die Generationen
 assert((backing.get('ashen-crown-save.bak1') ?? '').includes('"level":7'), 'Erholung: Backup-Rotation schiebt wieder (bak1)');
 
-// ——— Phase 4: purgeSaves räumt komplett ab — letzer Schritt, denn danach
+// ——— Phase 4: Export bei beschädigtem Hauptspielstand ———
+// Der Hauptstand ist syntaktisch kaputt; bak1 (aus Phase 3 rotiert) hält den
+// lesbaren Stand. Der Export muss kontrolliert auf das Backup fallen statt
+// mit einem JSON-Fehler abzubrechen oder Müll zu schreiben.
+backing.set(S.SAVE_KEY, '{"level": 7, "ash": [unlesbares Güll');
+const exported = await SV.exportSave();
+const payload = lastExportBlob ? await lastExportBlob.text() : '';
+assert(exported === true && downloadClicks === 1, `Export mit kaputtem Hauptstand gelingt über Backup (${exported}/${downloadClicks} Download)`);
+assert(payload.includes('"game": "ashen-crown"') && payload.includes('"level": 7'), 'Export-Payload trägt das Backup (ashen-crown-Hülle, Level 7)');
+// Nichts Lesbares anywhere → kontrolliert false, kein Wurf.
+backing.set(S.SAVE_KEY, '}}müll');
+for (const key of ['ashen-crown-save.bak1', 'ashen-crown-save.bak2', 'ashen-crown-save.bak3']) backing.set(key, 'kein json');
+let refused = false;
+try {
+  refused = await SV.exportSave();
+} catch (err) {
+  assert(false, `Export ohne lesbaren Stand warf ${err.message}`);
+}
+assert(refused === false, 'Export ohne jeden lesbaren Stand: kontrolliert false statt Exception');
+
+// ——— Phase 5: purgeSaves räumt komplett ab — letzer Schritt, denn danach
 // ist save() bis zum Reload unterdrückt ————
 SV.purgeSaves();
 assert(!backing.has(S.SAVE_KEY) && !backing.has('ashen-crown-save.bak1') && !backing.has('ashen-crown-save.bak2') && !backing.has('ashen-crown-save.bak3'), 'purgeSaves löscht Hauptstand und Backup-Kette (kein „gelöschter Held" kehrt zurück)');

@@ -11,6 +11,7 @@ import { LEGACY_TITLES } from './prestige.js';
 import { el } from './dom.js';
 import { flashButton } from './domfx.js';
 import { readStorage, writeStorage, removeStorage } from './storage.js';
+import { toast } from './feedback.js';
 import { use } from './bus.js';
 
 const BACKUP_KEYS = ['ashen-crown-save.bak1', 'ashen-crown-save.bak2', 'ashen-crown-save.bak3'];
@@ -255,13 +256,32 @@ function consumeSaveNotice() {
 const tauriSaveApi = () => (window.__TAURI__?.dialog && window.__TAURI__?.fs ? window.__TAURI__ : null);
 
 async function exportSave() {
-  const raw = readStorage(SAVE_KEY);
-  if (!raw) return false;
+  // Der Hauptstand kann unlesbar sein (beschädigtes JSON, schon im Speicher
+  // liegend — die Storage-Schicht fängt nur Zugriffsfehler). parseSave
+  // validiert Form und Syntax; ist der Hauptstand Müll, fällt der Export auf
+  // das neueste lesbare Backup zurück, statt mit einem Parse-Fehler
+  // abzubrechen oder still eine kaputte Datei zu schreiben.
+  let data = parseSave(readStorage(SAVE_KEY));
+  let backup = 0;
+  if (!data) {
+    for (const [attempt, key] of BACKUP_KEYS.entries()) {
+      data = parseSave(readStorage(key));
+      if (data) {
+        backup = attempt + 1;
+        break;
+      }
+    }
+  }
+  if (!data) {
+    toast(t('Kein lesbarer Spielstand — Export nicht möglich.'), '#c1663a');
+    return false;
+  }
+  if (backup) toast(t('Hauptspielstand war beschädigt — Backup {n} exportiert.', { n: backup }), '#c1663a');
   const payload = JSON.stringify({
     game: 'ashen-crown',
     saveVersion: SAVE_VERSION,
     exportedAt: new Date().toISOString(),
-    state: JSON.parse(raw),
+    state: data,
   }, null, 2);
   const fileName = `ashen-crown-spielstand-${new Date().toISOString().slice(0, 10)}.json`;
   const tauri = tauriSaveApi();

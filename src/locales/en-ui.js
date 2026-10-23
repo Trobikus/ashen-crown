@@ -366,6 +366,8 @@ export const EN_UI = {
   // ——— Speicher-Subsystem ———
   'Der Speicher blockiert Zugriffe — Spielstand und Einstellungen werden nicht gesichert.': 'Storage is blocking access — progress and settings cannot be saved.',
   'Hauptspielstand war beschädigt — Backup {n} geladen.': 'Main save was corrupted — backup {n} loaded.',
+  'Hauptspielstand war beschädigt — Backup {n} exportiert.': 'Main save was corrupted — backup {n} exported.',
+  'Kein lesbarer Spielstand — Export nicht möglich.': 'No readable save — export not possible.',
   'Wirklich? Überschreibt den Spielstand.': 'Really? Overwrites the save.',
   'Ungültige Datei': 'Invalid file',
   'Exportiert ✓': 'Exported ✓',
