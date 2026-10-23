@@ -1,24 +1,25 @@
 # Security Policy
 
-## Unterstützte Versionen
+## Supported versions
 
-Nur die aktuelle Version auf `main` erhält Sicherheitskorrekturen.
+Only the current version on `main` receives security fixes.
 
-## Schwachstellen melden
+## Reporting vulnerabilities
 
-Bitte **keine** öffentlichen Issues für Sicherheitsprobleme. Nutze stattdessen
-GitHub *Private Vulnerability Reporting* (Reiter **Security → Report a
-vulnerability**) — so bleibt die Meldung vertraulich, bis ein Fix vorliegt.
+Please do **not** open public issues for security problems. Use GitHub's
+*Private Vulnerability Reporting* instead (the **Security → Report a
+vulnerability** tab) — this keeps your report confidential until a fix is
+available.
 
-Alternativ erreichst du mich über das GitHub-Profil ([@Trobikus](https://github.com/Trobikus)).
+Alternatively, you can reach me via my GitHub profile
+([@Trobikus](https://github.com/Trobikus)).
 
 ## Scope
 
-Ashen Crown ist ein lokales Spiel ohne Server und ohne Konten. Es verarbeitet
-keine personenbezogenen Daten außer dem lokalen Spielstand im Browser-Speicher
-(`localStorage`) und sendet nichts an Dritte. Besonders interessant sind
-Meldungen zu:
+Ashen Crown is a local game with no server and no accounts. It processes no
+personal data other than the local save in browser storage (`localStorage`)
+and sends nothing to third parties. Reports especially welcome for:
 
-- Skript-Einschleusung über Spielstand-/Eingabedaten,
-- Tauri-Berechtigungen (Capabilities) zu weit gefasst,
-- Problemen im Build (Vite/Dependency-Kette).
+- script injection through save or input data,
+- Tauri permissions (capabilities) being too broad,
+- problems in the build (Vite/dependency chain).

@@ -1,13 +1,13 @@
-# Verhaltenskodex
+# Code of Conduct
 
-Kurz und ehrlich — so läuft der Umgang hier:
+Short and honest — this is how things work here:
 
-- **Sei freundlich.** Keine Beleidigungen, keine Herabwürdigungen, kein Spam.
-- **Bleib beim Thema.** Issues und Diskussionen drehen sich um Ashen Crown.
-- **Respektiere Autorenschaft.** Der Inhalt dieses Repos ist urheberrechtlich
-  geschützt (siehe [LICENSE](LICENSE)) — nichts kopieren, umwandeln oder
-  kommerziell nutzen.
+- **Be friendly.** No insults, no belittling, no spam.
+- **Stay on topic.** Issues and discussions are about Ashen Crown.
+- **Respect authorship.** The content of this repository is protected by
+  copyright (see [LICENSE](LICENSE)) — don't copy, transform or use it
+  commercially.
 
-Vorfälle oder Verstöße meldest du direkt über ein Issue an den Autor oder per
-[Security-Hinweis](SECURITY.md). Verstöße können zur Sperrung von Issues und
-Forks führen.
+Report incidents or violations directly to the author via an issue or a
+[security note](SECURITY.md). Violations may lead to issues and forks being
+blocked.

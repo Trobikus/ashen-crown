@@ -1,48 +1,44 @@
-Ashen Crown — proprietäre Lizenz
+Ashen Crown — proprietary license
 Copyright (c) 2026 Grimoire Interactive / Trobikus
 
-Alle Rechte vorbehalten / All rights reserved.
+All rights reserved.
 
-1. GESTATTETE NUTZUNG
-   Du darfst den Quelltext dieses Repositorys einsehen, ein Fork auf GitHub
-   anlegen und das Spiel für private, nicht-kommerzielle Zwecke ausführen
-   („persönliche Nutzung“).
+1. PERMITTED USE
+   You may view the source code of this repository, create a fork on GitHub,
+   and run the game for private, non-commercial purposes ("personal use").
 
-2. UNTERSAGT
-   Ohne vorherige schriftliche Genehmigung des Rechteinhabers ist es nicht
-   gestattet:
-   a) den Quelltext, Teile davon oder die enthaltenen Assets (Grafiken, Icons,
-      Texte, Namen, Spielmechanik-Umsetzungen) zu kopieren, zu verbreiten oder
-      öffentlich zugänglich zu machen, außer im Rahmen eines GitHub-Forks;
-   b) den Quelltext, abgeleitete Werke oder das Spiel kommerziell zu nutzen,
-      zu lizenzieren, zu verkaufen oder in kommerzielle Produkte einzubinden
-      (einschließlich Werbung, Spendenwällen und Paywalls);
-   c) Urheber- oder Herkunftsangaben (README, CREDITS.md, Lizenzhinweise)
-      zu entfernen oder zu verändern;
-   d) Assets (Icons, Banner, Screenshots) außerhalb dieses Projekts oder von
-      ihm abgeleiteter Forks zu verwenden.
+2. PROHIBITED
+   Without the prior written consent of the copyright holder, you may not:
+   a) copy, distribute or make publicly available the source code, parts of it
+      or the included assets (graphics, icons, texts, names, implementations of
+      game mechanics), except within the scope of a GitHub fork;
+   b) use, license, sell or include the source code, derivative works or the
+      game commercially, or in commercial products (including advertising,
+      donation walls and paywalls);
+   c) remove or alter copyright or attribution notices (README, CREDITS.md,
+      license notices);
+   d) use assets (icons, banner, screenshots) outside this project or forks
+      derived from it.
 
 3. FORKS
-   Ein Fork nach §1 bleibt an diese Lizenz gebunden. Ein Fork begründet keine
-   Übertragung von Verwertungsrechten und darf nicht so verwendet werden, dass
-   Dritte das Spiel oder den Quelltext außerhalb GitHub kommerziell beziehen
-   können.
+   A fork under §1 remains bound to this license. A fork does not transfer any
+   exploitation rights and must not be used in a way that allows third parties
+   to obtain the game or the source code commercially outside GitHub.
 
-4. BEITRÄGE
-   Zugelassene Beiträge (z. B. nach vorheriger Abstimmung angenommene Pull
-   Requests) gehen ohne Vergütung in das Eigentum des Rechteinhabers über,
-   soweit im Einzelfall nichts anderes vereinbart ist.
+4. CONTRIBUTIONS
+   Accepted contributions (e.g. pull requests approved after prior
+   consultation) become the property of the copyright holder without
+   compensation, unless otherwise agreed in the individual case.
 
-5. HAFTUNGSAUSSCHLUSS
-   DIE SOFTWARE WIRD „WIE BESEHEN“ BEREITGESTELLT, OHNE JEGLICHE GARANTIE.
-   DER AUTOR HAFTET NICHT FÜR SCHÄDEN, DIE AUS DER NUTZUNG DER SOFTWARE
-   ENTSTEHEN.
+5. DISCLAIMER OF WARRANTY
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. THE AUTHOR
+   SHALL NOT BE LIABLE FOR ANY DAMAGES ARISING FROM THE USE OF THE SOFTWARE.
 
-6. ENTFERNUNG / ÄNDERUNG
-   Der Rechteinhaber darf diese Lizenz für künftige Versionen jederzeit
-   ändern oder widerrufen. Bereits gewährte Rechte erlöschen mit schriftlichem
-   Widerruf im Falle eines Verstoßes gegen diese Bestimmungen.
+6. REMOVAL / CHANGE
+   The copyright holder may change or revoke this license for future versions
+   at any time. Rights already granted expire upon written revocation in the
+   event of a violation of these terms.
 
-Kontakt / Lizenzanfragen: siehe GitHub-Repository „Trobikus/ashen-crown“.
-Hinweis: Ausrüstungs-Icons stammen von game-icons.net (Lorc, Delapouite) und
-stehen unter CC BY 3.0 — siehe CREDITS.md; §2 gilt für diese nicht.
+Contact / license inquiries: see the GitHub repository "Trobikus/ashen-crown".
+Note: Equipment icons are from game-icons.net (Lorc, Delapouite) and are
+licensed under CC BY 3.0 — see CREDITS.md; §2 does not apply to them.

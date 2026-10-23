@@ -1,12 +1,12 @@
 # CREDITS
 
-## Ausrüstungs-Icons (`src/assets/icons/`)
+## Equipment icons (`src/assets/icons/`)
 
-Quelle: [game-icons.net](https://game-icons.net)
-Lizenz: [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)
-Autoren: Lorc, Delapouite (game-icons.net)
+Source: [game-icons.net](https://game-icons.net)
+License: [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+Authors: Lorc, Delapouite (game-icons.net)
 
-| Datei | Original-Icon | Autor |
+| File | Original icon | Author |
 | --- | --- | --- |
 | `waffe.svg` | [crossed-swords](https://game-icons.net/1x1/lorc/crossed-swords.html) | Lorc |
 | `brust.svg` | [breastplate](https://game-icons.net/1x1/lorc/breastplate.html) | Lorc |
@@ -15,5 +15,5 @@ Autoren: Lorc, Delapouite (game-icons.net)
 | `schuhe.svg` | [leather-boot](https://game-icons.net/1x1/lorc/leather-boot.html) | Lorc |
 | `hand.svg` | [gauntlet](https://game-icons.net/1x1/delapouite/gauntlet.html) | Delapouite |
 
-Die Icons wurden auf `viewBox="0 0 512 512"` belassen und für die Nutzung im Spiel
-(im geplanten Zustand einfarbig auf Spiel-Gold bzw. Raritätsfarbe) vorgesehen.
+The icons were kept at `viewBox="0 0 512 512"` and are intended for in-game use
+rendered in a single color (game gold or the rarity color).

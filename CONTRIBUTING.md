@@ -1,32 +1,32 @@
-# Beiträge
+# Contributing
 
-Danke für dein Interesse an **Ashen Crown**! Das ist mein persönliches
-Hobbyprojekt — ich entwickle es in meinem eigenen Tempo und nach meinen
-eigenen Ideen.
+Thanks for your interest in **Ashen Crown**! This is my personal hobby project —
+I develop it at my own pace, following my own ideas.
 
-## Fehler melden
+## Reporting bugs
 
-Etwas funktioniert nicht? [Eröffne ein Issue](../../issues/new?template=bug_report.yml)
-mit:
+Something isn't working? [Open an issue](../../issues/new?template=bug_report.yml)
+with:
 
-- was du getan hast und was passiert ist,
-- Web oder Desktop (Tauri),
-- besser mit Screenshot.
+- what you did and what happened,
+- web or desktop (Tauri),
+- a screenshot if possible.
 
-## Ideen & Vorschläge
+## Ideas & suggestions
 
-Vorschläge sind willkommen — [Feature-Issue](../../issues/new?template=feature_request.yml)
-stellen. Ob und wie etwas umgesetzt wird, entscheide ich selbst; ein Anspruch
-auf Umsetzung besteht nicht.
+Suggestions are welcome — please open a
+[feature issue](../../issues/new?template=feature_request.yml). Whether and how
+something gets implemented is my call; there is no entitlement to
+implementation.
 
-## Code-Beiträge
+## Code contributions
 
-Unangekündigte Pull Requests lehne ich in der Regel ab. Wenn du gern etwas
-beitragen möchtest, sprich es vorher in einem Issue ab — dann klären wir
-Scope und Umsetzung. Zugelassene Beiträge gehen gemäß [LICENSE](LICENSE)
-§4 in das Projekt über.
+Unannounced pull requests are usually declined. If you would like to contribute
+something, please talk about it in an issue first — we'll figure out scope and
+implementation there. Accepted contributions are transferred to the project
+under the terms of the [LICENSE](LICENSE), §4.
 
-## Verhalten
+## Conduct
 
-Sei freundlich und respektvoll — Details in
+Be friendly and respectful — details in
 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
