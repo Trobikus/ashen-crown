@@ -4,6 +4,39 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.21.1] — 2026-10-23
+
+### Sicherheit / Härtung
+- **Doppelte Runen im Spielstand**: `skillBonus()` summierte je Eintrag in
+  `state.skills` — ein bearbeiteter oder beschädigter Spielstand konnte
+  Runen-Effekte vervielfachen; die Punktekorrektur an der Array-Länge wäre
+  ebenso verfälscht. Neu: `sanitizeSkills()` (src/skilltree.js) kanonisiert
+  beim Laden — unbekannte IDs und Duplikate raus, Startknoten genau einmal,
+  Pfad-Bindung (maximal zwei Farben) erzwungen; die Runenpunkte rechnen auf
+  der bereinigten Liste.
+- **Errungenschaften konnten Ruhm vervielfachen**: `ruhmEarned()`/
+  `ruhmPending()` summieren je Listeneintrag, die Härtung prüfte aber nur
+  String-Typ und -Länge — wiederholte IDs erzeugten Ruhm aus dem Nichts und
+  umgingen den Ruhm-Laden. Neu: `sanitizeAchievements()` (src/achievements.js)
+  kanonisiert beim Laden — nur bekannte IDs ohne Duplikate, und das
+  Abhol-Regal verwirft bereits eingesammelte Einträge (sonst buchte der Claim
+  denselben Ruhm zweimal).
+- Beides betrifft ausschließlich lokal bearbeitete oder beschädigte
+  Spielstände (kein serverseitiger Angriff); reguläre Spielstände bleiben
+  unverändert.
+
+### Werkzeug
+- **Release-Gating**: Der Release-Workflow veröffentlicht erst nach
+  bestandener Prüfung des exakt getaggten Commits. Die Web-Gates laufen über
+  die neue Composite-Action `.github/actions/web-gates` (geteilt mit der CI,
+  damit die Gates nie auseinanderlaufen) in einem eigenen `web-gates`-Job;
+  der Release-Job hängt per `needs` daran und führt selbst `cargo check
+  --locked` aus, bevor `tauri-action` veröffentlicht. Ein `v*`-Tag kann die
+  CI-Prüfungen nicht mehr umgehen.
+- tools/smoke.mjs: 6 neue Asserts — Runen-Dedup mit Pfad-Kappung, fehlender
+  Startknoten genau einmal, `skillBonus` zählt jede Rune einfach, Annalen-
+  und Regal-Kanonisierung, Ruhm-Summen aus kanonischen Mengen.
+
 ## [0.21.0] — 2026-10-23
 
 ### Neu

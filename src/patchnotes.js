@@ -3,10 +3,19 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.21.0',
+  version: '0.21.1',
   date: '23.10.2026',
-  headline: 'Drag & Drop — Beute in die Hand nehmen',
+  headline: 'Härtung — Spielstand & Release-Pipeline',
   sections: [
+    {
+      heading: '0.21.1 — Härtung: Spielstand & Release-Pipeline',
+      items: [
+        'Fix: Doppelte Runen im Spielstand zählen nicht mehr doppelt. Ein bearbeiteter oder beschädigter Spielstand konnte Runen-Effekte vervielfachen und die Runenpunkte-Rechnung verfälschen. Beim Laden werden die Runen jetzt kanonisiert: nur bekannte IDs ohne Duplikate, der Startknoten genau einmal, und die Pfad-Bindung (maximal zwei Farben) wird erzwungen.',
+        'Fix: Errungenschaften können Ruhm nicht mehr vervielfachen. Wiederholte IDs in einem importierten Spielstand ließen sich als Ruhm mehrfach buchen — und den Ruhm-Laden damit umgehen. Beim Laden gelten nur bekannte IDs ohne Duplikate; das Abhol-Regal verwirft zusätzlich alles bereits Eingesammelte.',
+        'Klarstellung: Beides betrifft ausschließlich lokal bearbeitete oder beschädigte Spielstände. Normale Spielstände bleiben unverändert — es geht nichts verloren.',
+        'Unter der Haube: Ein Release wird erst nach bestandener Prüfung veröffentlicht. Der Release-Workflow wiederholt jetzt alle CI-Gates (Build, Übersetzung, Balance, cargo check) auf exakt dem getaggten Commit, bevor etwas hochgeladen wird — ein Tag kann die Prüfungen nicht mehr umgehen.',
+      ],
+    },
     {
       heading: '0.21.0 — Drag & Drop: Beute in die Hand nehmen',
       items: [
