@@ -165,6 +165,27 @@
   border-color: #3a352e;
 }
 
+/* Drag & Drop: Der gezogene Inventar-Slot leuchtet am passenden Ziel leicht
+   grün, an fremden Slots leicht rot — der Drop wird dort vom Browser selbst
+   verworfen (ohne preventDefault), der Glow erklärt nur, warum. */
+.gear-slot {
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.gear-slot.drop-ok {
+  border-color: #5aa06b;
+  box-shadow: 0 0 10px rgba(106, 168, 122, 0.35), inset 0 0 8px rgba(106, 168, 122, 0.16);
+}
+
+.gear-slot.drop-bad {
+  border-color: #a05555;
+  box-shadow: 0 0 10px rgba(160, 85, 85, 0.35), inset 0 0 8px rgba(160, 85, 85, 0.16);
+}
+
+.inv-cell.dragging {
+  opacity: 0.45;
+}
+
 .inventory-bar {
   display: flex;
   justify-content: space-between;

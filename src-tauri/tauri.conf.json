@@ -16,7 +16,8 @@
         "title": "Ashen Crown",
         "width": 1280,
         "height": 800,
-        "resizable": true
+        "resizable": true,
+        "dragDropEnabled": false
       }
     ],
     "security": {

@@ -37,6 +37,98 @@ function markGearDirty() {
   gearDirty = true;
 }
 
+// ——— Drag & Drop: Inventar-Stück direkt in einen Ausrüstungsslot ziehen ———
+// Die gezogene ID lebt in einem Modul-Flag, nicht in dataTransfer: Der
+// Browser stellt dragTransfer-Daten während dragover aus Schutzgründen nicht
+// bereit, der Glow (grün = passt, rot = fremder Slot) entscheidet aber genau
+// dort. Ein Blickwechsel: left/rechts-Handschuhe teilen einen Pool — beide
+// Slots nehmen beide Handschuhe (anders als der Klick-Pfad kein
+// schwächere-Hand-Auto, hier zählt der gewählte Slot).
+
+let dragItemId = null;
+
+function slotAcceptsItem(slotKey, item) {
+  const slot = gearSlotOf(slotKey);
+  if (!slot || !item) return false;
+  if (item.slot === slotKey) return true;
+  return pairedSlotsOf(item.slot).length > 1 && pairedSlotsOf(item.slot).includes(slotKey);
+}
+
+function clearDrag() {
+  dragItemId = null;
+  for (const slotEl of el.gearSlots) slotEl.classList.remove('drop-ok', 'drop-bad');
+  for (const cell of el.inventoryGrid.querySelectorAll('.inv-cell.dragging')) cell.classList.remove('dragging');
+}
+
+// Gerichtetes Anlegen: Das Stück landet im gewählten Slot, der bisherige
+// Bewohner wandert ins Inventar (Tausch hält die Belegung konstant — kein
+// Platz-Problem). Handschuh-Paare legen exakt dorthin, wohin gezogen wurde.
+function equipItemToSlot(id, slotKey) {
+  const index = state.inventory.findIndex((it) => it.id === id);
+  if (index === -1) return;
+  const item = state.inventory[index];
+  if (!slotAcceptsItem(slotKey, item)) return;
+  const previous = state.equipment[slotKey] ?? null;
+  state.inventory.splice(index, 1);
+  if (previous) state.inventory.push(previous);
+  state.equipment[slotKey] = item;
+  gearDirty = true;
+  hooks.clampHp();
+  hooks.save();
+  hooks.render();
+}
+
+function bindDragAndDrop() {
+  // Datei-Drops aus dem Betriebssystem dürfen das Fenster nie navigieren —
+  // global abfangen; unsere Slot-Handler entscheiden selbst, was sie nehmen.
+  document.addEventListener('dragover', (e) => e.preventDefault());
+  document.addEventListener('drop', (e) => e.preventDefault());
+
+  el.inventoryGrid.addEventListener('dragstart', (e) => {
+    const cell = e.target.closest?.('.inv-cell');
+    if (!cell || sellMode) {
+      e.preventDefault();
+      return;
+    }
+    dragItemId = Number(cell.dataset.id);
+    cell.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', cell.dataset.id);
+  });
+  el.inventoryGrid.addEventListener('dragend', clearDrag);
+
+  for (const slotEl of el.gearSlots) {
+    slotEl.addEventListener('dragover', (e) => {
+      if (dragItemId === null) return; // fremde Drags (z. B. Dateien) ignorieren
+      const item = state.inventory.find((it) => it.id === dragItemId);
+      const ok = slotAcceptsItem(slotEl.dataset.slot, item);
+      if (!ok) {
+        // Ohne preventDefault verwirft der Browser den Drop selbst — der
+        // rote Glow sagt additionally, warum.
+        slotEl.classList.remove('drop-ok');
+        slotEl.classList.add('drop-bad');
+        return;
+      }
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      slotEl.classList.add('drop-ok');
+      slotEl.classList.remove('drop-bad');
+    });
+    slotEl.addEventListener('dragleave', (e) => {
+      // Über Kind-Elemente (Tooltip) ziehen ist kein Verlassen des Slots.
+      if (slotEl.contains(e.relatedTarget)) return;
+      slotEl.classList.remove('drop-ok', 'drop-bad');
+    });
+    slotEl.addEventListener('drop', (e) => {
+      const id = dragItemId;
+      clearDrag();
+      if (id === null) return;
+      e.preventDefault();
+      equipItemToSlot(id, slotEl.dataset.slot);
+    });
+  }
+}
+
 
 
 let gearDirty = true;
@@ -462,6 +554,7 @@ function renderInventory() {
     const cell = document.createElement('button');
     cell.className = 'inv-cell has-tooltip';
     if (sellMode) cell.classList.add('selectable');
+    cell.draggable = !sellMode;
     if (selectedForSale.has(item.id)) cell.classList.add('selected');
     cell.dataset.id = item.id;
     cell.style.borderColor = rarity.color;
@@ -540,4 +633,4 @@ function grantItem(item) {
   gearDirty = true;
 }
 
-export { rollDrop, equipItem, unequipItem, sortInventory, equipBest, sellSelected, toggleSellMode, exitSellMode, buildDepthRelic, grantItem, itemSellValue, itemNameOf, markGearDirty };
+export { rollDrop, equipItem, unequipItem, sortInventory, equipBest, sellSelected, toggleSellMode, exitSellMode, buildDepthRelic, grantItem, itemSellValue, itemNameOf, markGearDirty, bindDragAndDrop, slotAcceptsItem, equipItemToSlot };

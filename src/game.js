@@ -29,7 +29,7 @@ import { buildCraftSlots, renderCrafting, bindCraftEvents } from './crafting.js'
 
 import { INTRO_PAGES, COMBAT_INTRO_PAGES, CONTINENT_LORE, epitaphOf, continentLoreKeyOf, renderChronicle } from './lore.js';
 
-import { initItems, rollDrop, unequipItem, sortInventory, equipBest, exitSellMode, sellButtonAction, selectAllForSale, handleInventoryClick, renderGearIfDirty, buildDepthRelic, grantItem, itemSellValue, markGearDirty } from './items.js';
+import { initItems, rollDrop, unequipItem, sortInventory, equipBest, exitSellMode, sellButtonAction, selectAllForSale, handleInventoryClick, renderGearIfDirty, buildDepthRelic, grantItem, itemSellValue, markGearDirty, bindDragAndDrop } from './items.js';
 
 import { t, lname, fmtDec, onLangChange, getLang } from './i18n.js';
 
@@ -1087,6 +1087,7 @@ function bindEvents() {
   el.sellButton.addEventListener('click', sellButtonAction);
   el.sellAllButton.addEventListener('click', selectAllForSale);
   el.inventoryGrid.addEventListener('click', handleInventoryClick);
+  bindDragAndDrop();
   for (const button of el.statPlusButtons) {
     bindHoldToRepeat(button, () => allocateStat(button.dataset.stat));
   }

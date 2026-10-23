@@ -35,7 +35,12 @@ class StubElement {
     this.id = id;
     this.children = [];
     this.parent = null;
-    this.dataset = {};
+    // dataset koerziert wie im echten DOM zu Strings; fehlende Keys sind
+    // undefined (nicht '') — sonst greifen `??=`-Muster im Spielcode nicht.
+    this.dataset = new Proxy({}, {
+      get: (t, p) => (p in t ? t[p] : undefined),
+      set: (t, p, v) => { t[p] = String(v); return true; },
+    });
     this.attributes = {};
     this.listeners = {};
     this.hidden = false;
@@ -49,6 +54,8 @@ class StubElement {
       set: (t, p, v) => { t[p] = v; return true; },
     });
   }
+  get className() { return [...this.classList.set].join(' '); }
+  set className(v) { this.classList.set = new Set(String(v).split(/\s+/).filter(Boolean)); }
   get textContent() { return this._text ?? ''; }
   set textContent(v) {
     this._text = String(v);
@@ -84,7 +91,10 @@ class StubElement {
     for (const fn of this.listeners.click ?? []) fn({ target: this, button: 0, key: '', preventDefault() {}, closest: () => null });
   }
   focus() {}
-  closest() { return null; }
+  closest(sel) {
+    const cls = typeof sel === 'string' && sel.startsWith('.') ? sel.slice(1) : null;
+    return cls && this.classList.contains(cls) ? this : null;
+  }
   contains() { return false; }
   get offsetWidth() { return 100; }
   get offsetHeight() { return 100; }
@@ -178,6 +188,7 @@ storage.set('ashen-crown-save', JSON.stringify({
   inventory: [
     item({ id: 1 }),
     item({ id: 2, slot: 'helm', base: 'Hornhelm', name: 'Hornhelm der Krone', rarity: 'episch', damage: 0, hp: 90, armor: 12, critChance: 0, hpPct: 6, mastery: null }),
+    item({ id: 4, slot: 'hand-links', base: 'Handschuh', name: 'Handschuh der Gebeine', rarity: 'selten', damage: 8, armor: 3, critChance: 2 }),
   ],
   equipment: { waffe: item({ id: 3, name: 'Sense der Aschenkrone', rarity: 'legendär', base: 'Sense', damage: 40, lifeleech: 12 }) },
   statPoints: 0, armorBase: 5, critBonus: 2, skillPoints: 1, skills: ['start'],
@@ -242,6 +253,51 @@ show('scene-map'); zones.renderZones();
 show('scene-chronik'); lore.renderChronicle();
 show('scene-skills'); skilltree.renderSkillTree();
 
+// ——— Drag & Drop: Inventar-Stücke nur in passende Slots ———
+const grid = element('inventory-grid');
+const fakeDt = () => ({ setData() {}, getData: () => '1', effectAllowed: '', dropEffect: '' });
+const fire = (el, ev, dt, target = el) => {
+  for (const fn of el.listeners[ev] ?? []) fn({ preventDefault() {}, target, currentTarget: el, relatedTarget: null, dataTransfer: dt });
+};
+const slotOf = (key) => gearSlots.find((s) => s.dataset.slot === key);
+
+const dragCell = grid.children[0]; // id 1: 'Klinge der Gebeine' (Waffe)
+fire(grid, 'dragstart', fakeDt(), dragCell); // dragstart bubbelt: Listener am Grid, Ziel = Zelle
+assert(dragCell.classList.contains('dragging'), 'Drag startet (Quell-Zelle markiert)');
+
+const helmSlot = slotOf('helm');
+const waffeSlot = slotOf('waffe');
+const handSlot = slotOf('hand-rechts');
+
+fire(helmSlot, 'dragover', fakeDt());
+assert(helmSlot.classList.contains('drop-bad') && !helmSlot.classList.contains('drop-ok'), 'falscher Slot glüht rot');
+const helmBefore = S.state.equipment.helm?.id ?? null;
+fire(helmSlot, 'drop', fakeDt());
+assert((S.state.equipment.helm?.id ?? null) === helmBefore, 'falscher Slot nimmt nichts an');
+
+// Im echten Browser wäre der Drop am roten Slot vom Browser verworfen und die
+// Ziehfahrt ginge weiter — der manuelle fire() oben hat clearDrag laufen,
+// also fasst der Test das Stück neu an.
+fire(grid, 'dragstart', fakeDt(), dragCell);
+fire(waffeSlot, 'dragover', fakeDt());
+assert(waffeSlot.classList.contains('drop-ok') && !waffeSlot.classList.contains('drop-bad'), 'richtiger Slot glüht grün');
+const invBefore = S.state.inventory.length;
+fire(waffeSlot, 'drop', fakeDt());
+assert(S.state.equipment.waffe?.id === 1, 'Drop rüstet das Stück ins Ziel-Slot');
+assert(S.state.inventory.length === invBefore, 'Tausch hält die Inventar-Belegung konstant');
+assert(S.state.inventory.some((it) => it.id === 3), 'verdrängte Sense zurück im Inventar');
+assert(!waffeSlot.classList.contains('drop-ok'), 'Glow nach dem Drop geräumt');
+
+// Handschuh aufs Paar: hand-links-Stück darf in hand-rechts (exakt dorthin)
+const gloveCell = grid.children.find((c) => c.dataset?.id === '4');
+assert(Boolean(gloveCell), 'Handschuh-Zelle im Inventar');
+fire(grid, 'dragstart', fakeDt(), gloveCell);
+fire(handSlot, 'dragover', fakeDt());
+assert(handSlot.classList.contains('drop-ok'), 'Handschuh glüht grün am Paar-Slot');
+fire(handSlot, 'drop', fakeDt());
+assert(S.state.equipment['hand-rechts']?.id === 4, 'Handschuh landet exakt im gewählten Paar-Slot');
+assert(gearSlots.every((s) => !s.classList.contains('drop-ok') && !s.classList.contains('drop-bad')), 'keine Glow-Reste nach den Drops');
+
 // ——— Kampf: Boss-Phase erzwingen (zone 0, 30 Kills gezählt) — Boss-Kill mit
 // Epitaph-Overlay, dann Tod an einem Gegner-Schlag. ———
 S.state.zone = 0;
@@ -281,6 +337,8 @@ assert(all.includes('Ashen Crypt · 12 slain'), 'Bestiary-Zählzeile englisch');
 assert(all.includes('Never slain yet'), 'Bestiary-verschlossen-Zeile englisch');
 assert(all.includes('Loot License · Level 2/3'), 'Ruhm-Laden-Zeile englisch');
 assert(all.includes('Second Wind'), 'Vermächtnis-Titel englisch');
+assert(all.includes('Blade of Bones'), 'Item-Name englisch komponiert (Klinge der Gebeine → Blade of Bones)');
+assert(all.includes('Glove of Bones'), 'Handschuh-Name englisch komponiert');
 
 // Debug: Läuft der Kampf-Pfad nicht bis zum Boss-Overlay/Tod, zeigt dieser
 // Streifen, was stattdessen im Log gelandet ist.
