@@ -133,6 +133,28 @@ export const RUHM_SHOP = {
 // Tiefen-Meisterschaft neu schmieden: unbegrenzt, bewusst günstig.
 export const RUHM_RELIC_REROLL_COST = 2;
 
+// Härtung für geladene Spielstände: Kaufstufen ganzzahlig zwischen 0 und der
+// höchsten Stufe — negative Werte verfälschten Inventar, Asche-Ertrag,
+// Todeszoll & Co., gebrochene ließen den nächsten Kauf NaN buchen. Dazu die
+// Ruhm-Buchhaltung konsistent halten: Der Einkaufsanteil von ruhmAusgegeben
+// wird exakt aus den Kaufstufen rekonstruiert — sonst bliebe ein Stand mit
+// maximalen Käufen und leerer Ausgabenzeile ein Balance-Bypass. Der nicht-
+// negative Rest ist die unveränderliche Reroll-Historie (je 2 Ruhm).
+export function sanitizeShopPurchases(purchases, ruhmAusgegeben) {
+  const clean = {};
+  let spend = 0;
+  for (const [kind, def] of Object.entries(RUHM_SHOP)) {
+    const raw = purchases?.[kind];
+    const level = Number.isFinite(raw)
+      ? Math.min(def.levels.length, Math.max(0, Math.trunc(raw)))
+      : 0;
+    clean[kind] = level;
+    for (let i = 0; i < level; i += 1) spend += def.levels[i];
+  }
+  const rerolls = Math.max(0, (Number.isFinite(ruhmAusgegeben) ? ruhmAusgegeben : 0) - spend);
+  return { purchases: clean, ruhmAusgegeben: spend + rerolls };
+}
+
 // Prüft alle noch unbekannten Errungenschaften und trägt erfüllte ins Abhol-
 // Regal (achievementsPending) ein — Ruhm gibt es erst beim Einsammeln.
 // Rückgabe sind die neuen IDs (für Toasts).

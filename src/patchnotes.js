@@ -1,12 +1,22 @@
 // Patchnote-Fenster beim Spielstart: zeigt die neuesten Änderungen einmal
 // pro Tag — oder sofort wieder, wenn eine neue Version neue Notizen bringt.
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
+import { readStorage, writeStorage } from './storage.js';
 
 export const PATCH_NOTES = {
-  version: '0.21.1',
+  version: '0.21.2',
   date: '23.10.2026',
-  headline: 'Härtung — Spielstand & Release-Pipeline',
+  headline: 'Härtung — Ruhm-Käufe, Speicher & Prüfgelände',
   sections: [
+    {
+      heading: '0.21.2 — Härtung: Ruhm-Käufe, Speicher & Prüfgelände',
+      items: [
+        'Fix: Ruhm-Käufe lassen sich nicht mehr manipulieren. Negative oder gebrochene Kaufstufen in einem bearbeiteten oder beschädigten Spielstand verfälschten Inventar, Asche-Ertrag, Todeszoll & Co. — und wer die Stufen auf Maximalwerte setzte, ohne die Ruhm-Ausgaben mitzuschreiben, bekam den ganzen Ruhm-Laden gratis. Beim Laden sind die Stufen jetzt ganzzahlig zwischen 0 und Maximum geklemmt, und die Ausgaben werden exakt aus den Kaufstufen nachberechnet.',
+        'Klarstellung: Betrifft wieder ausschließlich lokal bearbeitete oder beschädigte Spielstände — reguläre Spielstände bleiben unverändert, und bereits bezahlte Rerolls bleiben sauber gebucht.',
+        'Robustheit: Ein blockierter Speicher (Privatmodus, volle Quota, verweigerte Freigabe) bringt das Spiel nirgends mehr zum Stolpern. Jeder Zugriff — Lesen, Schreiben, Backup-Rotation, Löschen, Einstellungen — ist abgefangen; eine gedrosselte Warnung ersetzt den Absturz. Ein Import, dessen Schreiben fehlschlägt, bricht sichtbar ab, statt nach einem Reload einen Schein-Erfolg zu zeigen.',
+        'Unter der Haube: Das Prüfgelände wächst. Der Smoke-Test läuft jetzt in jeder CI, ein neuer Storage-Test wirft gezielt SecurityError und QuotaExceededError gegen alle Speicherpfade, und die Tiefen-Balance (Zone 51+) wird als eigenes Gate gefahren — Ziel erreicht, Zahlen präzise, Gesamtzeit im Korridor, Killzeit gedeckelt.',
+      ],
+    },
     {
       heading: '0.21.1 — Härtung: Spielstand & Release-Pipeline',
       items: [
@@ -244,16 +254,17 @@ const todayKey = () => {
 };
 
 function dismissedForToday() {
+  let stored = null;
   try {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
-    return stored?.day === todayKey() && stored?.version === PATCH_NOTES.version;
+    stored = JSON.parse(readStorage(STORAGE_KEY)); // blockierter Speicher → null, kein Wurf
   } catch {
-    return false;
+    return false; // kaputtes JSON → Notizen einfach wieder zeigen
   }
+  return stored?.day === todayKey() && stored?.version === PATCH_NOTES.version;
 }
 
 function rememberDismissed() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ day: todayKey(), version: PATCH_NOTES.version }));
+  writeStorage(STORAGE_KEY, JSON.stringify({ day: todayKey(), version: PATCH_NOTES.version }));
 }
 
 function renderNotes() {

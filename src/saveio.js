@@ -6,11 +6,11 @@ import { state, SAVE_KEY, SAVE_VERSION } from './state.js';
 import { GEAR_SLOTS, RARITIES, SKILL_TREE_UNLOCK_LEVEL, MAX_ZONE, sanitizeItem, asCount } from './data.js';
 import { t } from './i18n.js';
 import { MAX_SKILL_POINTS, sanitizeSkills } from './skilltree.js';
-import { sanitizeAchievements } from './achievements.js';
+import { sanitizeAchievements, sanitizeShopPurchases } from './achievements.js';
 import { LEGACY_TITLES } from './prestige.js';
 import { el } from './dom.js';
 import { flashButton } from './domfx.js';
-import { toast } from './feedback.js';
+import { readStorage, writeStorage, removeStorage } from './storage.js';
 import { use } from './bus.js';
 
 const BACKUP_KEYS = ['ashen-crown-save.bak1', 'ashen-crown-save.bak2', 'ashen-crown-save.bak3'];
@@ -25,26 +25,12 @@ function suppressSave() {
   saveSuppressed = true;
 }
 
-// Blockierter Speicher (Web-Build, Privatmodus, Quota): Ein Wurf darf das
-// Spiel nicht töten — gedrosselte Warnung statt Exception.
-let lastStorageWarning = 0;
-
-function warnStorageBroken() {
-  if (Date.now() - lastStorageWarning < 30000) return;
-  lastStorageWarning = Date.now();
-  toast(t('Spielstand konnte nicht gespeichert werden — der Speicher blockiert Schreibzugriffe.'), '#c1663a');
-}
-
 function save() {
   if (saveSuppressed) return;
   state.lastSeen = Date.now();
   state.hp = Math.max(0, Math.round(use('heroHp').get()));
   rotateBackups();
-  try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-  } catch {
-    warnStorageBroken();
-  }
+  writeStorage(SAVE_KEY, JSON.stringify(state));
 }
 
 // Rücksichtslos löschen heißt: Hauptstand UND Backup-Kette — sonst lädt
@@ -52,7 +38,7 @@ function save() {
 // Der Suppress hält Zwischenspeicherer aus dem Fenster bis zum Reload.
 function purgeSaves() {
   saveSuppressed = true;
-  for (const key of [SAVE_KEY, ...BACKUP_KEYS]) localStorage.removeItem(key);
+  for (const key of [SAVE_KEY, ...BACKUP_KEYS]) removeStorage(key);
 }
 
 const asNumber = (value, fallback) => (typeof value === 'number' && Number.isFinite(value) ? value : fallback);
@@ -105,19 +91,19 @@ function rotateBackups(force = false) {
   // save() läuft mit jedem 3-Sekunden-Tick und jedem Kill; die beiden
   // Voll-Parses des Spielstands fielen sonst in jedem Aufruf an.
   if (!force && Date.now() - lastBackupRotatedAt < BACKUP_MIN_GAP_MS) return;
-  const current = parseSave(localStorage.getItem(SAVE_KEY));
+  const current = parseSave(readStorage(SAVE_KEY));
   if (!current) return;
-  const newest = parseSave(localStorage.getItem(BACKUP_KEYS[0]));
+  const newest = parseSave(readStorage(BACKUP_KEYS[0]));
   if (!force && newest && Date.now() - (newest.lastSeen ?? 0) < BACKUP_MIN_GAP_MS) return;
-  try {
-    localStorage.setItem(BACKUP_KEYS[2], localStorage.getItem(BACKUP_KEYS[1]) ?? '');
-    localStorage.setItem(BACKUP_KEYS[1], localStorage.getItem(BACKUP_KEYS[0]) ?? '');
-    localStorage.setItem(BACKUP_KEYS[0], JSON.stringify(current));
-    lastBackupRotatedAt = Date.now();
-  } catch {
-    // Backups sind der zweite Schutzring — ihr Scheitern darf das Speichern
-    // des Hauptstands nicht mitreißen (die Quota gilt für beide).
-  }
+  // Backup-Kette schieben — die Quota gilt für alle Schlüssel, der zweite
+  // Schutzring darf scheitern, ohne den Hauptstand mitzureißen. Erst ein
+  // vollständiger Zug zählt als Rotation; sonst wird sie beim nächsten
+  // save() erneut versucht.
+  const shifted =
+    writeStorage(BACKUP_KEYS[2], readStorage(BACKUP_KEYS[1]) ?? '') &&
+    writeStorage(BACKUP_KEYS[1], readStorage(BACKUP_KEYS[0]) ?? '') &&
+    writeStorage(BACKUP_KEYS[0], JSON.stringify(current));
+  if (shifted) lastBackupRotatedAt = Date.now();
 }
 
 // Härtung: bereinigt ALLES auf dem rohen Spielstand-Objekt, bevor etwas davon
@@ -207,19 +193,11 @@ function prepareSave(data) {
   const achievements = sanitizeAchievements(data.achievements, data.achievementsPending);
   data.achievements = achievements.claimed;
   data.achievementsPending = achievements.pending;
-  // Ruhm-Laden: ausgegebener Ruhm und Kaufläufe geklemmt.
-  data.ruhmAusgegeben = Math.max(0, asNumber(data.ruhmAusgegeben, 0));
-  data.shopPurchases = data.shopPurchases && typeof data.shopPurchases === 'object' && !Array.isArray(data.shopPurchases) ? data.shopPurchases : {};
-  data.shopPurchases.beutelschein = Math.min(3, asNumber(data.shopPurchases.beutelschein, 0));
-  data.shopPurchases.zollerlass = Math.min(4, asNumber(data.shopPurchases.zollerlass, 0));
-  data.shopPurchases.aschesegen = Math.min(3, asNumber(data.shopPurchases.aschesegen, 0));
-  data.shopPurchases.tiefenkunde = Math.min(3, asNumber(data.shopPurchases.tiefenkunde, 0));
-  data.shopPurchases.werkstatthandwerk = Math.min(3, asNumber(data.shopPurchases.werkstatthandwerk, 0));
-  data.shopPurchases.kriegerherz = Math.min(3, asNumber(data.shopPurchases.kriegerherz, 0));
-  data.shopPurchases.wuchtschlag = Math.min(3, asNumber(data.shopPurchases.wuchtschlag, 0));
-  data.shopPurchases.altelehre = Math.min(3, asNumber(data.shopPurchases.altelehre, 0));
-  data.shopPurchases.schreinatem = Math.min(3, asNumber(data.shopPurchases.schreinatem, 0));
-  data.shopPurchases.aschwille = Math.min(3, asNumber(data.shopPurchases.aschwille, 0));
+  // Ruhm-Laden: Kaufstufen ganzzahlig 0..Maximum, und die Ruhm-Buchhaltung
+  // konsistent — Einkaufsanteil exakt aus den Stufen, Rest = Rerolls.
+  const shop = sanitizeShopPurchases(data.shopPurchases, data.ruhmAusgegeben);
+  data.shopPurchases = shop.purchases;
+  data.ruhmAusgegeben = shop.ruhmAusgegeben;
   // Prestige: Kronenasche-Buch und Vermächtnis-Stufen (nur bekannte Titel, 0–3).
   data.kronenascheEarned = Math.max(0, asNumber(data.kronenascheEarned, 0));
   data.kronenascheAusgegeben = Math.min(data.kronenascheEarned, Math.max(0, asNumber(data.kronenascheAusgegeben, 0)));
@@ -252,7 +230,7 @@ let saveNotice = null;
 
 function loadSave() {
   for (const [attempt, key] of [SAVE_KEY, ...BACKUP_KEYS].entries()) {
-    const data = parseSave(localStorage.getItem(key));
+    const data = parseSave(readStorage(key));
     if (!data) continue;
     try {
       prepareSave(data);
@@ -277,7 +255,7 @@ function consumeSaveNotice() {
 const tauriSaveApi = () => (window.__TAURI__?.dialog && window.__TAURI__?.fs ? window.__TAURI__ : null);
 
 async function exportSave() {
-  const raw = localStorage.getItem(SAVE_KEY);
+  const raw = readStorage(SAVE_KEY);
   if (!raw) return false;
   const payload = JSON.stringify({
     game: 'ashen-crown',
@@ -370,7 +348,10 @@ async function importSave() {
     return;
   }
   rotateBackups(true);
-  localStorage.setItem(SAVE_KEY, JSON.stringify(migrateSave(data)));
+  // Schlägt das Schreiben fehl (blockierter Speicher), bleibt der alte Stand
+  // stehen — ein Reload würde dem Spieler sonst einen Import vorgaukeln,
+  // der nicht stattfand.
+  if (!writeStorage(SAVE_KEY, JSON.stringify(migrateSave(data)))) return;
   location.reload();
 }
 

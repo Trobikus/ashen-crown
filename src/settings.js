@@ -8,18 +8,23 @@ import { applyFullscreenSetting } from './display.js';
 
 import { setLangPreference, applyStaticI18n } from './i18n.js';
 
+import { readStorage, writeStorage } from './storage.js';
+
 
 
 function loadSettings() {
+  let stored = null;
   try {
-    Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY)) ?? {});
+    stored = JSON.parse(readStorage(SETTINGS_KEY)); // blockierter Speicher → null, kein Wurf
   } catch {
-    Object.assign(settings, DEFAULT_SETTINGS);
+    Object.assign(settings, DEFAULT_SETTINGS); // kaputtes JSON → saubere Defaults
+    return;
   }
+  Object.assign(settings, stored ?? {});
 }
 
 function saveSettings() {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  writeStorage(SETTINGS_KEY, JSON.stringify(settings));
 }
 
 // Die Sprache nur bei echtem Wechsel umsetzen — applySettings läuft bei jeder

@@ -48,6 +48,17 @@ assert(canon.claimed.join(',') === 'ernte-1,sturz-1', `Annalen kanonisch: Duplik
 assert(canon.pending.join(',') === 'zeit-1', `Regal kanonisch: Duplikate/Unbekanntes raus, Eingesammeltes entfernt (${canon.pending.join(',')})`);
 assert(A.ruhmEarned({ achievements: canon.claimed }) === 2 && A.ruhmPending({ achievementsPending: canon.pending }) === 1, `Ruhm aus kanonischen Mengen: gebucht 1+1=2, Regal 1 (${A.ruhmEarned({ achievements: canon.claimed })}/${A.ruhmPending({ achievementsPending: canon.pending })})`);
 
+// ——— Härtung: Kaufstufen & Ruhm-Buchhaltung (sanitizeShopPurchases) ———
+// Negative/gebrochene Stufen verfälschen die Wirtschaft; Käufe ohne Ruhm-
+// Kosten werden über die Ausgaben nachberechnet.
+const shop = A.sanitizeShopPurchases({ beutelschein: 9, zollerlass: -2, aschesegen: 2.5 }, 5);
+assert(shop.purchases.beutelschein === 3 && shop.purchases.zollerlass === 0 && shop.purchases.aschesegen === 2, `Kaufstufen ganzzahlig 0..Max: 9→3, −2→0, 2.5→2 (${shop.purchases.beutelschein}/${shop.purchases.zollerlass}/${shop.purchases.aschesegen})`);
+assert(shop.ruhmAusgegeben === 27, `Buchhaltung nachberechnet: Einkauf 18+9=27, Reroll-Rest 0 (${shop.ruhmAusgegeben})`);
+const rerolls = A.sanitizeShopPurchases({ beutelschein: 2 }, 20);
+assert(rerolls.ruhmAusgegeben === 20, `legitime Buchhaltung unverändert: 9 Einkauf + 11 Rerolls (${rerolls.ruhmAusgegeben})`);
+const frei = A.sanitizeShopPurchases({ kriegerherz: 3 }, 0);
+assert(frei.ruhmAusgegeben === 21, `Kauf ohne Ruhm wird nachberechnet: 0 → 21 (${frei.ruhmAusgegeben})`);
+
 // Fortschritt der Tiefen-Errungenschaften zählt ab null (nicht negativ):
 const tiefe1 = A.ACHIEVEMENTS.find((a) => a.id === 'tiefe-1');
 const [cur] = tiefe1.progress({ cleared: 20 });

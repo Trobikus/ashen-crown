@@ -362,7 +362,7 @@ export const EN_UI = {
   '. Ein Boss versperrte den Weg — ausgewichen auf {name} und weitergefarmt.': '. A boss blocked the way — diverted to {name} and kept farming.',
 
   // ——— Speicher-Subsystem ———
-  'Spielstand konnte nicht gespeichert werden — der Speicher blockiert Schreibzugriffe.': 'Save could not be written — storage is blocking writes.',
+  'Der Speicher blockiert Zugriffe — Spielstand und Einstellungen werden nicht gesichert.': 'Storage is blocking access — progress and settings cannot be saved.',
   'Hauptspielstand war beschädigt — Backup {n} geladen.': 'Main save was corrupted — backup {n} loaded.',
   'Wirklich? Überschreibt den Spielstand.': 'Really? Overwrites the save.',
   'Ungültige Datei': 'Invalid file',
