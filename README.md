@@ -1,25 +1,43 @@
 <div align="center">
   <img src="docs/banner.svg" alt="Ashen Crown" width="840" />
 
-  **Ashen Crown** ist ein inkrementelles Dark-Fantasy-RPG: Du erwachst in der Asche,
-  kämpfst dich Gebiet für Gebiet durch **fünf Kontinente** — und formst dabei einen
-  Helden, der ganz nach deinem Willen geformt ist.
+  ### Ein inkrementelles Dark-Fantasy-Idle-RPG — Web & Desktop
 
-  [![Version](https://img.shields.io/badge/Alpha-v0.18.4-C14B3A)](releases)
-  [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev)
-  [![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)](https://tauri.app)
-  [![pnpm](https://img.shields.io/badge/pnpm-Paketmanager-F69220?logo=pnpm&logoColor=white)](https://pnpm.io)
-  [![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.de/de/docs/Web/JavaScript)
+  Du erwachst in der Asche. Der Kampf läuft von allein, die Entscheidungen triffst du:
+  Erlege Kreaturen, sammle Asche, forme deinen Helden — und steige Gebiet für Gebiet
+  tiefer, bis dir am Ende der Leere die Aschenkrone selbst gegenübersteht.
+
+  **[ ▶ Direkt im Browser spielen ](https://trobikus.github.io/ashen-crown/)** ·
+  **[ ⬇ Desktop-Installer laden ](releases)**
+
+  [![Version](https://img.shields.io/github/v/release/Trobikus/ashen-crown?include_prereleases&label=Alpha&color=C14B3A)](releases)
   [![CI](https://img.shields.io/badge/CI-Balance--Sim_%2B_Build-green)](../../actions/workflows/ci.yml)
   [![Lizenz](https://img.shields.io/badge/Lizenz-propriet%C3%A4r--alle%20Rechte%20vorbehalten-C14B3A)](LICENSE)
+  [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev)
+  [![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)](https://tauri.app)
+  [![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.de/de/docs/Web/JavaScript)
+  [![pnpm](https://img.shields.io/badge/pnpm-Paketmanager-F69220?logo=pnpm&logoColor=white)](https://pnpm.io)
 
-  *Web & Desktop — ohne Framework, ohne Server, mit Speicherstand im Browser.*
-
-  **🧪 Aktuell: Closed Alpha (v0.18.4)** — Installer über die
-  [Releases](releases), Updates installieren sich im Spiel von selbst.
+  *🧪 Geschlossene Alpha — Updates installieren sich im Spiel von selbst.*
 </div>
 
 ---
+
+## 🖼️ Eindrücke
+
+<div align="center">
+  <a href="docs/screenshots/kampf.png"><img src="docs/screenshots/kampf.png" alt="Der Kampf in der Arena" width="760" /></a>
+</div>
+
+| Fertigkeitenbaum | Die Gebiete |
+| :---: | :---: |
+| <a href="docs/screenshots/skilltree.png"><img src="docs/screenshots/skilltree.png" alt="Der Fertigkeitenbaum" width="100%" /></a> | <a href="docs/screenshots/gebiete.png"><img src="docs/screenshots/gebiete.png" alt="Die Gebiete-Karte" width="100%" /></a> |
+
+## 📊 Das Spiel in Zahlen
+
+| 🌍 | 🗺️ | ⚔️ | 🌳 | 🏆 | 🌌 |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| **5**<br>Kontinente | **50**<br>Gebiete | **163**<br>Kreaturen | **217**<br>Runen-Knoten | **29**<br>Errungenschaften | **∞**<br>Aschentiefen |
 
 ## 🕯️ Das Spiel
 
@@ -27,10 +45,6 @@ Ashen Crown ist ein Idle-RPG: Der Kampf läuft von allein, die Entscheidungen tr
 Erlege Kreaturen, sammle Asche, schärfe Klinge und Haut, rüste Beute aus — und steige
 Gebiet für Gebiet tiefer, bis dir am Ende der Leere die Aschenkrone selbst gegenübersteht.
 Denn die Asche erinnert sich — an jedes Reich, das vor dir versuchte, ihr zu entkommen.
-
-| Kampf | Fertigkeiten | Gebiete |
-| :---: | :---: | :---: |
-| ![](docs/screenshots/kampf.png) | ![](docs/screenshots/skilltree.png) | ![](docs/screenshots/gebiete.png) |
 
 ## ⚙️ Systeme, die ineinandergreifen
 
@@ -165,9 +179,9 @@ sich an alles andere.
   dich weiter (mit Tiefenkunde bis 20). An einer Boss-Wand weicht der simulierte
   Held aufs beste errungene Gebiet aus und farmt weiter — und meldet dir bei der
   Rückkehr, was er erlegt, gefunden und gelernt hat.
-- **Spielstand mit Sicherheitsnetz** — Versioniert (aktuell v9), drei rotierende
-  Backups, Export/Import als JSON, Migrationen für alte Helden. Korrupte Items
-  repariert das Spiel beim Laden — oder es greift zum Backup.
+- **Spielstand mit Sicherheitsnetz** — Versioniert, drei rotierende Backups,
+  Export/Import als JSON, Migrationen für alte Helden. Korrupte Items repariert
+  das Spiel beim Laden — oder es greift zum Backup.
 - **Onboarding ohne Tutorial-Zwang** — Einmal-Hinweise im richtigen Moment, und ein
   Patchnote-Fenster zeigt beim Start, was neu ist. Bestehende Helden bekommen nur,
   was sie verpasst haben.
@@ -215,7 +229,7 @@ Gebiete — je tiefer die Ebene, desto besser Beute und Werkstatt.
 
 ## 🧪 Closed Alpha
 
-Ashen Crown befindet sich im geschlossenen Alpha-Stadium (aktuell **v0.18.4**):
+Ashen Crown befindet sich im geschlossenen Alpha-Stadium:
 
 - **Mitmachen:** Installer aus den [Releases](releases) laden und installieren —
   das Spiel aktualisiert sich danach bei neuen Versionen von selbst. Ohne
@@ -233,6 +247,8 @@ Ashen Crown befindet sich im geschlossenen Alpha-Stadium (aktuell **v0.18.4**):
   3. Wann stirbst du, ohne zu verstehen warum?
 - **Empfehlung:** Desktop-Build spielen; der Web-Build (GitHub Pages bzw.
   `pnpm dev`) ist Dev-Vorschau ohne Touch-Feinschliff.
+- **Änderungshistorie:** Alle Versionen im Detail im
+  [CHANGELOG.md](CHANGELOG.md) und im Patchnote-Fenster im Spiel.
 
 ## 🚀 Entwicklung
 
@@ -246,7 +262,8 @@ node tools/balance-sim.mjs --verify   # Balance gegen die echte data.js prüfen
 node tools/smoke.mjs                  # Smoke-Checks für Kern-Module
 ```
 
-### Projektstruktur
+<details>
+<summary><strong>📁 Projektstruktur</strong></summary>
 
 ```
 ├── index.html            # UI-Grundgerüst (Menü, Schrein, Szenen, Patchnotes)
@@ -286,6 +303,8 @@ node tools/smoke.mjs                  # Smoke-Checks für Kern-Module
 ├── docs/                 # Banner & Screenshots für dieses README
 └── src-tauri/            # Tauri-2-Desktop-Shell (Rust)
 ```
+
+</details>
 
 ## 📜 Credits
 
