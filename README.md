@@ -1,327 +1,328 @@
 <div align="center">
   <img src="docs/banner.svg" alt="Ashen Crown" width="840" />
 
-  ### Ein inkrementelles Dark-Fantasy-Idle-RPG — Web & Desktop
+  ### An incremental dark-fantasy idle RPG — Web & Desktop
 
-  Du erwachst in der Asche. Der Kampf läuft von allein, die Entscheidungen triffst du:
-  Erlege Kreaturen, sammle Asche, forme deinen Helden — und steige Gebiet für Gebiet
-  tiefer, bis dir am Ende der Leere die Aschenkrone selbst gegenübersteht.
+  You wake in the ash. The fight runs by itself, the decisions are yours:
+  hunt creatures, gather ash, forge your hero — and descend area by area until,
+  at the end of the void, the Ashen Crown itself rises to meet you.
 
-  **[ ▶ Direkt im Browser spielen ](https://trobikus.github.io/ashen-crown/)** ·
-  **[ ⬇ Desktop-Installer laden ](releases)**
+  **[ ▶ Play in your browser ](https://trobikus.github.io/ashen-crown/)** ·
+  **[ ⬇ Download the desktop build ](releases)**
 
   [![Version](https://img.shields.io/github/v/release/Trobikus/ashen-crown?include_prereleases&label=Alpha&color=C14B3A)](releases)
-  [![CI](https://img.shields.io/badge/CI-Balance--Sim_%2B_Build-green)](../../actions/workflows/ci.yml)
-  [![Lizenz](https://img.shields.io/badge/Lizenz-propriet%C3%A4r--alle%20Rechte%20vorbehalten-C14B3A)](LICENSE)
+  [![CI](https://img.shields.io/badge/CI-balance-sim-%2B-smoke-green)](../../actions/workflows/ci.yml)
+  [![Lizenz](https://img.shields.io/badge/License-proprietary--all-rights-reserved-C14B3A)](LICENSE)
   [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev)
   [![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)](https://tauri.app)
-  [![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.de/de/docs/Web/JavaScript)
-  [![pnpm](https://img.shields.io/badge/pnpm-Paketmanager-F69220?logo=pnpm&logoColor=white)](https://pnpm.io)
+  [![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.de/en-US/docs/Web/JavaScript)
+  [![pnpm](https://img.shields.io/badge/pnpm-package-manager-F69220?logo=pnpm&logoColor=white)](https://pnpm.io)
 
-  *🧪 Geschlossene Alpha — Updates installieren sich im Spiel von selbst.*
+  *🧪 Closed alpha — updates install themselves inside the game.*
 </div>
 
 ---
 
-## 🖼️ Eindrücke
+> **Note:** Ashen Crown is a closed alpha and currently **German-language only** —
+> the UI, lore and this game's world names are German. The sections below describe
+> the game in English and keep proper nouns as they appear in-game.
+
+## 🖼️ Screenshots
 
 <div align="center">
-  <a href="docs/screenshots/kampf.png"><img src="docs/screenshots/kampf.png" alt="Der Kampf in der Arena" width="760" /></a>
+  <a href="docs/screenshots/kampf.png"><img src="docs/screenshots/kampf.png" alt="Combat in the arena" width="760" /></a>
 </div>
 
-| Fertigkeitenbaum | Die Gebiete |
+| Skill tree | Areas |
 | :---: | :---: |
-| <a href="docs/screenshots/skilltree.png"><img src="docs/screenshots/skilltree.png" alt="Der Fertigkeitenbaum" width="100%" /></a> | <a href="docs/screenshots/gebiete.png"><img src="docs/screenshots/gebiete.png" alt="Die Gebiete-Karte" width="100%" /></a> |
+| <a href="docs/screenshots/skilltree.png"><img src="docs/screenshots/skilltree.png" alt="The skill tree" width="100%" /></a> | <a href="docs/screenshots/gebiete.png"><img src="docs/screenshots/gebiete.png" alt="The area map" width="100%" /></a> |
 
-## 📊 Das Spiel in Zahlen
+## 📊 The game in numbers
 
 | 🌍 | 🗺️ | ⚔️ | 🌳 | 🏆 | 🌌 |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **5**<br>Kontinente | **50**<br>Gebiete | **163**<br>Kreaturen | **217**<br>Runen-Knoten | **29**<br>Errungenschaften | **∞**<br>Aschentiefen |
+| **5**<br>continents | **50**<br>areas | **163**<br>creatures | **217**<br>skill nodes | **29**<br>achievements | **∞**<br>Ashen Depths |
 
-## 🕯️ Das Spiel
+## 🕯️ The game
 
-Ashen Crown ist ein Idle-RPG: Der Kampf läuft von allein, die Entscheidungen triffst du.
-Erlege Kreaturen, sammle Asche, schärfe Klinge und Haut, rüste Beute aus — und steige
-Gebiet für Gebiet tiefer, bis dir am Ende der Leere die Aschenkrone selbst gegenübersteht.
-Denn die Asche erinnert sich — an jedes Reich, das vor dir versuchte, ihr zu entkommen.
+Ashen Crown is an idle RPG: the combat plays itself, the decisions are yours.
+Hunt creatures, gather ash, sharpen blade and skin, equip your loot — and descend
+area by area until the Ashen Crown itself waits at the end of the void. Because
+the ash remembers — every realm that tried to escape it before you.
 
-## ⚙️ Systeme, die ineinandergreifen
+## ⚙️ Systems that interlock
 
-### ⚔️ Kampf & Zonen
+### ⚔️ Combat & zones
 
-- **Auto-Kampf & Zonen** — **5 Kontinente** mit je **10 Ebenen**, dahinter die
-  endlosen **Aschentiefen**. Jedes Gebiet bringt sein eigenes Bestiarium aus drei
-  Kreaturen mit — **150 Gegner insgesamt**, von der Ascheratte bis zur Aschenkrone.
-  Pro Ebene wartet nach 30 Siegen ein Boss; sein Fall öffnet die Tür in die Tiefe.
-  Jede Zone kämpft mit eigenem Temperament (*Flink* oder *Massiv*), Bosse verfallen
-  unter 35 % Lebenskraft in **Wut** — und jeder Gegner trägt die Färbung seines
-  Kontinents. Kämpfen ist Handwerk: **Gegner greifen gelegentlich daneben** (15 %),
-  dein Held verfehlt auch (12 %), die Kritchance deckelt bei 75 %, und Rüstung
-  mindert nie mehr als die Hälfte — mindestens 50 % jedes Schlags kommen durch.
-- **Die Arena ist eine Bühne** — Sieben handgesetzte Silhouetten-Sprites
-  (Diener, Bestie, Ritter, Kultist, Schatten, Koloss, Regent) kämpfen auf einer
-  kontinentfarbenen Bühne mit Bodenschatten: Bosse tragen die goldene Krone,
-  Eliten einen goldenen Randschimmer, Wut lässt die Augen aufflammen. Funken am
-  Einschlag, der Hieb-Bogen und der Geist-Nachlauf auf den HP-Leisten machen
-  jeden Treffer lesbar.
-- **Der Gegner-Inspektor** — Hover auf den Gegner verrät Level, Schaden pro Schlag,
-  Angriffstempo, Temperament und die Schadensminderung, die deine Rüstung gerade
-  bewirkt. Und wenn es doch schiefgeht, nennt der **Todesrückblick** den Bezwinger
-  mit Trefferzahl und Schadenssumme: Du weißt immer, warum du gestorben bist.
-- **Der Schrein atmet — und zählt** — Im Feld regeneriert dein Held nie von selbst;
-  nur das Rasten am Schrein heilt (2 % pro Sekunde), und wer aufbricht, nimmt seine
-  Lebenskraft mit, wie sie ist. Stirbst du, erwachst du mit einem Viertel deiner
-  Lebenskraft — und die Asche behält 15 % deines Vorrats als Zoll.
-- **Erfahrung gibt es nur von Würdigen** — Gegner unter deinem Niveau tragen weniger
-  bei, 20 Stufen darunter gar nichts. Und mancher Boss ist eine echte **Wand**:
-  Dann heißt es zurück, Asche und Beute farmen, besser schmieden — und es ihm
-  nochmal zeigen. Der Held wächst dabei mit: Er bleibt dauerhaft nur wenige Stufen
-  unter seinen Gegnern.
+- **Auto-combat & zones** — **5 continents** with **10 areas** each, and behind
+  them the endless **Ashen Depths**. Every area carries its own bestiary of three
+  creatures — **150 enemies in total**, from the ash rat to the Ashen Crown. Each
+  level pits you against a boss after 30 victories; his fall opens the door into
+  the depths. Every zone fights with its own temperament (*Swift* or *Massive*),
+  bosses fall into **enrage** below 35 % health — and every enemy wears the color
+  of its continent. Combat is craft: **enemies swing wide occasionally** (15 %),
+  your hero misses too (12 %), crit chance caps at 75 %, and armor never reduces
+  more than half — at least 50 % of every hit gets through.
+- **The arena is a stage** — Seven hand-drawn silhouette sprites (minion, beast,
+  knight, cultist, shade, colossus, regent) fight on a continent-tinted stage
+  with ground shadows: bosses wear the golden crown, elites glow with a golden
+  rim, enrage lights their eyes. Sparks on impact, the swing arc and ghost trails
+  on the health bars make every hit readable.
+- **The enemy inspector** — Hover an enemy to see its level, damage per hit,
+  attack tempo, temperament and the damage reduction your armor is currently
+  providing. And when it goes wrong anyway, the **death recap** names your slayer
+  with hit count and total damage: you always know why you died.
+- **The shrine breathes — and keeps count** — In the field your hero never heals
+  on his own; resting at the shrine does (2 % per second), and whoever departs
+  takes their health along as it is. If you die, you wake with a quarter of your
+  health — and the ash keeps 15 % of your stock as toll.
+- **Experience only from the worthy** — Enemies below your level contribute less,
+  none at all 20 levels down. And some bosses are genuine **walls**: then it's
+  back to farm ash and loot, forge better gear — and show them again. Your hero
+  grows along the way: he stays permanently just a few levels below his enemies.
+- **(German UI note)** Fight text, enemy names and areas are German — *Grabwächter*
+  is a grave warden, *Die Aschenkrone* is the Ashen Crown.
 
-### 🌳 Fertigkeitenbaum
+### 🌳 Skill tree
 
-**217 Knoten** im Path-of-Exile-Stil: vier Pfade (Krieg, Haut, Asche, Geist) mit
-kleinen Passives, Notables und **12 Keystones mit Tradeoffs**. **12 Brücken**
-verbinden die Pfade miteinander — für Misch-Builds, die es so kein zweites Mal gibt.
-Der Baum **erwacht ab Stufe 20** — erst dann gibt es Runenpunkte, und seine Werte
-sind bewusst gedämpft. Und er will Entscheidung: **Maximal zwei Pfade erwachen
-gleichzeitig** — die übrigen versiegeln sich, bis ein Respec sie wieder öffnet.
+**217 nodes** in the Path-of-Exile style: four paths (Krieg/war, Haut/skin, Asche/
+ash, Geist/spirit) with small passives, notables and **12 keystones with
+tradeoffs**. **12 bridges** connect the paths — for hybrid builds that exist
+exactly once. The tree **awakens at level 20** — only then do rune points come
+in, and its values are deliberately dampened. And it demands commitment:
+**at most two paths awaken at the same time** — the others seal themselves until
+a respec reopens them.
 
-### 🗡️ Loot & Inventar
+### 🗡️ Loot & inventory
 
-- **7 Rüstungsslots, 5 Raritäten** (Gewöhnlich → Magisch → Selten → Episch →
-  Legendär) über **35 Item-Basen** à la Diablo: Klinge bis Sense, Brustplatte bis
-  Plattenharnisch — höhere Basen schalten per Itemlevel frei und prägen den
-  Hauptwert. Jede Seltenheit kauft Affixplätze, jedes Stück **rollt seine Werte**
-  — das perfekte Exemplar ist ein Fund, kein Rechenresultat (gedrückte Alt-Taste
-  zeigt die Roll-Spannen).
-- **Beute ist ein Ereignis** — Der erste Elite-Kill eines Gebiets garantiert ein
-  Stück, der Boss kämpft mit 75 % Fundchance, normale Gegner bleiben das seltene
-  Glück. Lifeleech gibt es ausschließlich auf epischen und legendären Waffen.
-- **Komfort auf Wunsch** — **Auto-Tür** (nach dem Boss geht es von allein weiter),
-  **Auto-Verkauf** (Beute unter einer gewählten Seltenheit wird beim Fund zu Asche),
-  dazu Sortieren und „Bestes anlegen". Legendäre Stücke tragen eine goldene
-  **Meisterschaft** — Prozentboni, die es sonst auf Gear nirgends gibt.
+- **7 armor slots, 5 rarities** (Common → Magic → Rare → Epic → Legendary) across
+  **35 item bases** in the Diablo tradition: blade to scythe, breastplate to full
+  plate — higher bases unlock by item level and shape the primary stat. Every
+  rarity buys affix slots, every piece **rolls its own values** — the perfect
+  exemplar is a find, not a calculation (hold Alt to see the roll ranges).
+- **Loot is an event** — The first elite kill of an area guarantees a piece, the
+  boss fights with a 75 % find chance, regular enemies stay the rare luck.
+  Lifeleech exists exclusively on epic and legendary weapons.
+- **Convenience on request** — **Auto-door** (after the boss falls, the door
+  moves on by itself), **auto-sell** (loot below a chosen rarity turns into ash
+  on pickup), plus sorting and "equip best". Legendary pieces carry a golden
+  **mastery** — percentage bonuses that exist nowhere else on gear.
 
-### 🏺 Die Werkstatt
+### 🏺 The workshop
 
-Die Werkstatt macht Asche zu Macht: Ausrüstungsstufen **verstärken** (steile
-Kostenkurve pro Stufe) oder **umschmieden** (Rarity-Upgrade mit Neuwurf, senkt das
-Ilvl nie). Die goldene Meisterschaft lässt sich gegen viel Asche **neu schmieden**
-— die Endgame-Jagd nach dem Perfekt-Wurf. Und im Helden-Screen können verteilte
-**Statpunkte neu verteilt** werden: Alle Punkte zurück, nichts bleibt verbaut.
-Alles skaliert mit der tiefsten errungenen Ebene.
+The workshop turns ash into power: equipment levels are **reinforced** (a steep
+cost curve per level) or **reforged** (a rarity upgrade with fresh rolls that
+never lowers item level). The golden mastery can be **re-forged** for plenty of
+ash — the endgame hunt for the perfect roll. And in the hero screen, distributed
+**stat points can be respecced**: all points back, nothing stays baked in.
+Everything scales with the deepest conquered level.
 
-### 🏆 Ruhm, Errungenschaften & Wissen
+### 🏆 Glory, achievements & knowledge
 
-- **Errungenschaften & Ruhm** — **29 Auszeichnungen** aus Jagd, Stürzen, Spielzeit,
-  Beute und Reich-Fortschritt zahlen **Ruhm**, eine Währung, die es nur durch
-  Tun gibt. Im **Ruhm-Laden** kaufst du permanente Erleichterungen: **Beutelschein**
-  (+Inventarplätze), **Zollerlass** (−Todeszoll), **Aschesegen** (+Asche-Ertrag),
-  **Tiefenkunde** (+Offline-Fortschritt) und **Werkstatthandwerk** (−Werkstatt-
-  Kosten). Der Laden kostet insgesamt mehr, als je an Ruhm existiert — Ruhm bleibt
-  eine Entscheidung, keine Checkliste.
-- **Bestiarium & Statistik** — **163 Kreaturen** in der Chronik-Schwester: erlegt
-  entschleiert, unerlegt bleibt „???" versiegelt. Die Statistik-Seite zählt
-  Spielzeit, Tode, Beute je Seltenheit und deinen tiefsten Erfolg — die Asche
-  vergisst nicht.
+- **Achievements & glory** — **29 awards** from hunting, deaths, playtime, loot
+  and realm progress pay out **Glory (Ruhm)**, a currency earned only by doing.
+  In the **Glory shop** you buy permanent conveniences: **Beutelschein**
+  (+inventory slots), **Zollerlass** (−death toll), **Aschesegen** (+ash gain),
+  **Tiefenkunde** (+offline progress) and **Werkstatthandwerk** (−workshop
+  costs). The shop costs more in total than glory ever exists — glory stays a
+  decision, not a checklist.
+- **Bestiary & statistics** — **163 creatures** in the chronicle's sibling: slain
+  ones are unveiled, the unslain stay sealed as "???". The statistics page counts
+  playtime, deaths, loot by rarity and your deepest success — the ash forgets
+  nothing.
 
-### 🌌 Unter dem Thron: Die Aschentiefen
+### 🌌 Beneath the throne: the Ashen Depths
 
-Hinter dem Sieg wartet das Endgame: prozedural tiefer werdende **Aschentiefen**
-mit eigener Gegnerschaft. Der erste Boss jeder Tiefe hinterlässt garantiert ein
-**Tiefenrelikt** — ein Legendärstück auf Tiefen-Itemlevel mit gesicherter Lifeleech
-und **zwei Meisterschaften**. Die zweite Meisterschaft lässt sich für **2 Ruhm**
-neu schmieden: günstig, unbegrenzt, die Jagd des Endgames.
+Behind the victory waits the endgame: procedurally deepening **Ashen Depths**
+with their own roster of enemies. The first boss of every depth leaves behind a
+guaranteed **depth relic** — a legendary piece at depth item level with secured
+lifeleech and **two masteries**. The second mastery can be **re-forged for 2
+glory**: cheap, unlimited, the endgame hunt.
 
-### 🔁 Erneut erwachen: Der Thron
+### 🔁 Awaken anew: the Throne
 
-Nach dem ersten Kronensieg öffnet sich die Hub-Kachel **„Der Thron"** — dort,
-wo die Krone ruht. Jeder abgeschlossene Lauf zahlt **Kronenasche**: 1 für die
-gehobene Krone, +1 je volle 5 errungene Aschentiefen. Sie ist die zweite,
-wiederkehrende Meta-Währung neben Ruhm — und sie wirkt nicht durchs Ausgeben:
-**Jede erworbene Kronenasche segnet alle künftigen Läufe** mit +3 % Asche &
-Erfahrung, lebenslang, unabhängig davon, was du investierst.
+After the first crown victory, the hub tile **"Der Thron" (the throne)** opens —
+there, where the crown rests. Every completed run pays **Crown Ash
+(Kronenasche)**: 1 for the raised crown, +1 for every full 5 conquered Ashen
+Depths. It is the second, recurring meta-currency besides glory — and it works
+without being spent: **every piece of Crown Ash earned blesses all future runs**
+with +3 % ash & experience, lifelong, independent of what you invest.
 
-Ausgegeben wird sie im **Vermächtnis** auf sechs gestufte Titel (je 3 Stufen,
-zusammen 36 Kronenasche — der Satz füllt sich über mehrere Läufe, die
-Reihenfolge wählst du):
+It is spent in the **Legacy (Vermächtnis)** on six tiered titles (3 levels each,
+36 Crown Ash in total — the set fills over several runs, the order is yours):
 
-| Titel | Wirkung je Stufe |
+| Title | Effect per level |
 | --- | --- |
-| *Zweiter Atem* | +5 % Lebenskraft & Schaden auf den Helden-Grundwert |
-| *Aschengeist* | +5 % Erfahrung |
-| *Beutelspähler* | +5 % Asche-Ertrag |
-| *Alter Pfad* | Erwache mit +2 freien Statpunkten |
-| *Tiefenwissen* | +10 % Elite-/Boss-Fundchance |
-| *Der Vorbereitete* | Erwache mit 25 Asche |
+| *Zweiter Atem* | +5 % health & damage on the hero's base value |
+| *Aschengeist* | +5 % experience |
+| *Beutelspähler* | +5 % ash gain |
+| *Alter Pfad* | Awaken with +2 free stat points |
+| *Tiefenwissen* | +10 % elite/boss find chance |
+| *Der Vorbereitete* | Awaken with 25 ash |
 
-**Erneut erwachen** setzt den Lauf zurück — Zone & Gebiete, Held (Stufe, EP,
-Statpunkte, Runen & Pfad-Bindung), Asche, Ausrüstung & Inventar. Was bleibt:
-das ganze **Ruhm-Ökosystem**, **Kronenasche & Vermächtnis**, **Bestiarium,
-Chronik & Statistik**. Der Thron zeigt vorher eine Verfällt/Bleibt-Vorschau
-und will den Entschluss zweimal gehört haben — erst der zweite Klick vollzieht
-das Erwachen. Die Kontinent-Annalen liest du dabei erneut; die Asche erinnert
-sich an alles andere.
+**Awaken anew** resets the run — zone & areas, hero (level, XP, stat points,
+runes & path binding), ash, equipment & inventory. What stays: the whole
+**glory ecosystem**, **Crown Ash & Legacy**, **bestiary, chronicle &
+statistics**. The throne shows a verfall/bleibt (fades/keeps) preview first and
+wants the decision twice — only the second click performs the awakening. You
+read the continent annals once more; the ash remembers everything else.
 
-### 🌙 Chronik, Klang & Komfort
+### 🌙 Chronicle, sound & comfort
 
-- **Chronik & Lore** — Die Asche erinnert sich: Intro-Erzählung beim Erwachen, eine
-  Annale pro Kontinent beim ersten Betreten, ein Epitaph über jedem der **50
-  bezwungenen Bosse** und Flüstertöne aus den Tiefen — alles gesammelt am Schrein.
-- **Klang & Feedback** — Prozeduraler Sound aus der Web Audio API (keine Assets):
-  Treffer, Krits, Bosse, Beute, Aufstiege, Enrage, dazu ein dunkler Ambient-Drone,
-  der über Intensitäts-Layer mit Abstieg, Hub, Sieg und Prestige dichter wird —
-  mit Reglern für Gesamt, Effekte und Musik. Schadenszahlen, Aufblitzen und Toasts
-  lassen sich trennen.
-- **Offline-Fortschritt** — Wer im Feld aufhört, kämpft bis zu **8 Stunden** ohne
-  dich weiter (mit Tiefenkunde bis 20). An einer Boss-Wand weicht der simulierte
-  Held aufs beste errungene Gebiet aus und farmt weiter — und meldet dir bei der
-  Rückkehr, was er erlegt, gefunden und gelernt hat.
-- **Spielstand mit Sicherheitsnetz** — Versioniert, drei rotierende Backups,
-  Export/Import als JSON, Migrationen für alte Helden. Korrupte Items repariert
-  das Spiel beim Laden — oder es greift zum Backup.
-- **Onboarding ohne Tutorial-Zwang** — Einmal-Hinweise im richtigen Moment, und ein
-  Patchnote-Fenster zeigt beim Start, was neu ist. Bestehende Helden bekommen nur,
-  was sie verpasst haben.
+- **Chronicle & lore** — The ash remembers: an intro tale on awakening, an annal
+  per continent on first entry, an epitaph above each of the **50 conquered
+  bosses** and whispers from the depths — all collected at the shrine.
+- **Sound & feedback** — Procedural sound from the Web Audio API (no assets):
+  hits, crits, bosses, loot, level-ups, enrage, plus a dark ambient drone that
+  thickens with intensity layers across descent, hub, victory and prestige —
+  with sliders for master, effects and music. Damage numbers, hit flashes and
+  toasts can be toggled separately.
+- **Offline progress** — Whoever stops in the field fights on for up to **8
+  hours** without you (up to 20 with Tiefenkunde). At a boss wall the simulated
+  hero detours to your best conquered area and keeps farming — and reports on
+  your return what it slew, found and learned.
+- **A save with a safety net** — Versioned, three rotating backups, JSON
+  export/import, migrations for old heroes. Corrupt items are repaired on load —
+  or the game falls back to a backup.
+- **Onboarding without tutorial force** — once-only hints at the right moment,
+  and a patch-notes window shows what's new at launch. Existing heroes only get
+  what they missed.
 
-## 🌍 Die fünf Kontinente
+## 🌍 The five continents
 
-| # | Kontinent | Gebiete (ilvl) | Bestie an der Spitze |
+| # | Continent | Areas (ilvl) | Beast at the summit |
 | --- | --- | --- | --- |
-| 1 | **Die Aschenlande** | 2–20 | *Der Aschegott* im Herz der Asche |
-| 2 | **Das Frostreich** | 29–252 | *Der Frostgott* im Herz des Winters |
-| 3 | **Das Faulmoor** | 375–3.222 | *Der Moorgott* im Herz des Moores |
-| 4 | **Das Blutmark** | 4.780–41.118 | *Der Blutgott* im Herz des Blutes |
-| 5 | **Die Sternenleere** | 60.998–524.718 | *Die Aschenkrone* im Herz der Leere |
+| 1 | **Die Aschenlande** (Ashen Lands) | 2–20 | *Der Aschegott*, in the heart of ash |
+| 2 | **Das Frostreich** (Frost Realm) | 29–252 | *Der Frostgott*, in the heart of winter |
+| 3 | **Das Faulmoor** (Fen Moor) | 375–3.222 | *Der Moorgott*, in the heart of the moor |
+| 4 | **Das Blutmark** (Bloodmark) | 4.780–41.118 | *Der Blutgott*, in the heart of blood |
+| 5 | **Die Sternenleere** (Star Void) | 60.998–524.718 | *Die Aschenkrone*, in the heart of the void |
 
-Die Zahlen hinter jedem Kontinent sind die Gegenstandsstufen (ilvl) seiner zehn
-Gebiete — je tiefer die Ebene, desto besser Beute und Werkstatt.
+The numbers behind each continent are the item levels of its ten areas — the
+deeper the level, the better the loot and the workshop.
 
-## 🧭 Die vier Pfade
+## 🧭 The four paths
 
-| Pfad | Fokus | Extrem |
+| Path | Focus | Extreme |
 | --- | --- | --- |
-| ⚔️ **Krieg** | Schaden, Krit, Angriffstempo | *Knochenbrecher* — +30 Schaden, −40 Lebenskraft |
-| 🛡️ **Haut** | Lebenskraft, Rüstung | *Blutzoll* — +150 Lebenskraft, −8 % Tempo |
-| 🏺 **Asche** | Beute & Erfahrung | *Midashand* — +45 % Asche, −10 % Schaden |
-| 👁️ **Geist** | Krit, Kritschaden, Tempo | *Zeitraffung* — +35 % Angriffstempo, −8 Rüstung |
+| ⚔️ **Krieg** (War) | damage, crit, attack speed | *Knochenbrecher* — +30 damage, −40 health |
+| 🛡️ **Haut** (Skin) | health, armor | *Blutzoll* — +150 health, −8 % speed |
+| 🏺 **Asche** (Ash) | loot & experience | *Midashand* — +45 % ash, −10 % damage |
+| 👁️ **Geist** (Spirit) | crit, crit damage, speed | *Zeitraffung* — +35 % attack speed, −8 armor |
 
-## 🔭 Ausblick — unverbindlich
+## 🔭 Roadmap — non-binding
 
-> Alles Folgende ist **Idee, kein Versprechen**: Umfang, Reihenfolge und ob überhaupt
-> ändern sich mit dem Feedback der Alpha. Nichts hier ist gebunden.
+> Everything below is **an idea, not a promise**: scope, order and whether at all
+> change with alpha feedback. Nothing here is binding.
 
-- **Vermächtnis-Ausbau** — weitere Titel für die Kronenasche, etwa Teuer-Titel
-  mit Startvorsprung (Start in tieferen Zonen, Start-Gear); langfristig offen
-  Richtung Meta-Baum — siehe das
-  [Prestige-Papier](docs/prestige-optionen.md).
-- **Boss-Signaturen** — namensgebende Uniques der zehn Kontinent-Bosse („Herz der
-  Asche") als Jagdziele mit eigener Prägung.
-- **Tiefen- & Elite-Modifier** — rotierende Bestimmungen (z. B. „Gestählt: +40 %
-  Leben, +80 % Asche"), damit die Endlos-Wand und die Kampagne Abwechslung bekommen.
-- **Versunkene Kontinente** — Story-Kapitel in den Tiefen: eine Annale, Gegner und
-  Epitaphe pro Kapitel, auf der bestehenden Tiefen-Kurve.
-- **QoL & Härtung** — Werkstatt-Schmieden per Halten wiederholen, Tastatur-Shortcuts
-  über die Tooltips hinaus und weitere automatische Tests für Speicherstand
-  und Formeln.
+- **Legacy expansion** — more titles for Crown Ash, e.g. costly titles with a
+  head start (start in deeper zones, starting gear); long-term, possibly a meta
+  tree — see the [prestige paper](docs/prestige-optionen.md) (German).
+- **Boss signatures** — eponymous uniques of the ten continent bosses ("heart of
+  ash") as hunt targets with their own imprint.
+- **Depth & elite modifiers** — rotating conditions (e.g. "Hardened: +40 %
+  health, +80 % ash") so the endless wall and the campaign get variety.
+- **Sunken continents** — story chapters in the depths: an annal, enemies and
+  epitaphs per chapter, riding the existing depth curve.
+- **QoL & hardening** — workshop forging on hold-to-repeat, keyboard shortcuts
+  beyond the tooltips, and more automated tests for saves and formulas.
+- **English localization** — the UI is German today; an English language option
+  is on the radar.
 
-## 🧪 Closed Alpha
+## 🧪 Closed alpha
 
-Ashen Crown befindet sich im geschlossenen Alpha-Stadium:
+Ashen Crown is in a closed alpha stage:
 
-- **Mitmachen:** Installer aus den [Releases](releases) laden und installieren —
-  das Spiel aktualisiert sich danach bei neuen Versionen von selbst. Ohne
-  Installation geht es auch direkt im Browser:
-  **[trobikus.github.io/ashen-crown](https://trobikus.github.io/ashen-crown/)**
-  (Web-Build, Stand `main`; Desktop bleibt die empfohlene Variante).
-- **Spielstand:** Liegt sicher im Browser-Speicher der App, mit Backups;
-  unter Optionen → Spiel lässt er sich als JSON exportieren und wieder
-  einspielen (z. B. vor Experimenten). Im Web-Build liegt er im
-  Browser-Speicher der Seite.
-- **Feedback:** Am liebsten als [Issue](issues) — der Knopf dafür steckt auch
-  im Spiel unter Optionen → Spiel. Drei Fragen interessieren uns am meisten:
-  1. Wo hängst du fest oder weißt nicht weiter?
-  2. Wo langweilt es dich?
-  3. Wann stirbst du, ohne zu verstehen warum?
-- **Empfehlung:** Desktop-Build spielen; der Web-Build (GitHub Pages bzw.
-  `pnpm dev`) ist Dev-Vorschau ohne Touch-Feinschliff.
-- **Änderungshistorie:** Alle Versionen im Detail im
-  [CHANGELOG.md](CHANGELOG.md) und im Patchnote-Fenster im Spiel.
+- **Join:** grab the installer from the [releases](releases) — the game updates
+  itself when new versions ship. Without installation, play directly in the
+  browser: **[trobikus.github.io/ashen-crown](https://trobikus.github.io/ashen-crown/)**
+  (web build, tracking `main`; desktop remains the recommended way to play).
+- **Save data:** Lives safely in the app's browser storage, with backups; under
+  options → play it can be exported and re-imported as JSON (e.g. before
+  experiments). In the web build it lives in the page's browser storage.
+- **Feedback:** Best as an [issue](issues) — the button for it also lives in the
+  game under options → play (German UI). Three questions interest us most:
+  1. Where do you get stuck or lost?
+  2. Where does it bore you?
+  3. When did you die without understanding why?
+- **Recommendation:** Play the desktop build; the web build (GitHub Pages or
+  `pnpm dev`) is a dev preview without touch polish.
+- **Changelog:** Every version in detail in [CHANGELOG.md](CHANGELOG.md) and in
+  the in-game patch-notes window.
 
-## 🚀 Entwicklung
+## 🚀 Development
 
 ```bash
-pnpm install        # Abhängigkeiten installieren
-pnpm dev            # Web-Dev-Server (Vite, HMR)
-pnpm tauri dev      # Desktop-Fenster mit Hot Reload (Rust-Toolchain nötig)
-pnpm build          # Produktions-Build nach dist/
+pnpm install        # install dependencies
+pnpm dev            # web dev server (Vite, HMR)
+pnpm tauri dev      # desktop window with hot reload (Rust toolchain required)
+pnpm build          # production build into dist/
 
-node tools/balance-sim.mjs --verify   # Balance gegen die echte data.js prüfen
-node tools/smoke.mjs                  # Smoke-Checks für Kern-Module
+node tools/balance-sim.mjs --verify   # verify balance against the real data.js
+node tools/smoke.mjs                  # smoke checks for core modules
 ```
 
 <details>
-<summary><strong>📁 Projektstruktur</strong></summary>
+<summary><strong>📁 Project structure</strong></summary>
 
 ```
-├── index.html            # UI-Grundgerüst (Menü, Schrein, Szenen, Patchnotes)
+├── index.html            # UI skeleton (menu, shrine, scenes, patch notes)
 ├── src/
-│   ├── main.js           # Einstieg: Menü und Spielstart
-│   ├── data.js           # Spieldaten: Kontinente, Gegner, Loot, Skilltree
-│   ├── game.js           # App-Kern: Kampf, Held-Fortschritt, Render-Pfad, Szenenfluss
-│   ├── bus.js            # Manager-Bus: game.js meldet Kern-Dienste, Fach-Module ziehen sie
-│   ├── domfx.js          # DOM-Schreib-Helfer & Kampf-Effekte (Partikel, Zahlen, Hieb)
-│   ├── overlay.js        # Overlay-Botschaften & Szenen-Timer (Tod, Boss-Gate, Intros)
-│   ├── saveio.js         # Speicher-Subsystem: Migration, Härtung, Backups, Import/Export
-│   ├── offline.js        # Offline-Fortschritt: Kampf-Simulation & Zusammenfassung
-│   ├── throne.js         # Der Thron: Vermächtnis-Laden & „Erneut erwachen"
-│   ├── records.js        # Bestiarium, Errungenschaften (Ruhm-Laden), Statistik
-│   ├── zones.js          # Gebiete-Karte: Kontinente & Durchschalten
-│   ├── items.js          # Loot, Inventar, Vergleiche, Verkauf, Tiefenrelikte
-│   ├── crafting.js       # Werkstatt: Verstärken, Umschmieden, Meisterschafts-Reroll
-│   ├── skilltree.js      # Fertigkeitenbaum: Graph, Pfad-Bindung & Punktevergabe
-│   ├── stats.js          # Heldenwerte aus Basis, Gear, Skills & Meisterschaft
-│   ├── prestige.js       # Der Thron: Kronenasche, Vermächtnis-Titel, Prestige-Reset
-│   ├── achievements.js   # Errungenschaften, Ruhm-Währung & Ruhm-Laden
-│   ├── lore.js           # Chronik: Intro, Annalen, Epitaphe, Tiefen-Flüstertöne
-│   ├── state.js          # Spielstand & Einstellungen (localStorage)
-│   ├── dom.js            # DOM-Cache
-│   ├── settings.js       # Optionen laden/speichern/anwenden
-│   ├── audio.js          # Prozeduraler Sound (Web Audio API)
-│   ├── feedback.js       # Toasts & Levelup-Einblendungen
-│   ├── display.js        # Vollbild-Steuerung (Desktop & Web)
-│   ├── sprites.js        # Gegner-Sprites: Sieben SVG-Archetypen in Kontinent-Farbe
-│   ├── patchnotes.js     # Patchnote-Fenster beim Spielstart
-│   ├── updater.js        # Auto-Update über GitHub Releases
-│   ├── style.css         # Basis-Styling
-│   └── scenes.css        # Szenen: Inventar, Karte, Werkstatt, Chronik, Optionen
+│   ├── main.js           # entry point: menu and game start
+│   ├── data.js           # game data: continents, enemies, loot, skill tree
+│   ├── game.js           # app core: combat, hero progress, render path, scene flow
+│   ├── bus.js            # manager bus: game.js provides services, modules consume them
+│   ├── domfx.js          # DOM write helpers & combat effects (particles, numbers, arcs)
+│   ├── overlay.js        # overlay messages & scene timers (death, boss gate, intros)
+│   ├── saveio.js         # save subsystem: migration, hardening, backups, import/export
+│   ├── offline.js        # offline progress: combat simulation & summary
+│   ├── throne.js         # the throne: legacy shop & awaken anew
+│   ├── records.js        # bestiary, achievements (glory shop), statistics
+│   ├── zones.js          # area map: continents & paging
+│   ├── items.js          # loot, inventory, comparisons, selling, depth relics
+│   ├── crafting.js       # workshop: reinforce, reforge, mastery reroll
+│   ├── skilltree.js      # skill tree: graph, path binding & point allocation
+│   ├── stats.js          # hero stats from base, gear, skills & masteries
+│   ├── prestige.js       # the throne: crown ash, legacy titles, prestige reset
+│   ├── achievements.js   # achievements, glory currency & glory shop
+│   ├── lore.js           # chronicle: intro, annals, epitaphs, depth whispers
+│   ├── state.js          # save & settings (localStorage)
+│   ├── dom.js            # DOM cache
+│   ├── settings.js       # options load/save/apply
+│   ├── audio.js          # procedural sound (Web Audio API)
+│   ├── feedback.js       # toasts & level-up flourishes
+│   ├── display.js        # fullscreen control (desktop & web)
+│   ├── sprites.js        # enemy sprites: seven SVG archetypes in continent color
+│   ├── patchnotes.js     # patch-notes window at game start
+│   ├── updater.js        # auto-update via GitHub releases
+│   ├── style.css         # base styling
+│   └── scenes.css        # scenes: inventory, map, workshop, chronicle, options
 ├── tools/
-│   ├── balance-sim.mjs   # Balance-Simulator: spielt die echte data.js durch
-│   └── smoke.mjs         # Node-Smoke-Checks für Kern-Module
-├── docs/                 # Banner & Screenshots für dieses README
-└── src-tauri/            # Tauri-2-Desktop-Shell (Rust)
+│   ├── balance-sim.mjs   # balance simulator: plays the real data.js
+│   └── smoke.mjs         # node smoke checks for core modules
+├── docs/                 # banner & screenshots for this README
+└── src-tauri/            # Tauri-2 desktop shell (Rust)
 ```
+
+The codebase itself (comments, identifiers, UI text) is German.
 
 </details>
 
 ## 📜 Credits
 
-Ausrüstungs-Icons von [game-icons.net](https://game-icons.net) (Lorc, Delapouite),
-Lizenz [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) — Details in
+Equipment icons by [game-icons.net](https://game-icons.net) (Lorc, Delapouite),
+licensed [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) — details in
 [CREDITS.md](CREDITS.md).
 
-## ⚖️ Lizenz
+## ⚖️ License
 
-Copyright © 2026 Grimoire Interactive / Trobikus — **alle Rechte vorbehalten**
-(siehe [LICENSE](LICENSE)). Das Spiel darf privat gespielt und auf GitHub
-eingesehen/geforkt werden; kommerzielle Nutzung, Weiterverbreitung und
-Entfernen von Urheberangaben sind ohne schriftliche Genehmigung nicht
-gestattet.
+Copyright © 2026 Grimoire Interactive / Trobikus — **all rights reserved**
+(see [LICENSE](LICENSE)). The game may be played privately and viewed/forked on
+GitHub; commercial use, redistribution and removal of copyright notices are not
+permitted without written permission.
 
 ---
 
 <div align="center">
-  <sub>Ein Spiel von Grimoire Interactive · <em>„Geschnittene Runen heilen nicht."</em></sub>
+  <sub>A game by Grimoire Interactive · <em>"Carved runes do not heal."</em></sub>
 </div>
