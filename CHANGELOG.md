@@ -4,6 +4,49 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.21.2] — 2026-10-23
+
+### Sicherheit / Härtung
+- **Negative/gebrochene Kaufstufen akzeptiert**: Die Save-Härtung klemmte die
+  Ruhm-Kaufstufen nur nach oben (`Math.min`) — Negative verfälschten
+  Inventarkapazität, Asche-Ertrag, Todeszoll & Co., Gebrochene (z. B. 2.5)
+  ließen den nächsten Kauf `NaN` in die Ruhm-Ausgaben buchen. Größer noch:
+  `ruhmAusgegeben` wurde nie gegen die Stufen validiert — maximale Käufe mit
+  leerer Ausgabenzeile ergaben den ganzen Ruhm-Laden gratis. Neu:
+  `sanitizeShopPurchases()` (src/achievements.js) klemmt jede Stufe ganzzahlig
+  zwischen 0 und der Maximalstufe (Maxima aus `RUHM_SHOP` abgeleitet, nicht
+  mehr doppelt gepflegt) und rekonstruiert den Einkaufsanteil der Ausgaben
+  exakt aus den Stufenkosten; der nicht-negative Rest bleibt als Reroll-
+  Historie (je 2 Ruhm) erhalten. Reguläre Spielstände rekonstruieren sich
+  bitgenau — es wird nie Währung erfunden.
+
+### Behoben / unter der Haube
+- **Speicherfehler durchgängig abgefangen**: `rotateBackups` las außerhalb
+  des try-Blocks (aus `save()` im 3-Sekunden-Tick bis zum Aufrufer
+  durchschlagend); `purgeSaves`, `loadSave`, `exportSave`, `importSave`,
+  `saveSettings` und die Patchnotes-Abmerker-Markierung waren ungeschützt.
+  Neu: **src/storage.js** als einziger Weg zum localStorage —
+  `readStorage`/`writeStorage`/`removeStorage` mit sicheren Ersatzwerten
+  (null/false) und gedrosselter Warnung (30 s). `importSave` reloadet nur bei
+  erfolgreichem Schreiben (kein Schein-Import mehr); die Backup-Rotation
+  zählt nur bei vollständigem Zug als geglückt und wird sonst beim nächsten
+  `save()` erneut versucht. JSON-Parse-Guards bleiben (kaputtes JSON →
+  Defaults).
+
+### Werkzeug
+- **smoke.mjs erstmals in CI**: lief bisher nur als lokaler Self-Proof —
+  jetzt fester Schritt in der Composite-Action.
+- **tools/storage-smoke.mjs** (neues Gate): localStorage-Stub wirft gezielt
+  `SecurityError` (jeder Zugriff) und `QuotaExceededError` (nur Schreiben) —
+  save/Backup-Rotation/loadSave/exportSave/purgeSaves/saveSettings werfen
+  nicht, und nach Erholung des Speichers wird wieder korrekt persistiert
+  (10 Checks).
+- **Tiefen-Gate**: `balance-sim.mjs --verify --depths --gate` (neu, determin-
+  istisch, ~0,2 s) prüft die Tiefen-Balance (Zone 51+): Ziel erreicht (keine
+  Endlos-Wand), Zahlen präzise (2^53), Gesamtzeit 320–670 h (Referenz
+  v0.21.1: 495,9 h), langsamste Killzeit < 2400 s (Referenz: 1960 s). Bei
+  bewusstem Re-Tune sind die Schranken mitzuziehen.
+
 ## [0.21.1] — 2026-10-23
 
 ### Sicherheit / Härtung
