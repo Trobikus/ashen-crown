@@ -4,6 +4,32 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.21.0] — 2026-10-23
+
+### Neu
+- **Drag & Drop aus dem Inventar in die Ausrüstungsslots**: Inventar-Stücke
+  sind in die Gear-Slots ziehbar — der Ziel-Slot glüht leicht grün bei
+  passendem, leicht rot bei fremdem Slot; ungültige Drops verwirft der Browser
+  selbst (kein preventDefault im dragover). Der Drop legt das Stück exakt in
+  den gewählten Slot und tauscht den bisherigen Bewohner zurück ins Inventar
+  (Belegung konstant). Handschuh-Paare (hand-links/hand-rechts) nehmen beide
+  Handschuhe an — gerichtet, ohne das schwächere-Hand-Auto des Klick-Pfads.
+  Im Verkaufsmodus ist Ziehen aus; Klick-Pfade unverändert.
+
+### Behoben / unter der Haube
+- **Desktop-Build akzeptiert HTML5-Drag** (`dragDropEnabled: false` in
+  tauri.conf.json): der native Datei-Drop (Default) schluckt in der
+  Windows-WebView2 die Drag-Events komplett.
+- Globaler dragover/drop-Guard: Betriebssystem-Datei-Drops können das Fenster
+  nicht mehr navigieren.
+
+### Werkzeug
+- Der Runtime-Check (tools/i18n-runtime-check.mjs) fährt jetzt auch die
+  Drag-&-Drop-Regeln mit (12 neue Asserts: Drag-Markierung, Glow-Zustände,
+  Slot-Ablehnung, gerichteter Drop, Tausch, Paar-Slots, Glow-Räumung); die
+  DOM-Stubs wurden dafür dem echten DOM angenähert (className/ClassList-
+  Synchronisation, dataset-String-Koerzierung mit undefined für fehlende Keys).
+
 ## [0.20.1] — 2026-10-23
 
 ### Behoben

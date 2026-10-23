@@ -3,10 +3,19 @@
 // Das Häkchen „Heute nicht mehr anzeigen" speichert Tag + Version.
 
 export const PATCH_NOTES = {
-  version: '0.20.1',
+  version: '0.21.0',
   date: '23.10.2026',
-  headline: 'Hotfix — Epitaphe in beiden Sprachen',
+  headline: 'Drag & Drop — Beute in die Hand nehmen',
   sections: [
+    {
+      heading: '0.21.0 — Drag & Drop: Beute in die Hand nehmen',
+      items: [
+        'Neu: Inventar-Stücke lassen sich direkt in die Ausrüstungsslots ziehen. Der Ziel-Slot glüht leicht grün, wenn das Stück passt — und leicht rot an fremden Slots; dort verwirft das Spiel den Drop.',
+        'Beim Ablegen landet das Stück exakt im gewählten Slot; der bisherige Bewohner wandert als Tausch zurück ins Inventar. Die beiden Handschuh-Slots nehmen beide Handschuhe an — gezielt in die Hand, in die sie gehören.',
+        'Der Klick-Weg (Anlegen, „Bestes anlegen“, Verkaufen) bleibt unverändert; im Verkaufsmodus ist Ziehen aus.',
+        'Unter der Haube: Die Desktop-App akzeptiert jetzt HTML5-Ziehen (die Windows-Weboberfläche schluckte solche Events bislang), und der automatisierte Spiel-Check prüft die Drag-&-Drop-Regeln bei jedem Commit.',
+      ],
+    },
     {
       heading: '0.20.1 — Hotfix: Epitaphe sprechen nun auch Englisch',
       items: [
