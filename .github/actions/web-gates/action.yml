@@ -29,6 +29,10 @@ runs:
       shell: bash
       run: node tools/smoke.mjs
 
+    - name: CSP-Audit (keine Inline-Styles im HTML-Bau)
+      shell: bash
+      run: node tools/csp-check.mjs
+
     - name: Storage-Smoke (SecurityError/QuotaExceededError werden abgefangen)
       shell: bash
       run: node tools/storage-smoke.mjs

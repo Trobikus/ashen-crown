@@ -156,7 +156,7 @@ function renderCrafting() {
     row.classList.toggle('selected', slotKey === selectedCraftSlot);
     row.classList.toggle('empty', !item);
     row.innerHTML = `<span class="craft-slot-name">${t(gearSlotOf(slotKey).label)}</span>
-      <span class="craft-slot-item" style="color:${rarity?.color ?? '#5f584e'}">${item ? `${itemNameOf(item)}${item.enhance ? ` +${item.enhance}` : ''}` : t('Leer')}</span>`;
+      <span class="craft-slot-item${rarity ? ` rarity-${rarity.key}` : ' rarity-leer'}">${item ? `${itemNameOf(item)}${item.enhance ? ` +${item.enhance}` : ''}` : t('Leer')}</span>`;
   }
   renderCraftDetail();
 }
@@ -195,8 +195,8 @@ function renderCraftDetail() {
     : '';
   el.craftDetail.innerHTML = `
     <div class="craft-item">
-      <div class="tt-name" style="color:${rarity.color}">${itemNameOf(item)}${item.enhance ? ` +${item.enhance}` : ''}</div>
-      <div class="tt-rarity" style="color:${rarity.color}">${t(rarity.label)} · Ilvl ${formatNum(itemIlvl(item))}</div>
+      <div class="tt-name rarity-${rarity.key}">${itemNameOf(item)}${item.enhance ? ` +${item.enhance}` : ''}</div>
+      <div class="tt-rarity rarity-${rarity.key}">${t(rarity.label)} · Ilvl ${formatNum(itemIlvl(item))}</div>
       <div class="tt-stat">${itemStatsText(item)}</div>
       ${item.enhanceBonus ? `<div class="tt-enhance">${t('Verstärkt durch die Werkstatt')}</div>` : ''}
       ${item.mastery ? `<div class="tt-mastery">${t('Meisterschaft: {m}', { m: SKILL_EFFECT_LABELS[item.mastery.stat](item.mastery.value) })}</div>` : ''}

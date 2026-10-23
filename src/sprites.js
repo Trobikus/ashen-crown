@@ -16,7 +16,9 @@ const CROWN_GEM = '<circle class="se" cx="50" cy="5" r="1" opacity="0.9"/>';
 const crown = (dx, dy) => `<g transform="translate(${dx} ${dy})"><path class="sc" d="${CROWN}"/>${CROWN_GEM}</g>`;
 
 function wrap(inner) {
-  return `<svg viewBox="0 0 100 140" preserveAspectRatio="xMidYMax meet" style="overflow:visible;display:block;width:100%;height:100%" aria-hidden="true">${inner}</svg>`;
+  // Größe/Overflow als Klasse .sprite-svg — Inline-Style-Attribute verwirft
+  // die Content-Security-Policy des Desktop-Builds.
+  return `<svg class="sprite-svg" viewBox="0 0 100 140" preserveAspectRatio="xMidYMax meet" aria-hidden="true">${inner}</svg>`;
 }
 
 // Gebückter Diener: zerlumpte Gestalt, schwebender Arm mit Krallenhand.

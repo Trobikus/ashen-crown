@@ -521,8 +521,8 @@ function tooltipHtml(item, action, showValue = false) {
     .filter(Boolean)
     .join('');
   return `
-    <div class="tt-name" style="color:${rarity.color}">${itemNameOf(item)}</div>
-    <div class="tt-rarity" style="color:${rarity.color}">${t(rarity.label)} · Ilvl ${formatNum(itemIlvl(item))}</div>
+    <div class="tt-name rarity-${rarity.key}">${itemNameOf(item)}</div>
+    <div class="tt-rarity rarity-${rarity.key}">${t(rarity.label)} · Ilvl ${formatNum(itemIlvl(item))}</div>
     ${rows}
     ${showValue ? `<div class="tt-stat">${t('Wert: {n} Asche', { n: formatNum(itemSellValue(item)) })}</div>` : ''}
     ${comparisonHtml(item)}
@@ -535,7 +535,10 @@ function renderGear() {
     const slotDef = gearSlotOf(slotEl.dataset.slot);
     const rarity = item ? rarityOf(item.rarity) : null;
     slotEl.querySelector('.slot-value').innerHTML =
-      `<span class="slot-icon" style="--icon: url('${iconOf(slotDef.key)}'); color:${rarity ? rarity.color : '#4a443b'}"></span>`;
+      `<span class="slot-icon${rarity ? ` rarity-${rarity.key}` : ''}"></span>`;
+    // Icon-URL per CSSOM — Inline-Style-Attribute aus HTML-Strings verwirft
+    // die CSP (siehe tools/csp-check.mjs).
+    slotEl.querySelector('.slot-value .slot-icon').style.setProperty('--icon', `url('${iconOf(slotDef.key)}')`);
     slotEl.querySelector('.tooltip').innerHTML = tooltipHtml(item, 'Ablegen');
   }
 }
@@ -560,8 +563,9 @@ function renderInventory() {
     cell.style.borderColor = rarity.color;
     cell.setAttribute('aria-label', `${itemNameOf(item)} — ${t(rarity.label)}`);
     cell.innerHTML = `
-      <span class="slot-icon inv-icon" style="--icon: url('${iconOf(item.slot)}'); color:${rarity.color}"></span>
+      <span class="slot-icon inv-icon rarity-${rarity.key}"></span>
       <div class="tooltip">${tooltipHtml(item, sellMode ? 'Auswählen' : 'Anlegen', true)}</div>`;
+    cell.querySelector('.slot-icon').style.setProperty('--icon', `url('${iconOf(item.slot)}')`);
     el.inventoryGrid.appendChild(cell);
   }
 }

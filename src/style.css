@@ -1461,11 +1461,35 @@ input[type='range'] {
   -webkit-mask: var(--icon) center / contain no-repeat;
   mask: var(--icon) center / contain no-repeat;
   flex: none;
+  color: #4a443b;
 }
 
 .inv-icon {
   width: 24px;
   height: 24px;
+}
+
+/* Seltenheits-Farben als Klassen statt Inline-Style-Attribute: Die
+   Content-Security-Policy (style-src 'self') verwirft style="…" aus
+   HTML-Strings — Klassen bleiben erlaubt. Dynamische Werte (--icon) setzt
+   der Code per CSSOM (el.style.setProperty), das CSP-frei ist. */
+.rarity-gewoehnlich { color: #8a7f6d; }
+
+.rarity-magisch { color: #6d8aa6; }
+
+.rarity-selten { color: #bfa24a; }
+
+.rarity-episch { color: #9d6d8a; }
+
+.rarity-legendär { color: #c1663a; }
+
+.rarity-leer { color: #5f584e; }
+
+.sprite-svg {
+  overflow: visible;
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 
