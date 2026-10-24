@@ -250,4 +250,22 @@ export const EN_NAMES = {
   'Alter Pfad': 'Old Path', 'Erwache mit +2 freien Statpunkten, je Stufe.': 'Awaken with +2 free stat points, per level.',
   'Tiefenwissen': 'Depth Knowledge', '+10 % Elite-/Boss-Fundchance, je Stufe.': '+10 % elite/boss loot chance, per level.',
   'Der Vorbereitete': 'The Prepared', 'Erwache mit 25 Asche, je Stufe.': 'Awaken with 25 ash, per level.',
+
+  // ——— Kreatur-Familien (Gedächtnis der Ausrüstung) ———
+  'Knechte': 'Minions',
+  'Bestien': 'Beasts',
+  'Ritter': 'Knights',
+  'Kultisten': 'Cultists',
+  'Schatten': 'Shades',
+  'Kolosse': 'Colossi',
+  'Regenten': 'Regents',
+
+  // ——— Relikte ———
+  'Nachhallrelikt': 'Echo Relic',
+
+  // ——— Errungenschaften: Gedächtnis & Nachhall ———
+  'Die Klinge erinnert sich': 'The Blade Remembers',
+  'Besitze ein Stück, das sich an 300 Beutezüge gegen eine Kreaturfamilie erinnert (+3 % Schaden).': 'Own a piece that remembers 300 hunts against one creature family (+3 % damage).',
+  'Das Ich im Aschenschleier': 'The Self in the Ash Veil',
+  'Brich den Nachhall deines früheren Ichs.': 'Break the Ash Echo of your former self.',
 };

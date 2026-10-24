@@ -3,10 +3,12 @@
 // profile, erlittener Schaden und Lifeleech. Stoppt am Boss (Bosse verlangen
 // deine Anwesenheit) oder beim Tod. Rückgabe: 'time' | 'boss' | 'died'.
 import { state, settings, offlineCapMs, ashGainFactor, deathReviveShare } from './state.js';
-import { ATTACK_INTERVAL_MS, ENEMY_RESPAWN_S, OFFLINE_MIN_GAP_MS, ELITE_EVERY_KILLS, HERO_MISS_CHANCE, ENEMY_MISS_CHANCE, ARMOR_RESISTANCE, BOSS_AFTER_KILLS, enemyXpMultiplier, zoneDef, formatNum, formatDuration } from './data.js';
+import { ATTACK_INTERVAL_MS, ENEMY_RESPAWN_S, OFFLINE_MIN_GAP_MS, ELITE_EVERY_KILLS, HERO_MISS_CHANCE, ENEMY_MISS_CHANCE, ARMOR_RESISTANCE, BOSS_AFTER_KILLS, GEAR_SLOTS, growMemory, enemyXpMultiplier, zoneDef, formatNum, formatDuration } from './data.js';
 import { t, lname } from './i18n.js';
-import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier, heroLifeleech } from './stats.js';
+import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier, heroLifeleech, heroMemoryBonus } from './stats.js';
+import { archetypeOf } from './sprites.js';
 import { rollDrop } from './items.js';
+import { echoManifests } from './echo.js';
 import { save } from './saveio.js';
 import { use } from './bus.js';
 
@@ -14,10 +16,12 @@ let offlineSummary = null;
 
 let offlineDiversion = null;
 
+let offlineDiversionEcho = false;
+
 function simulateKills(seconds, heroHpService) {
   const speed = heroAttackSpeed();
   const critFactor = 1 + (Math.min(100, heroCritChance()) / 100) * (critMultiplier() - 1);
-  const avgHit = heroDamage() * critFactor;
+  const baseAvgHit = heroDamage() * critFactor;
   const { pct, flat } = heroLifeleech();
   let remaining = seconds;
   let guard = 0;
@@ -31,9 +35,22 @@ function simulateKills(seconds, heroHpService) {
       state.zone = state.cleared - 1;
       state.zoneKills = 0;
       offlineDiversion = lname(zoneDef(state.zone).name);
+      offlineDiversionEcho = false;
+    } else if (echoManifests(state)) {
+      // Der Nachhall verlangt ebenfalls Anwesenheit: Er verteidigt seine
+      // Zone, bis du ihn persönlich brichst — offline wird ausgewichen.
+      if (state.cleared <= 0) return 'boss';
+      state.zone = state.cleared - 1;
+      state.zoneKills = 0;
+      offlineDiversion = lname(zoneDef(state.zone).name);
+      offlineDiversionEcho = true;
     }
     const isElite = state.zoneKills > 0 && state.zoneKills % ELITE_EVERY_KILLS === 0;
     const def = scaledEnemy(isElite ? 'elite' : 'normal');
+    // Gedächtnis: Der Bonus der getragenen Ausrüstung gegen diese Familie
+    // zählt auch offline — je Kampf frisch gelesen, Stufenwechsel greifen
+    // also sofort.
+    const avgHit = baseAvgHit * (1 + heroMemoryBonus(archetypeOf(def.name)) / 100);
     // Erwartete Treffer: HERO_MISS_CHANCE der eigenen Schläge geht daneben.
     const fightS = Math.max(1, Math.ceil(def.hp / avgHit)) * (ATTACK_INTERVAL_MS / 1000) / speed / (1 - HERO_MISS_CHANCE);
     const duration = fightS + ENEMY_RESPAWN_S;
@@ -55,6 +72,9 @@ function simulateKills(seconds, heroHpService) {
     state.zoneKills += 1;
     // Bestiarium: Offline-Erlegtes zählt wie im Feld unter dem Kreaturnamen.
     state.bestiary[def.name] = (state.bestiary[def.name] ?? 0) + 1;
+    // Gedächtnis: Die getragene Ausrüstung bucht offline dieselben Beutezüge
+    // (ohne Meilenstein-Meldung — die Zusammenfassung fasst ohnehin zusammen).
+    for (const slot of GEAR_SLOTS) growMemory(state.equipment[slot.key], def.name);
     state.ash += Math.round(def.ash * (1 + statBonus('ash') / 100) * ashGainFactor());
     use('gainXp')(Math.round(def.xp * enemyXpMultiplier(def.level, state.level)));
     rollDrop(isElite ? 'elite' : 'normal', eliteSafedrop);
@@ -66,6 +86,7 @@ function applyOfflineProgress() {
   if (!state.inField) return;
   state.inField = false;
   offlineDiversion = null;
+  offlineDiversionEcho = false;
   if (!settings.offlineProgress) {
     save();
     return;
@@ -103,7 +124,9 @@ function applyOfflineProgress() {
   } else if (result === 'boss') {
     summary += t('. Ein Boss versperrt den Weg.');
   } else if (offlineDiversion) {
-    summary += t('. Ein Boss versperrte den Weg — ausgewichen auf {name} und weitergefarmt.', { name: offlineDiversion });
+    summary += offlineDiversionEcho
+      ? t('. Der Nachhall versperrte den Weg — ausgewichen auf {name} und weitergefarmt.', { name: offlineDiversion })
+      : t('. Ein Boss versperrte den Weg — ausgewichen auf {name} und weitergefarmt.', { name: offlineDiversion });
   } else {
     summary += '.';
   }

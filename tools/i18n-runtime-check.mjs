@@ -176,6 +176,7 @@ const item = (over = {}) => ({
   ilvl: 40, damage: 12, hp: 0, armor: 2, critChance: 3, critDmg: 0, damagePct: 0,
   hpPct: 0, armorPct: 0, lifeleech: 0, lifeleechFlat: 0, enhance: 2,
   enhanceBonus: { damage: 5, hp: 0, armor: 0 }, mastery: { stat: 'damagePct', value: 9 }, mastery2: null,
+  memory: null,
   ...over,
 });
 
@@ -186,7 +187,7 @@ storage.set('ashen-crown-save', JSON.stringify({
   kills: 7342, heroName: 'Aldric', zone: 55, cleared: 57, crownWon: true, zoneKills: 0,
   lastSeen: Date.now(), itemSeq: 5,
   inventory: [
-    item({ id: 1 }),
+    item({ id: 1, memory: { ritter: 120 } }),
     item({ id: 2, slot: 'helm', base: 'Hornhelm', name: 'Hornhelm der Krone', rarity: 'episch', damage: 0, hp: 90, armor: 12, critChance: 0, hpPct: 6, mastery: null }),
     item({ id: 4, slot: 'hand-links', base: 'Handschuh', name: 'Handschuh der Gebeine', rarity: 'selten', damage: 8, armor: 3, critChance: 2 }),
   ],
@@ -197,6 +198,7 @@ storage.set('ashen-crown-save', JSON.stringify({
   bestiary: { 'Grabwächter': 12 }, achievements: ['ernte-1'], achievementsPending: [], ruhmAusgegeben: 0,
   shopPurchases: { beutelschein: 1 }, safedropZones: {},
   kronenascheEarned: 3, kronenascheAusgegeben: 1, prestigeRuns: 1, legacy: { 'zweiter-atem': 1 },
+  echo: { zone: 49, name: 'Aldric', level: 60, kills: 7342, speed: 1.4, weaponBase: 'Sense', weaponMemory: { schatten: 250 }, defeated: true },
 }));
 
 // ——— Spielmodule laden und fahren ———
@@ -339,6 +341,9 @@ assert(all.includes('Loot License · Level 2/3'), 'Ruhm-Laden-Zeile englisch');
 assert(all.includes('Second Wind'), 'Vermächtnis-Titel englisch');
 assert(all.includes('Blade of Bones'), 'Item-Name englisch komponiert (Klinge der Gebeine → Blade of Bones)');
 assert(all.includes('Glove of Bones'), 'Handschuh-Name englisch komponiert');
+assert(all.includes('Knights: +1 % damage · 120 slain'), 'Item-Gedächtnis im Tooltip englisch (Ritter → Knights)');
+assert(all.includes("Your gear's memory: +1 % damage"), 'Gegner-Inspektor zeigt Gedächtnis-Bonus englisch');
+assert(all.includes('Ash Echo of Aldric is broken'), 'Chronik-Nachhall (gebrochen) englisch');
 
 // ——— Updater: Fortschrittstexte in BEIDEN Sprachen ———
 // Der Lauf oben fährt nur Englisch; rohe englische Strings im Quellcode

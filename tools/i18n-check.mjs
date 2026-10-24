@@ -54,7 +54,7 @@ for (const [key, where] of [...used].sort(([a], [b]) => a.localeCompare(b))) {
 // per t()/lname() nachgeschlagen — hier zählt jede Abweichung (Gedankenstrich,
 // Anführungszeichen, Leerzeichen). Alle deutschen Quelltexte müssen in den
 // Wörterbüchern liegen.
-const { CONTINENTS, ZONE_ENEMIES, ZONES, DEPTH_ENEMY_NAMES, GEAR_SLOTS, RARITIES, ENEMY_PROFILES, SKILL_NODES } = await import('../src/data.js');
+const { CONTINENTS, ZONE_ENEMIES, ZONES, DEPTH_ENEMY_NAMES, GEAR_SLOTS, RARITIES, ENEMY_PROFILES, SKILL_NODES, ARCHETYPE_LABELS } = await import('../src/data.js');
 const { ACHIEVEMENTS, RUHM_SHOP } = await import('../src/achievements.js');
 const { LEGACY_TITLES } = await import('../src/prestige.js');
 const lore = await import('../src/lore.js');
@@ -81,6 +81,9 @@ for (const rarity of RARITIES) {
 }
 for (const profile of Object.values(ENEMY_PROFILES)) add(profile.label, 'Gegner-Profil');
 add('Boss', 'Gegner-Profil');
+// Kreatur-Familien des Gedächtnisses: dynamisch per t() im Tooltip — hier
+// zählt jede Abweichung, wie bei den Profilen.
+for (const label of Object.values(ARCHETYPE_LABELS)) add(label, 'Kreatur-Familie');
 add('Standard', 'Temperament');
 add('Wütend', 'Wut-Label');
 for (const node of SKILL_NODES) {

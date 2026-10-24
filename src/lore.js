@@ -3,7 +3,7 @@
 // Freischaltung leitet sich aus dem Fortschritt ab (state.cleared), damit
 // keine eigene Speicherlogik nötig ist.
 
-import { CONTINENTS, MAIN_ZONE_COUNT, MAX_ZONE, ZONES, ZONE_ENEMIES, formatNum } from './data.js';
+import { CONTINENTS, MAIN_ZONE_COUNT, MAX_ZONE, ZONES, ZONE_ENEMIES, zoneDef, formatNum } from './data.js';
 
 import { state } from './state.js';
 
@@ -183,6 +183,21 @@ export function renderChronicle() {
     depths.appendChild(sealed);
   }
   list.appendChild(depths);
+
+  // Der Nachhall: keine Fortschritts-Angelegenheit, sondern Erinnerung —
+  // er steht im Spielstand (state.echo), nicht in cleared. Wartend erzählt
+  // er vom alten Ich, gebrochen von seinem Ende.
+  if (state.echo) {
+    const echo = state.echo;
+    const section = chronicleSection(t('Der Nachhall'));
+    section.appendChild(chronicleEntry(
+      echo.defeated ? t('Gebrochen') : t('Wartend'),
+      echo.defeated
+        ? t('Der Nachhall von {name} ist gebrochen — Stufe {lvl}, einst {kills} erlegt. Die Asche nimmt ihn zurück, bis du erneut erwachst.', { name: echo.name, lvl: formatNum(echo.level), kills: formatNum(echo.kills) })
+        : t('Ein Nachhall von {name} wartet in {zone}: Stufe {lvl}, {kills} erlegt einst. Er trägt alles, was du warst.', { name: echo.name, zone: lname(zoneDef(echo.zone).name), lvl: formatNum(echo.level), kills: formatNum(echo.kills) }),
+    ));
+    list.appendChild(section);
+  }
 
   if (state.crownWon) {
     const throne = chronicleSection(t('Der Thron'));

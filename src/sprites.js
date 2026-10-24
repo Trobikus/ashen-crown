@@ -119,7 +119,9 @@ const ARCHETYPE_RULES = [
   ['koloss', /koloss|avatar/i],
   ['kultist', /chor|organist|priester|prediger|herold|magd|schreiber|ärztin|wartin|weber|pilger|archivar|kämmerin|zahlmeister|doppelgeld|botschafter|meister|heilkund/i],
   ['kriecher', /ratte|wurm|wühler|kriecher|spross|schwimm|schleim|würger|schürfer/i],
-  ['schatten', /schatten|schleicher|schlinger|echo|geboren|wicht|läufer|anomalie|leiche|tänzer/i],
+  // „Nachhall von <Name>" (der Echo-Gegner aus echo.js/game.js) ist ein
+  // Schatten — die Gedächtnis-Familie des Echo-Kampfs ist damit stabil.
+  ['schatten', /schatten|schleicher|schlinger|echo|nachhall|geboren|wicht|läufer|anomalie|leiche|tänzer/i],
   ['ritter', /ritter|wächter|wache|warter|kämmerer|fähnrich|garde|diener|jäger|söldner|lanzknecht|knecht|mörder|kerkerer|hüter|träger|fessel|schreiter|schlächter|gefolge|herr\b/i],
 ];
 

@@ -439,6 +439,16 @@
   color: #d9a03f;
 }
 
+/* Der Nachhall des letzten Laufs wartet in dieser Zone: bleicher Balken und
+   Statuswort in Geist-Grau, solange er ungebrochen ist. */
+.zone-row.zone-echo {
+  border-color: #9fb4c8;
+}
+
+.zone-row.zone-echo .zone-status {
+  color: #9fb4c8;
+}
+
 .zone-row.locked {
   opacity: 0.45;
   cursor: default;

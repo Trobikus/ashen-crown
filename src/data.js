@@ -4,6 +4,10 @@ const TICK_MS = 100;
 // data.js bleibt Daten-Modul, übersetzt nur, was es selbst zusammensetzt
 // (Tiefen-Namen, Effekt-Labels, Zahlenformate).
 import { t, lname, decimalSep } from './i18n.js';
+
+// Kreaturfamilien der Gedächtnis-Mechanik sind die Silhouetten-Archetypen —
+// sprites.js istrein (keine eigenen Importe), dieser Bezug bleibt zyklenfrei.
+import { archetypeOf } from './sprites.js';
 const ATTACK_INTERVAL_MS = 1500;
 
 const STATS_SYNC_INTERVAL_MS = 3000;
@@ -533,6 +537,58 @@ const LIFELEECH_FLAT_BY_RARITY = {
 // Sustain-Arbeitstier; Flat ist der frühe, konstante Weg.
 const LIFELEECH_PCT_ODDS = 0.65;
 
+// Gedächtnis der Ausrüstung: Jedes getragene Stück zählt seine Beutezüge je
+// Kreaturfamilie (Silhouetten-Typ der Kreatur). Je MEMORY_STEP Beutezüge einer
+// Familie wächst der Schadensbonus gegen sie um +1 % — Deckel MEMORY_TIERS je
+// Stück. Verstärken und Umschmieden würfeln die Werte neu, nie die Erinne-
+// rung: Das Gedächtnis gehört dem Stück, nicht dem Wurf.
+const MEMORY_STEP = 100;
+
+const MEMORY_TIERS = 3;
+
+const MEMORY_MAX_KILLS = MEMORY_STEP * MEMORY_TIERS;
+
+// Familien-Plural für die Anzeige (Tooltip, Meilenstein-Meldung) — lesbar
+// als „gegen wen" ein Stück gelernt hat.
+const ARCHETYPE_LABELS = {
+  knecht: 'Knechte',
+  kriecher: 'Bestien',
+  ritter: 'Ritter',
+  kultist: 'Kultisten',
+  schatten: 'Schatten',
+  koloss: 'Kolosse',
+  regent: 'Regenten',
+};
+
+const memoryTier = (kills) => Math.min(MEMORY_TIERS, Math.floor(Math.max(0, kills) / MEMORY_STEP));
+
+// Einen Kill für ein Stück buchen: zählt die Familie des Gegners hoch (auf
+// den Deckel geklemmt) und meldet einen frisch überquerten Schwellwert —
+// sonst null. Der Bonus ist im selben Zug wirksam, siehe stats.js.
+function growMemory(item, enemyName) {
+  if (!item) return null;
+  const family = archetypeOf(enemyName);
+  const memory = item.memory ?? (item.memory = {});
+  const kills = Math.min(MEMORY_MAX_KILLS, (memory[family] ?? 0) + 1);
+  if (kills === (memory[family] ?? 0)) return null;
+  memory[family] = kills;
+  return memoryTier(kills) > memoryTier(kills - 1) ? { family, tier: memoryTier(kills) } : null;
+}
+
+const memoryBonusOfItem = (item, family) => (item?.memory ? memoryTier(item.memory[family] ?? 0) : 0);
+
+// Härtung für Spielstand-Items: nur bekannte Familien, ganze zählbare Werte
+// auf den Deckel geklemmt, Nullen verworfen — leeres Gedächtnis ist null.
+function sanitizeMemory(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const clean = {};
+  for (const family of Object.keys(ARCHETYPE_LABELS)) {
+    const kills = Math.min(MEMORY_MAX_KILLS, asCount(raw[family]));
+    if (kills > 0) clean[family] = kills;
+  }
+  return Object.keys(clean).length ? clean : null;
+}
+
 // Kämpfen ist kein Selbstläufer: Gegner greifen manchmal daneben.
 const ENEMY_MISS_CHANCE = 0.15;
 
@@ -1037,6 +1093,7 @@ function normalizeItem(item) {
   item.enhanceBonus ??= null;
   item.mastery ??= null;
   item.mastery2 ??= null;
+  item.memory ??= null;
   return item;
 }
 
@@ -1082,6 +1139,9 @@ function sanitizeItem(item) {
     && Object.hasOwn(SKILL_EFFECT_LABELS, item.mastery2.stat) && typeof item.mastery2.value === 'number'
     ? { stat: item.mastery2.stat, value: asCount(item.mastery2.value) }
     : null;
+  // Gedächtnis: nur bekannte Familien, Werte auf den Deckel geklemmt — ein
+  // bearbeiteter Spielstand darf keine freien Schadensprozente erfinden.
+  item.memory = sanitizeMemory(item.memory);
   normalizeItem(item);
   return item;
 }
@@ -1195,6 +1255,7 @@ function itemNameOf(item) {
   const localized = `${lname(item.base)} ${t(rarity.suffix)}`;
   if (item.name === plain) return localized;
   if (item.name === `Tiefenrelikt: ${plain}`) return `${t('Tiefenrelikt')}: ${localized}`;
+  if (item.name === `Nachhallrelikt: ${plain}`) return `${t('Nachhallrelikt')}: ${localized}`;
   return item.name;
 }
 
@@ -1252,6 +1313,8 @@ export {
   ENEMY_XP_CUTOFF_LEVELS, enemyXpMultiplier, SKILL_VALUE_SCALE,
 
   ENEMY_PROFILES, PROFILE_CYCLE, profileOf, continentKeyOf,
+
+  MEMORY_STEP, MEMORY_TIERS, MEMORY_MAX_KILLS, ARCHETYPE_LABELS, memoryTier, growMemory, memoryBonusOfItem, sanitizeMemory,
 
   CONTINENTS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, MAX_ZONE, formatNum, formatDuration, pairedSlotsOf,
 

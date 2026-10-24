@@ -4,6 +4,33 @@ Alle nennenswerten Änderungen an Ashen Crown werden hier dokumentiert.
 Format orientiert an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/);
 Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.22.0] — 2026-10-24
+
+### Neu
+- **Ausrüstung mit Gedächtnis**: Jedes getragene Stück zählt seine Beutezüge
+  je Kreaturfamilie (die sieben Silhouetten-Typen des Spiels) — je 100
+  Beutezüge wächst der Schaden gegen diese Familie um +1 %, Deckel +3 % je
+  Stück (300 Beutezüge je Familie; im Spielstand gehärtet). Verstärken und
+  Umschmieden würfeln die Werte neu, nie die Erinnerung. Tooltips führen die
+  Biografie (auch in der Werkstatt), der Gegner-Inspektor zeigt den aktiven
+  Bonus, Meilensteine melden sich leise — und offline gezählte Beutezüge
+  buchen mit.
+- **Der Asche-Nachhall**: Jedes „Erneut erwachen" hinterlässt einen Nachhall
+  des endenden Laufs (Name, Stufe, Angriffstempo, Klinge samt Gedächtnis) in
+  der Grenzzone des alten Laufs. Dort manifestiert er sich ab dem 8. Sieg und
+  verteidigt die Zone, bis der neue Lauf ihn bricht — ein Duell gegen das
+  frühere Ich: 80 % der Boss-Werte seiner Zone (selbst-balancierend über die
+  Lauf-Kurve), Tempo aus dem alten Lauf geklemmt, Wut unter 35 % Leben, im
+  Geist-Look der Arena. Brechen zahlt +1 Kronenasche und hinterlässt die
+  Klinge: ein **Nachhallrelikt** — legendär auf dem Zonen-ilvl, mit
+  gesicherter Lifeleech, einer Meisterschaft und dem vollen Gedächtnis des
+  alten Ichs. Die Gebiete-Karte markiert die wartende Zone, die Chronik
+  erzählt ihn, der Offline-Held weicht ihm aus wie einer Boss-Wand.
+- Errungenschaften: „Die Klinge erinnert sich" (volles Gedächtnis, 2 Ruhm)
+  und „Das Ich im Aschenschleier" (Nachhall gebrochen, 3 Ruhm) — 29 → 31
+  Errungenschaften, Gesamt-Ruhm 77 → 82 (der Laden kostet weiterhin 168:
+  Ruhm bleibt eine Entscheidung).
+
 ## [0.21.4] — 2026-10-23
 
 ### Behoben

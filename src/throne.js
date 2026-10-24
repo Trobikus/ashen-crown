@@ -4,10 +4,11 @@
 // abgeschlossener Akt ebenfalls — die Kern-Werte (Szene öffnen, rendern,
 // Lebenskraft) zieht er sich vom Bus.
 import { state } from './state.js';
-import { MAIN_ZONE_COUNT, GEAR_SLOTS, formatNum } from './data.js';
+import { MAIN_ZONE_COUNT, GEAR_SLOTS, formatNum, zoneDef } from './data.js';
 import { t, lname } from './i18n.js';
-import { heroMaxHp } from './stats.js';
+import { heroMaxHp, heroAttackSpeed } from './stats.js';
 import { LEGACY_TITLES, kronenascheAvailable, kronenascheEarnedOf, kronenascheReward, legacyLevel } from './prestige.js';
+import { buildEchoSnapshot } from './echo.js';
 import { el } from './dom.js';
 import { pulseClass } from './domfx.js';
 import { sfx, setCombatIntensity } from './audio.js';
@@ -113,6 +114,11 @@ function attemptPrestige() {
   prestigeArmTimer = null;
   prestigeArmed = false;
   const reward = kronenascheReward(state.cleared);
+  // Der Nachhall: Die Asche formt aus dem ENDENDEN Lauf ein Abbild — Name,
+  // Stufe, Tempo und die Klinge samt Gedächtnis — bevor der Reset alles
+  // verwirft. Der Snapshot wandert in die Grenzzone des alten Laufs (siehe
+  // echo.js) und wartet dort auf den nächsten Aufstieg.
+  const echo = buildEchoSnapshot(state, { attackSpeed: heroAttackSpeed() });
   state.kronenascheEarned += reward;
   state.prestigeRuns += 1;
   // Der Lauf verfällt — alles Run-Bezogene kehrt zum Erwachen zurück. Die
@@ -136,6 +142,7 @@ function attemptPrestige() {
   state.cleared = 0;
   state.zoneKills = 0;
   state.safedropZones = {};
+  state.echo = echo;
   // Die Annalen erneut: Der zweite Lauf liest dieselbe Geschichte neu.
   state.seenContinents = [];
   state.inField = false;
@@ -148,7 +155,13 @@ function attemptPrestige() {
   // neue Lauf beginnt.
   pulseClass(el.hub, 'ash-rebirth', 1800);
   use('render')();
-  showDismissibleOverlay(t('Du erwachst erneut — der Lauf zahlt <strong>{n} Kronenasche</strong>. Die Asche erinnert sich an alles andere.', { n: reward }), 5500, true);
+  showDismissibleOverlay(
+    t('Du erwachst erneut — der Lauf zahlt <strong>{n} Kronenasche</strong>. Die Asche erinnert sich an alles andere.', { n: reward })
+    + ' '
+    + t('Und sie formt schon etwas: Ein Nachhall deiner selbst wartet in {zone} — mit allem, was du warst.', { zone: lname(zoneDef(echo.zone).name) }),
+    6500,
+    true,
+  );
 }
 
 export { renderThrone, buyLegacy, attemptPrestige };

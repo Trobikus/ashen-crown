@@ -6,6 +6,8 @@ import { t } from './i18n.js';
 
 import { ruhmAvailable, RUHM_RELIC_REROLL_COST } from './achievements.js';
 
+import { memoryHtml } from './items.js';
+
 import { el } from './dom.js';
 
 
@@ -201,6 +203,7 @@ function renderCraftDetail() {
       ${item.enhanceBonus ? `<div class="tt-enhance">${t('Verstärkt durch die Werkstatt')}</div>` : ''}
       ${item.mastery ? `<div class="tt-mastery">${t('Meisterschaft: {m}', { m: SKILL_EFFECT_LABELS[item.mastery.stat](item.mastery.value) })}</div>` : ''}
       ${item.mastery2 ? `<div class="tt-mastery">${t('Tiefen-Meisterschaft: {m}', { m: SKILL_EFFECT_LABELS[item.mastery2.stat](item.mastery2.value) })}</div>` : ''}
+      ${item.memory ? memoryHtml(item) : ''}
     </div>
     <div class="craft-action">
       <div class="craft-action-head">${t('Verstärken auf +{n}', { n: item.enhance + 1 })}<span>${enhancePreview}</span></div>

@@ -4,7 +4,7 @@ import helmIcon from './assets/icons/helm.svg';
 import hoseIcon from './assets/icons/hose.svg';
 import schuheIcon from './assets/icons/schuhe.svg';
 import handIcon from './assets/icons/hand.svg';
-import { GEAR_SLOTS, RARITIES, DROP_CHANCES, LIFELEECH_PCT_BY_RARITY, zoneDef, gearSlotOf, rarityOf, rollRarity, pickBase, rollItemValues, itemStats, itemStatRanges, itemIlvl, itemScore, rollMastery, rollRangesVisible, setRollRanges, SKILL_EFFECT_LABELS, formatNum, pairedSlotsOf, itemNameOf } from './data.js';
+import { GEAR_SLOTS, RARITIES, DROP_CHANCES, LIFELEECH_PCT_BY_RARITY, zoneDef, gearSlotOf, rarityOf, rollRarity, pickBase, baseOf, rollItemValues, itemStats, itemStatRanges, itemIlvl, itemScore, rollMastery, memoryTier, ARCHETYPE_LABELS, rollRangesVisible, setRollRanges, SKILL_EFFECT_LABELS, formatNum, pairedSlotsOf, itemNameOf } from './data.js';
 
 import { state, settings, inventoryCap } from './state.js';
 
@@ -494,6 +494,22 @@ function comparisonHtml(item) {
   return `<div class="tt-compare"><div class="tt-compare-head">${t('Getragen: {name}', { name: itemNameOf(equipped) })}${equipped.enhance ? ` +${equipped.enhance}` : ''}</div>${body}</div>`;
 }
 
+// Gedächtnis-Block für Tooltips: die Biografie des Stücks — Kopfzeile mit
+// der Gesamtzahl der Beutezüge, je Familie mit aktivem Bonus eine Zeile.
+// Familien ohne Bonus zählen nur in die Summe (die Jugend des Stücks).
+function memoryHtml(item) {
+  if (!item.memory) return '';
+  const families = Object.keys(ARCHETYPE_LABELS)
+    .filter((family) => (item.memory[family] ?? 0) > 0)
+    .sort((a, b) => item.memory[b] - item.memory[a]);
+  if (!families.length) return '';
+  const total = families.reduce((sum, family) => sum + item.memory[family], 0);
+  const lines = families
+    .filter((family) => memoryTier(item.memory[family]) > 0)
+    .map((family) => `<div class="tt-memory">${t('{fam}: +{p} % Schaden · {n} erlegt', { fam: t(ARCHETYPE_LABELS[family]), p: memoryTier(item.memory[family]), n: formatNum(item.memory[family]) })}</div>`);
+  return `<div class="tt-memory-head">${t('Gedächtnis · {n} erlegt', { n: formatNum(total) })}</div>${lines.join('')}`;
+}
+
 function tooltipHtml(item, action, showValue = false) {
   if (!item) return `<span class="tt-empty">${t('Leer')}</span>`;
   const rarity = rarityOf(item.rarity);
@@ -517,6 +533,7 @@ function tooltipHtml(item, action, showValue = false) {
     item.enhance ? `<div class="tt-enhance">${t('Verstärkt +{n}', { n: item.enhance })}</div>` : null,
     item.mastery ? `<div class="tt-mastery">${t('Meisterschaft: {m}', { m: SKILL_EFFECT_LABELS[item.mastery.stat](item.mastery.value) })}</div>` : null,
     item.mastery2 ? `<div class="tt-mastery">${t('Tiefen-Meisterschaft: {m}', { m: SKILL_EFFECT_LABELS[item.mastery2.stat](item.mastery2.value) })}</div>` : null,
+    item.memory ? memoryHtml(item) : null,
   ]
     .filter(Boolean)
     .join('');
@@ -630,6 +647,35 @@ function buildDepthRelic(ilvl) {
   };
 }
 
+// Nachhallrelikt: Der Lohn des gebrochenen Nachhalls — die Klinge des
+// früheren Ichs, neu geschmieden auf der Stufe seines Endes (Zonen-ilvl der
+// Grenzzone), mit gesicherter Lifeleech, EINER Meisterschaft und dem
+// Gedächtnis all ihrer Beutezüge. Die Werte würfeln neu — die Erinnerung
+// wandert mit dem Stahl.
+function buildEchoRelic(echo) {
+  const slot = gearSlotOf('waffe');
+  const rarity = rarityOf('legendär');
+  const ilvl = zoneDef(echo.zone).ilvl;
+  const baseItem = baseOf(slot, echo.weaponBase ?? slot.bases[0].name);
+  const values = rollItemValues(slot, rarity, ilvl, baseItem);
+  if (!values.lifeleech && !values.lifeleechFlat) {
+    const [min, max] = LIFELEECH_PCT_BY_RARITY.legendär;
+    values.lifeleech = min + Math.floor(Math.random() * (max - min + 1));
+  }
+  return {
+    id: ++state.itemSeq,
+    slot: slot.key,
+    base: baseItem.name,
+    name: `Nachhallrelikt: ${baseItem.name} ${rarity.suffix}`,
+    rarity: rarity.key,
+    ilvl,
+    enhance: 0,
+    mastery: rollMastery(slot.stat),
+    memory: echo.weaponMemory ? { ...echo.weaponMemory } : null,
+    ...values,
+  };
+}
+
 // Legt ein gebautes Stück direkt ins Inventar (Tiefenrelikt) und markiert
 // das Gear-Rendering dirty — der normale Drop-Pfad läuft über rollDrop.
 function grantItem(item) {
@@ -637,4 +683,4 @@ function grantItem(item) {
   gearDirty = true;
 }
 
-export { rollDrop, equipItem, unequipItem, sortInventory, equipBest, sellSelected, toggleSellMode, exitSellMode, buildDepthRelic, grantItem, itemSellValue, itemNameOf, markGearDirty, bindDragAndDrop, slotAcceptsItem, equipItemToSlot };
+export { rollDrop, equipItem, unequipItem, sortInventory, equipBest, sellSelected, toggleSellMode, exitSellMode, buildDepthRelic, buildEchoRelic, grantItem, itemSellValue, itemNameOf, memoryHtml, markGearDirty, bindDragAndDrop, slotAcceptsItem, equipItemToSlot };

@@ -43,7 +43,7 @@
 
 | 🌍 | 🗺️ | ⚔️ | 🌳 | 🏆 | 🌌 |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **5**<br>continents | **50**<br>areas | **163**<br>creatures | **217**<br>skill nodes | **29**<br>achievements | **∞**<br>Ashen Depths |
+| **5**<br>continents | **50**<br>areas | **163**<br>creatures | **217**<br>skill nodes | **31**<br>achievements | **∞**<br>Ashen Depths |
 
 ## 🕯️ The game
 
@@ -106,6 +106,11 @@ a respec reopens them.
 - **Loot is an event** — The first elite kill of an area guarantees a piece, the
   boss fights with a 75 % find chance, regular enemies stay the rare luck.
   Lifeleech exists exclusively on epic and legendary weapons.
+- **Gear that remembers** — Every equipped piece counts its kills per creature
+  family (the seven silhouette types); each 100 kills against a family grant
+  +1 % damage against it, up to +3 % per piece. Reinforcing and reforging
+  reroll the values, never the memory — a blade’s biography travels with the
+  metal, offline hunts included.
 - **Convenience on request** — **Auto-door** (after the boss falls, the door
   moves on by itself), **auto-sell** (loot below a chosen rarity turns into ash
   on pickup), plus sorting and "equip best". Legendary pieces carry a golden
@@ -122,7 +127,7 @@ Everything scales with the deepest conquered level.
 
 ### 🏆 Glory, achievements & knowledge
 
-- **Achievements & glory** — **29 awards** from hunting, deaths, playtime, loot
+- **Achievements & glory** — **31 awards** from hunting, deaths, playtime, loot
   and realm progress pay out **Glory (Ruhm)**, a currency earned only by doing.
   In the **Glory shop** you buy permanent conveniences: **Beutelschein**
   (+inventory slots), **Zollerlass** (−death toll), **Aschesegen** (+ash gain),
@@ -162,6 +167,15 @@ It is spent in the **Legacy (Vermächtnis)** on six tiered titles (3 levels each
 | *Alter Pfad* | Awaken with +2 free stat points |
 | *Tiefenwissen* | +10 % elite/boss find chance |
 | *Der Vorbereitete* | Awaken with 25 ash |
+
+**The Ash Echo** — every awakening leaves an *Ash Echo* of the finished run
+(name, level, attack tempo, and its blade with all its kill memory) waiting in
+the area where that run peaked. It manifests there mid-area and defends the
+zone until broken — a boss-tier duel against who you used to be, self-balanced
+on the area’s own curve. Breaking it pays **+1 Crown Ash** and leaves its
+blade behind: an **Echo Relic**, a legendary at that area’s item level with
+secured lifeleech, one mastery — and the previous run’s kill memory. The area
+map marks the waiting echo; the chronicle tells its story.
 
 **Awaken anew** resets the run — zone & areas, hero (level, XP, stat points,
 runes & path binding), ash, equipment & inventory. What stays: the whole

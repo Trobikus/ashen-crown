@@ -1,4 +1,4 @@
-import { GEAR_SLOTS, enemyDef, BASE_CRIT_CHANCE, CRIT_MULTIPLIER, BASE_ATTACK_SPEED, ARMOR_RESISTANCE, ATTACK_INTERVAL_MS, CRIT_CHANCE_CAP, itemStats, profileOf, enemyLevelOf } from './data.js';
+import { GEAR_SLOTS, enemyDef, BASE_CRIT_CHANCE, CRIT_MULTIPLIER, BASE_ATTACK_SPEED, ARMOR_RESISTANCE, ATTACK_INTERVAL_MS, CRIT_CHANCE_CAP, itemStats, profileOf, enemyLevelOf, memoryBonusOfItem } from './data.js';
 import { state, heroHpFactor, critDmgBonusPct } from './state.js';
 import { skillBonus } from './skilltree.js';
 import { legacyFactor } from './prestige.js';
@@ -37,6 +37,20 @@ export function masteryBonus(stat) {
 
 export function statBonus(stat) {
   return skillBonus(stat) + masteryBonus(stat);
+}
+
+// Gedächtnis der getragenen Ausrüstung gegen eine Kreaturfamilie: Summe der
+// Stufen aller getragenen Stücke — je Stufe +1 % Schaden gegen die Familie
+// (Deckel je Stück in data.js). Bewusst situativ: Es stärkt gegen das
+// Vertraute, nie flächendeckend.
+export function heroMemoryBonus(family) {
+  if (!family) return 0;
+  let total = 0;
+  for (const slot of GEAR_SLOTS) {
+    const item = state.equipment[slot.key];
+    if (item) total += memoryBonusOfItem(item, family);
+  }
+  return total;
 }
 
 export function heroDamage() {

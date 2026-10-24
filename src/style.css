@@ -1025,6 +1025,23 @@ input[type='range'] {
   75% { transform: translate(0.5px, 0.7px); }
 }
 
+/* Der Nachhall: ein Geist des früheren Ichs — entsättigt, leicht überleuchtet
+   und vom Boden gelöst. Die Drift sitzt auf dem SVG (nicht auf der Figur),
+   damit die Kampf-Animationen (lunge/recoil/spawn) unberührt bleiben; in der
+   Wut übernimmt enrage-quiver (gleich spezifisch, später im File). */
+#enemy-figure.echo {
+  filter: grayscale(0.35) brightness(1.15);
+}
+
+#enemy-figure.echo svg {
+  animation: echo-drift 3.4s ease-in-out infinite;
+}
+
+@keyframes echo-drift {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
 .fighter-level {
   margin: 0.6rem 0 -0.35rem;
   font-size: 0.7rem;
@@ -1504,6 +1521,22 @@ input[type='range'] {
   color: #d9a03f;
   font-size: 0.78rem;
   margin-top: 0.2rem;
+}
+
+/* Gedächtnis der Ausrüstung: kühles Asche-Grau — abgesetzt vom Gold der
+   Meisterschaften, die Biografie eines Stücks statt seines Werts. */
+.tt-memory-head {
+  color: #9fb4c8;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 0.35rem;
+}
+
+.tt-memory {
+  color: #9fb4c8;
+  font-size: 0.72rem;
 }
 
 .tt-enhance {

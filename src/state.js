@@ -71,6 +71,10 @@ const state = {
   kronenascheAusgegeben: 0,
   prestigeRuns: 0,
   legacy: {},
+  // Der Asche-Nachhall: Snapshot des letzten Laufs, überlebt das Erwachen
+  // wie Ruhm und Kronenasche (siehe src/echo.js); null, solange nie erwacht
+  // wurde. Gehärtet wird er beim Laden (saveio → sanitizeEcho).
+  echo: null,
 };
 
 // Ruhm-Käufe wirken direkt auf die Systemregeln: Der Beutelschein erweitert

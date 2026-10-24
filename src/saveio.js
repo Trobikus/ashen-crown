@@ -8,6 +8,7 @@ import { t } from './i18n.js';
 import { MAX_SKILL_POINTS, sanitizeSkills } from './skilltree.js';
 import { sanitizeAchievements, sanitizeShopPurchases } from './achievements.js';
 import { LEGACY_TITLES } from './prestige.js';
+import { sanitizeEcho } from './echo.js';
 import { el } from './dom.js';
 import { flashButton } from './domfx.js';
 import { readStorage, writeStorage, removeStorage } from './storage.js';
@@ -210,6 +211,9 @@ function prepareSave(data) {
     if (level > 0) cleanLegacy[title] = Math.min(3, Math.trunc(level));
   }
   data.legacy = cleanLegacy;
+  // Der Asche-Nachhall: Snapshot des letzten Laufs — härtet sanitizeEcho
+  // (bekannte Form, Werte geklemmt); ohne Snapshot gibt es keinen Nachhall.
+  data.echo = sanitizeEcho(data.echo);
   // Safedrop-Register: Gebiete, deren Elite-Erstkill schon gedroppt hat.
   data.safedropZones = data.safedropZones && typeof data.safedropZones === 'object' && !Array.isArray(data.safedropZones) ? data.safedropZones : {};
   const cleanSafedrops = {};

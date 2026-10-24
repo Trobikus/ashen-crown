@@ -163,6 +163,7 @@ export function renderZones() {
         row.classList.toggle('current', index === state.zone);
         row.classList.toggle('locked', !open);
       row.querySelector('.zone-status').textContent = index === state.zone ? t('Aufenthalt') : open ? t('Eröffnet') : t('Versiegelt');
+      markEchoZone(row, index);
     }
     continue;
   }
@@ -184,6 +185,16 @@ export function renderZones() {
       row.classList.toggle('current', index === state.zone);
       row.classList.toggle('locked', !open);
       row.querySelector('.zone-status').textContent = index === state.zone ? t('Aufenthalt') : open ? t('Eröffnet') : t('Versiegelt');
+      markEchoZone(row, index);
     }
   }
+}
+
+// Der Nachhall des letzten Laufs wartet in seiner Zone: bleiche Markierung
+// statt des Statusworts, solange er ungebrochen ist (siehe echo.js/game.js).
+// Gebrochen ist er reine Chronik — die Karte schweigt dann wieder.
+function markEchoZone(row, index) {
+  const echoHere = Boolean(state.echo) && !state.echo.defeated && index === state.echo.zone;
+  row.classList.toggle('zone-echo', echoHere);
+  if (echoHere) row.querySelector('.zone-status').textContent = t('Nachhall');
 }

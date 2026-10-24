@@ -13,9 +13,9 @@ import { state, settings, inventoryCap, deathPenalty, ashGainFactor, xpGainFacto
 
 import { loadSettings, saveSettings, applySettings } from './settings.js';
 
-import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, GEAR_SLOTS, ARMOR_RESISTANCE, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, formatNum, itemNameOf } from './data.js';
+import { TICK_MS, ATTACK_INTERVAL_MS, STATS_SYNC_INTERVAL_MS, BOSS_AFTER_KILLS, ELITE_EVERY_KILLS, MAIN_ZONE_COUNT, LAST_ZONE_INDEX, GEAR_SLOTS, ARMOR_RESISTANCE, ENRAGE_THRESHOLD, ENRAGE_INTERVAL_MULT, HUB_REGEN_PER_SECOND, ENEMY_MISS_CHANCE, HERO_MISS_CHANCE, DAMAGE_VARIANCE, SKILL_TREE_UNLOCK_LEVEL, STAT_POINTS_PER_LEVEL, enemyXpMultiplier, continentKeyOf, xpNeeded, zoneDef, formatNum, itemNameOf, growMemory, ARCHETYPE_LABELS } from './data.js';
 
-import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier, heroLifeleech } from './stats.js';
+import { scaledEnemy, statBonus, heroDamage, heroMaxHp, heroArmor, heroCritChance, heroAttackSpeed, critMultiplier, heroLifeleech, heroMemoryBonus } from './stats.js';
 
 import { buildSkillTree, renderSkillTree, bindSkillTreeEvents, applySkillView, refreshSkillLabels, MAX_SKILL_POINTS } from './skilltree.js';
 
@@ -29,7 +29,7 @@ import { buildCraftSlots, renderCrafting, bindCraftEvents } from './crafting.js'
 
 import { INTRO_PAGES, COMBAT_INTRO_PAGES, CONTINENT_LORE, epitaphOf, continentLoreKeyOf, renderChronicle } from './lore.js';
 
-import { initItems, rollDrop, unequipItem, sortInventory, equipBest, exitSellMode, sellButtonAction, selectAllForSale, handleInventoryClick, renderGearIfDirty, buildDepthRelic, grantItem, itemSellValue, markGearDirty, bindDragAndDrop } from './items.js';
+import { initItems, rollDrop, unequipItem, sortInventory, equipBest, exitSellMode, sellButtonAction, selectAllForSale, handleInventoryClick, renderGearIfDirty, buildDepthRelic, buildEchoRelic, grantItem, itemSellValue, markGearDirty, bindDragAndDrop } from './items.js';
 
 import { t, lname, fmtDec, onLangChange, getLang } from './i18n.js';
 
@@ -37,7 +37,9 @@ import { ACHIEVEMENTS, claimAchievement, evaluateAchievements } from './achievem
 
 import { kronenascheReward } from './prestige.js';
 
-import { spriteSvgFor } from './sprites.js';
+import { echoEnemy, echoManifests } from './echo.js';
+
+import { spriteSvgFor, archetypeOf } from './sprites.js';
 
 import { flash, pulseClass, setText, setWidth, setHidden, setHpBar, spawnDamageFloat, spawnHealFloat, spawnMissFloat, spawnSlash, spawnImpact, flashButton, refreshArenaParticles, CONTINENT_FIGURE_CLASSES } from './domfx.js';
 
@@ -93,8 +95,30 @@ const escapeHtml = (text) => text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<
 // es nichts zurückzuholen und die Zeile wäre nur Deko.
 const STAT_RESPEC_MIN_SPENT = 5;
 
-// Gegner-Typ als Wort (Boss/Elite/Normal — in beiden Sprachen gleich).
-const typeLabelOf = (type) => t(type === 'boss' ? 'Boss' : type === 'elite' ? 'Elite' : 'Normal');
+// Gegner-Typ als Wort (Boss/Elite/Nachhall/Normal — Boss und Elite in beiden
+// Sprachen gleich, der Nachhall ist ein eigener Typ mit eigenem Wort).
+const typeLabelOf = (type) => t(type === 'boss' ? 'Boss' : type === 'elite' ? 'Elite' : type === 'echo' ? 'Nachhall' : 'Normal');
+
+// Anzeigename eines Gegners: Bestiarium-Namen übersetzt lname(); der Nachhall
+// ist ein zusammengesetzter Satz mit Spielernamen — der fällt durch lname
+// hindurch und wird darum hier als eigener Schlüssel gebaut (Player-Namen
+// sind Freitext: vor der Interpolation escapen).
+const enemyDisplayName = (e) => (e.type === 'echo'
+  ? t('Nachhall von {name}', { name: escapeHtml(e.echoHero ?? '') })
+  : lname(e.name));
+
+// Gedächtnis der Ausrüstung füttern: Alle getragenen Stücke buchen den Kill
+// je Kreaturfamilie; überquert der GESAMMELTE Bonus eine Schwelle, meldet
+// sich die Asche einmal — leise, aber hörbar (Offline bucht ohne Meldung).
+function growGearMemory(enemyName) {
+  const family = archetypeOf(enemyName);
+  const before = heroMemoryBonus(family);
+  for (const slot of GEAR_SLOTS) growMemory(state.equipment[slot.key], enemyName);
+  const after = heroMemoryBonus(family);
+  if (after > before) {
+    toast(t('Gedächtnis wächst: +{n} % Schaden gegen {fam}.', { n: after, fam: t(ARCHETYPE_LABELS[family]) }), '#9fb4c8');
+  }
+}
 
 // Die Bus-Anmeldung: Kern-Dienste für die Fach-Module. Funktionsdeklarationen
 // sind gehoistet — die Closures dürfen sich auf weiter unten stehende
@@ -142,16 +166,23 @@ function showScreen(target) {
 
 function setEnemyFigure(zoneIndex, name, enemyType) {
   for (const cls of CONTINENT_FIGURE_CLASSES) el.enemyFigure.classList.remove(cls);
-  el.enemyFigure.classList.remove('enraged');
+  el.enemyFigure.classList.remove('enraged', 'echo');
   el.enemyFigure.classList.add(`cont-${continentKeyOf(zoneIndex)}`);
   el.enemyFigure.classList.toggle('boss', enemyType === 'boss');
   el.enemyFigure.classList.toggle('elite', enemyType === 'elite');
+  el.enemyFigure.classList.toggle('echo', enemyType === 'echo');
   // Der Sprite folgt dem Namen (Bestiarium-Konsistenz) und der Type gibt
   // Bossen die Krone — dieselbe Kreatur sieht überall gleich aus.
   el.enemyFigure.innerHTML = spriteSvgFor(name, enemyType === 'boss');
 }
 
 function spawnEnemy() {
+  // Der Nachhall hat Vorrang vor allem anderen: Er STEHT in seiner Zone,
+  // sobald die Manifestations-Schwelle erreicht ist — bis er gebrochen ist.
+  if (echoManifests(state)) {
+    spawnEcho();
+    return;
+  }
   let type = 'normal';
   const zoneCleared = state.cleared > state.zone;
   if (!zoneCleared && state.zoneKills >= BOSS_AFTER_KILLS) {
@@ -182,6 +213,29 @@ function spawnEnemy() {
     sfx.boss();
     hintOnce('hint-boss', t('Ein Boss hütet den Ausgang — zäh und unerbittlich. Kehr notfalls zum Schrein zurück, heile, und stelle ihn vorbereitet.'), { pauseCombat: true });
   }
+  render();
+}
+
+// Der Nachhall manifestiert sich: Die Asche des letzten Laufs steigt in der
+// Grenzzone des alten Ichs auf — ein Duell gegen das frühere Selbst. Kamp-
+// werte aus echo.js (80 % des Zonen-Bossen, Tempo des alten Ichs), Identität
+// aus dem Snapshot (Name, Stufe). Er wird nicht im Bestiarium gezählt —
+// er ist kein Wesen der Welt, er bist du.
+function spawnEcho() {
+  const echo = state.echo;
+  const def = echoEnemy(echo, state.zone);
+  enemy = { type: 'echo', name: `Nachhall von ${echo.name}`, echoHero: echo.name, level: echo.level, hp: def.hp, maxHp: def.hp, damage: def.damage, attackIntervalMs: def.attackIntervalMs, enraged: false, hitsOnHero: 0, damageToHero: 0 };
+  setEnemyFigure(state.zone, enemy.name, 'echo');
+  el.enemyFigure.classList.remove('dying');
+  pulseClass(el.enemyFigure, 'spawn', 600);
+  refreshArenaParticles();
+  el.enemyName.textContent = enemyDisplayName(enemy);
+  el.enemyLevel.textContent = `Lv ${echo.level} · ${typeLabelOf('echo')}`;
+  el.enemyProfile.textContent = t('Nachhall — kämpft wie du einst');
+  el.enemyProfile.classList.remove('enraged-label');
+  enemyAttackProgress = 0;
+  sfx.boss();
+  hintOnce('hint-echo', t('Die Asche gestaltet sich: Der Nachhall von {name} tritt dir entgegen — mit allem, was du einst warst. Er verteidigt diese Zone, bis du ihn brichst.', { name: escapeHtml(echo.name) }), { duration: 5600 });
   render();
 }
 
@@ -309,6 +363,10 @@ function applyLifeleech(damage) {
 }
 
 function killEnemy() {
+  if (enemy.type === 'echo') {
+    killEcho();
+    return;
+  }
   const def = scaledEnemy(enemy.type);
   pulseClass(el.enemyFigure, 'dying', 500);
   state.kills += 1;
@@ -318,6 +376,8 @@ function killEnemy() {
   const firstOfKind = !state.bestiary[def.name];
   state.bestiary[def.name] = (state.bestiary[def.name] ?? 0) + 1;
   if (firstOfKind) toast(t('Neue Kreatur erlegt: {name}', { name: lname(def.name) }), '#c1663a');
+  // Gedächtnis: Die getragene Ausrüstung war dabei — jede Familie zählt.
+  growGearMemory(def.name);
   // Safedrop: Der erste Elite-Kill eines Gebiets garantiert ein Stück.
   const eliteSafedrop = enemy.type === 'elite' && !state.safedropZones[state.zone];
   if (eliteSafedrop) state.safedropZones[state.zone] = 1;
@@ -381,6 +441,42 @@ function killEnemy() {
   render();
 }
 
+// Der gebrochene Nachhall: +1 Kronenasche (einmal je Erweckung) und seine
+// Klinge — ein Nachhallrelikt, das die Beutezüge des alten Ichs im Gedächtnis
+// trägt. Volles Inventar ist kein Verlust: Die Klinge zahlt sich in Asche
+// aus (wie das Tiefenrelikt).
+function killEcho() {
+  const echo = state.echo;
+  pulseClass(el.enemyFigure, 'dying', 500);
+  state.kills += 1;
+  state.zoneKills += 1;
+  // Auch der Nachhall zählt ins Gedächtnis — er ist eine Schatten-Familie.
+  growGearMemory(enemy.name);
+  echo.defeated = true;
+  state.kronenascheEarned += 1;
+  const relic = buildEchoRelic(echo);
+  let relicLine;
+  if (state.inventory.length < inventoryCap()) {
+    grantItem(relic);
+    relicLine = t('Seine Klinge bleibt: <strong>{item}</strong> — mit dem Gedächtnis all ihrer Beutezüge.', { item: itemNameOf(relic) });
+  } else {
+    const ash = itemSellValue(relic);
+    state.ash += ash;
+    relicLine = t('Seine Klinge verflüchtigt sich — das Inventar war voll: +{n} Asche.', { n: formatNum(ash) });
+  }
+  sfx.kill();
+  sfx.legendary();
+  showDismissibleOverlay(
+    t('Der Nachhall von {name} ist gebrochen — die Asche nimmt ihn zurück, bis du erneut erwachst.<br><br>{relic}<br><br>+1 Kronenasche.', { name: escapeHtml(echo.name), relic: relicLine }),
+    7000,
+    true,
+  );
+  enemy = null;
+  save();
+  setTimeout(spawnEnemy, 900);
+  render();
+}
+
 function heroAttack() {
   // Der Schwung passiert immer — auch ein Fehlschlag war ein Angriff.
   pulseClass(el.heroFigure, 'lunge');
@@ -392,6 +488,9 @@ function heroAttack() {
   }
   // Der Schaden rollt in einer Spanne — kein Schlag trifft gleich hart.
   let damage = Math.round(heroDamage() * (1 - DAMAGE_VARIANCE + Math.random() * DAMAGE_VARIANCE * 2));
+  // Gedächtnis: Die Ausrüstung schlägt härter gegen Familien, die sie kennt.
+  const memoryBonus = heroMemoryBonus(archetypeOf(enemy.name));
+  if (memoryBonus > 0) damage = Math.round(damage * (1 + memoryBonus / 100));
   const isCrit = Math.random() * 100 < heroCritChance();
   if (isCrit) {
     damage = Math.round(damage * critMultiplier());
@@ -470,7 +569,7 @@ function die() {
   // Todesrückblick: Wer nicht versteht, warum er starb, kann nicht dazulernen —
   // das Overlay nennt den Bezwinger und die eingesteckte Summe.
   const recap = enemy
-    ? t('<br><br>Gefallen gegen <strong>{name}</strong> (Lv {level}): {hits} Treffer, {damage} Schaden insgesamt.', { name: lname(enemy.name), level: enemy.level, hits: enemy.hitsOnHero, damage: formatNum(enemy.damageToHero) })
+    ? t('<br><br>Gefallen gegen <strong>{name}</strong> (Lv {level}): {hits} Treffer, {damage} Schaden insgesamt.', { name: enemyDisplayName(enemy), level: enemy.level, hits: enemy.hitsOnHero, damage: formatNum(enemy.damageToHero) })
     : '';
   showOverlay(t('<strong>{name}</strong> ist gefallen — die Asche nimmt dich zurück{toll}. Am Schrein erwachst du mit einem Viertel deiner Lebenskraft.', {
     name: escapeHtml(lname(state.heroName)),
@@ -489,7 +588,8 @@ function enemyAttackInterval() {
 }
 
 function updateEnrage() {
-  if (!enemy || enemy.type !== 'boss') return;
+  // Der Nachhall rast wie ein Boss — das frühere Ich kämpft um sein Dasein.
+  if (!enemy || (enemy.type !== 'boss' && enemy.type !== 'echo')) return;
   const enraged = enemy.hp / enemy.maxHp <= ENRAGE_THRESHOLD;
   if (enraged === enemy.enraged) return;
   enemy.enraged = enraged;
@@ -502,7 +602,7 @@ function updateEnrage() {
 function tick() {
   if (paused || !enemy) return;
   updateEnrage();
-  setBossFight(enemy.type === 'boss');
+  setBossFight(enemy.type === 'boss' || enemy.type === 'echo');
   setLowHp(heroHp / heroMaxHp() <= 0.25);
   heroAttackProgress += TICK_MS * heroAttackSpeed();
   enemyAttackProgress += TICK_MS;
@@ -566,16 +666,20 @@ function renderEnemyTooltip() {
   const speed = fmtDec(1000 / enemyAttackInterval());
   const temperament = enemy.enraged
     ? t('Wütend — greift schneller an')
-    : enemy.type === 'boss' ? t('Standard') : t(enemy.profileLabel || 'Standard');
-  const signatur = `${getLang()}|${enemy.name}|${enemy.level}|${enemy.type}|${enemy.enraged ? 'wütend' : 'ruhig'}|${reduction.toFixed(3)}`;
+    : enemy.type === 'boss' ? t('Standard')
+    : enemy.type === 'echo' ? t('Nachhall — kämpft wie du einst')
+    : t(enemy.profileLabel || 'Standard');
+  const memoryBonus = heroMemoryBonus(archetypeOf(enemy.name));
+  const signatur = `${getLang()}|${enemy.name}|${enemy.level}|${enemy.type}|${memoryBonus}|${enemy.enraged ? 'wütend' : 'ruhig'}|${reduction.toFixed(3)}`;
   if (signatur === tooltipSignatur) return;
   tooltipSignatur = signatur;
   el.enemyTooltip.innerHTML = `
-    <div class="tt-name">${lname(enemy.name)}</div>
+    <div class="tt-name">${enemyDisplayName(enemy)}</div>
     <div class="tt-rarity">${typeLabelOf(enemy.type)} · Lv ${enemy.level}</div>
     <div class="tt-stat">${t('Schlag: bis zu {n} Schaden', { n: formatNum(enemy.damage) })}</div>
     <div class="tt-stat">${t('Angriffstempo: {s} / s', { s: speed })}</div>
     <div class="tt-stat">${t('Temperament: {t}', { t: temperament })}</div>
+    ${memoryBonus > 0 ? `<div class="tt-stat">${t('Gedächtnis deiner Ausrüstung: +{n} % Schaden', { n: memoryBonus })}</div>` : ''}
     <div class="tt-stat">${t('Deine Rüstung mindert: {p} %', { p: Math.round(reduction * 100) })}</div>`;
 }
 
@@ -661,7 +765,7 @@ function render() {
   setWidth(el.heroXpFill, Math.min(100, (state.xp / xpNeed) * 100));
   setText(el.heroXpText, `${formatNum(state.xp)} / ${formatNum(xpNeed)}`);
   if (enemy) {
-    setText(el.enemyName, lname(enemy.name));
+    setText(el.enemyName, enemyDisplayName(enemy));
     setText(el.enemyLevel, `Lv ${enemy.level} · ${typeLabelOf(enemy.type)}`);
     setHpBar(el.enemyHp, el.enemyHpGhost, (enemy.hp / enemy.maxHp) * 100);
     setText(el.enemyHpText, `${formatNum(Math.max(0, enemy.hp))} / ${formatNum(enemy.maxHp)}`);
@@ -916,8 +1020,10 @@ function bindSceneTabs(nav, panel, onPage) {
 
 function bindEvents() {
   el.shrineButton.addEventListener('click', () => {
-    // Der Schrein verwirft den laufenden Kampf — Bosse heilen sich voll.
+    // Der Schrein verwirft den laufenden Kampf — Bosse heilen sich voll, der
+    // Nachhall genauso: kein Zermürben über viele Besuche hinweg.
     if (enemy?.type === 'boss') toast(t('Der Boss heilt sich beim Verlassen vollständig.'));
+    else if (enemy?.type === 'echo') toast(t('Der Nachhall heilt sich beim Verlassen vollständig.'));
     returnToHub();
   });
   el.btnDescend.addEventListener('click', descend);

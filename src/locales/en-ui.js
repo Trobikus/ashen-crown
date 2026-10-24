@@ -478,4 +478,29 @@ export const EN_UI = {
   'Hier unten zählt die Asche ihre Toten. Du bist eine Zahl geworden, die mitgeht.': 'Down here the ash counts its dead. You have become a number that comes along.',
   'Die Tiefen haben keinen Boden. Sie haben nur Geduld.': 'The depths have no floor. They have only patience.',
   'Was du oben erbeutest, wird unten vermisst.': 'What you loot up above is missed down below.',
+
+  // ——— Gedächtnis der Ausrüstung ———
+  'Gedächtnis · {n} erlegt': 'Memory · {n} slain',
+  '{fam}: +{p} % Schaden · {n} erlegt': '{fam}: +{p} % damage · {n} slain',
+  'Gedächtnis wächst: +{n} % Schaden gegen {fam}.': 'Memory grows: +{n} % damage against {fam}.',
+  'Gedächtnis deiner Ausrüstung: +{n} % Schaden': "Your gear's memory: +{n} % damage",
+
+  // ——— Der Asche-Nachhall ———
+  'Nachhall': 'Echo',
+  'Nachhall von {name}': 'Ash Echo of {name}',
+  'Nachhall — kämpft wie du einst': 'Echo — it fights as you once did',
+  'Die Asche gestaltet sich: Der Nachhall von {name} tritt dir entgegen — mit allem, was du einst warst. Er verteidigt diese Zone, bis du ihn brichst.': 'The ash takes shape: the Ash Echo of {name} steps out to meet you — wearing everything you once were. It defends this area until you break it.',
+  'Der Nachhall heilt sich beim Verlassen vollständig.': 'The echo heals fully when you leave.',
+  'Der Nachhall von {name} ist gebrochen — die Asche nimmt ihn zurück, bis du erneut erwachst.<br><br>{relic}<br><br>+1 Kronenasche.': 'The Ash Echo of {name} is broken — the ash takes it back until you awaken anew.<br><br>{relic}<br><br>+1 Crown Ash.',
+  'Seine Klinge bleibt: <strong>{item}</strong> — mit dem Gedächtnis all ihrer Beutezüge.': 'Its blade remains: <strong>{item}</strong> — carrying the memory of all its hunts.',
+  'Seine Klinge verflüchtigt sich — das Inventar war voll: +{n} Asche.': 'Its blade dissipates — the inventory was full: +{n} ash.',
+  'Und sie formt schon etwas: Ein Nachhall deiner selbst wartet in {zone} — mit allem, was du warst.': 'And it is already shaping something: an echo of yourself waits in {zone} — with everything you once were.',
+  '. Der Nachhall versperrte den Weg — ausgewichen auf {name} und weitergefarmt.': '. The echo blocked the way — diverted to {name} and kept farming.',
+
+  // ——— Chronik: Der Nachhall ———
+  'Der Nachhall': 'The Echo',
+  'Wartend': 'Waiting',
+  'Gebrochen': 'Broken',
+  'Ein Nachhall von {name} wartet in {zone}: Stufe {lvl}, {kills} erlegt einst. Er trägt alles, was du warst.': 'An Ash Echo of {name} waits in {zone}: level {lvl}, {kills} slain in its day. It carries everything you were.',
+  'Der Nachhall von {name} ist gebrochen — Stufe {lvl}, einst {kills} erlegt. Die Asche nimmt ihn zurück, bis du erneut erwachst.': 'The Ash Echo of {name} is broken — level {lvl}, {kills} slain in its day. The ash takes it back until you awaken anew.',
 };

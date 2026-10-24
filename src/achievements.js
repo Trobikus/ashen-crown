@@ -2,10 +2,17 @@
 // Speicherlogik, nur IDs im Spielstand (state.achievements). check entscheidet
 // den Unlock, progress liefert [aktuell, Ziel] für die Anzeige, ruhm ist die
 // Währung, die jeder Errungenschaft beim Erringen gewachsen ist.
-import { ZONE_ENEMIES } from './data.js';
+import { ZONE_ENEMIES, memoryTier } from './data.js';
 
 const dropTotal = (s) => Object.values(s.drops ?? {}).reduce((sum, n) => sum + (Number.isFinite(n) ? n : 0), 0);
 const dropOf = (s, key) => s.drops?.[key] ?? 0;
+
+// Volles Gedächtnis: Irgendein Stück (getragen oder im Inventar) erinnert
+// 300 Beutezüge gegen eine Familie — der Deckel je Stück ist der Meilenstein.
+const fullMemoryOwned = (s) => {
+  const items = [...Object.values(s.equipment ?? {}), ...(Array.isArray(s.inventory) ? s.inventory : [])];
+  return items.some((item) => item?.memory && Object.values(item.memory).some((kills) => memoryTier(kills) >= 3));
+};
 
 // Bestiarium-Fortschritt: die 150 Kreaturen des Hauptspiels, je mindestens
 // einmal erlegt (die Tiefen-Namen rotieren endlos und zählen nicht hinein).
@@ -40,6 +47,7 @@ export const ACHIEVEMENTS = [
   { id: 'beute-500', name: 'Aschenbaron', desc: 'Finde 500 Beutestücke.', ruhm: 3, check: (s) => dropTotal(s) >= 500, progress: (s) => [Math.min(dropTotal(s), 500), 500] },
   { id: 'legendaer-1', name: 'Goldhauch', desc: 'Finde dein erstes legendäres Stück.', ruhm: 1, check: (s) => dropOf(s, 'legendär') >= 1, progress: (s) => [Math.min(dropOf(s, 'legendär'), 1), 1] },
   { id: 'legendaer-10', name: 'Kronjäger', desc: 'Finde 10 legendäre Stücke.', ruhm: 2, check: (s) => dropOf(s, 'legendär') >= 10, progress: (s) => [Math.min(dropOf(s, 'legendär'), 10), 10] },
+  { id: 'gedaechtnis-voll', name: 'Die Klinge erinnert sich', desc: 'Besitze ein Stück, das sich an 300 Beutezüge gegen eine Kreaturfamilie erinnert (+3 % Schaden).', ruhm: 2, check: (s) => fullMemoryOwned(s), progress: (s) => [fullMemoryOwned(s) ? 1 : 0, 1] },
 
   { id: 'gebiet-10', name: 'Über den Thron hinaus', desc: 'Befreie 10 Gebiete.', ruhm: 1, check: (s) => s.cleared >= 10, progress: (s) => [Math.min(s.cleared, 10), 10] },
   { id: 'gebiet-25', name: 'Der halbe Weg', desc: 'Befreie 25 Gebiete.', ruhm: 2, check: (s) => s.cleared >= 25, progress: (s) => [Math.min(s.cleared, 25), 25] },
@@ -58,6 +66,7 @@ export const ACHIEVEMENTS = [
   { id: 'tiefe-25', name: 'Dem Grund entgegen', desc: 'Erringe 25 Aschentiefen.', ruhm: 4, check: (s) => s.cleared >= 75, progress: (s) => [Math.max(0, Math.min(s.cleared - 50, 25)), 25] },
   { id: 'tiefe-50', name: 'Unter allem Licht', desc: 'Erringe 50 Aschentiefen.', ruhm: 5, check: (s) => s.cleared >= 100, progress: (s) => [Math.max(0, Math.min(s.cleared - 50, 50)), 50] },
   { id: 'bestiarium-haupt', name: 'Chronist der Asche', desc: 'Erlege jede der 150 Kreaturen des Hauptspiels mindestens einmal.', ruhm: 5, check: (s) => mainBestiaryKnown(s) >= MAIN_BESTIARY_TOTAL, progress: (s) => [Math.min(mainBestiaryKnown(s), MAIN_BESTIARY_TOTAL), MAIN_BESTIARY_TOTAL] },
+  { id: 'nachhall-1', name: 'Das Ich im Aschenschleier', desc: 'Brich den Nachhall deines früheren Ichs.', ruhm: 3, check: (s) => s.echo?.defeated === true, progress: (s) => [s.echo?.defeated === true ? 1 : 0, 1] },
 ];
 
 // Ruhm: Die Errungenschaften-Währung. Sie wird NICHT separat gespeichert,
@@ -115,7 +124,7 @@ export function ruhmAvailable(state) {
 }
 
 // Der Ruhm-Laden: permanente Erleichterungen, gestaffelt nach Stufen. Die
-// Gesamtkosten (168) übersteigen bewusst den Gesamt-Ertrag (77) — Ruhm bleibt
+// Gesamtkosten (168) übersteigen bewusst den Gesamt-Ertrag (82) — Ruhm bleibt
 // eine Entscheidung, nicht eine Checkliste: Es passt nie alles rein.
 export const RUHM_SHOP = {
   beutelschein: { name: 'Beutelschein', desc: '+8 Inventarplätze pro Stufe — die Asche trägt mehr.', levels: [3, 6, 9] },
