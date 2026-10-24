@@ -12,3 +12,14 @@ Thumbs.db
 *.log
 .zcode/
 .release-notes-*.md
+
+# Flüchtige Arbeitsausgaben der Asset-Tools
+tools/.cover/
+docs/screenshots/.debug-*.png
+docs/screenshots-en/.debug-*.png
+
+# Lokale Dev-Werkzeuge der Store-Material-Pflege (Screenshots & Cover via
+# Edge/Playwright) — bewusst nicht im Repo: Der Release braucht sie nicht,
+# GitHub bekommt nur CI-relevante Werkzeuge.
+tools/screenshots.mjs
+tools/make-cover.mjs

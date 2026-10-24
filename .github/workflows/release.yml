@@ -1,12 +1,18 @@
 name: Release
 
 # Ein Release veröffentlicht nur nach bestandenen Gates auf exakt dem
-# getaggten Commit: Der Web-Gate-Job blockiert den Publish-Job (needs),
-# und der Release-Job führt cargo check auf demselben Stand aus. Sich
+# getaggten Commit: Der Web-Gate-Job blockiert die Publish-Jobs (needs),
+# und jeder Release-Job führt cargo check auf demselben Stand aus. Sich
 # stattdessen auf den CI-Lauf auf main zu verlassen, wäre löchrig — er
 # kann fehlen oder noch laufen, und ein Tag darf auf beliebig alten
 # Commits zeigen. Die Web-Gates deshalb bewusst hier erneut ausführen,
 # geteilt über .github/actions/web-gates.
+#
+# Desktop-Matrix: Windows (NSIS), macOS (.app/.dmg) und Linux (AppImage/deb)
+# bauen parallel und hängen an denselben GitHub-Release — appendReleases
+# verhindert, dass der zweite Lauf den Release überschreibt, und führt die
+# Updater-JSON (latest.json) zusammen. Ubuntu 22.04 bewusst statt latest:
+# die ältere glibc hält die AppImage auch auf älteren Distributionen lauffähig.
 on:
   push:
     tags:
@@ -25,9 +31,19 @@ jobs:
       - uses: ./.github/actions/web-gates
 
   release:
-    name: Release (Windows)
+    name: Release (${{ matrix.label }})
     needs: web-gates
-    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: Windows
+          - os: macos-latest
+            label: macOS
+          - os: ubuntu-22.04
+            label: Linux
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
 
@@ -45,6 +61,12 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+
+      - name: Systemabhängigkeiten (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev
 
       - name: cargo check (Rust-Gate auf dem getaggten Commit)
         working-directory: src-tauri
@@ -66,3 +88,4 @@ jobs:
           releaseDraft: false
           prerelease: false
           includeUpdaterJson: true
+          appendReleases: true

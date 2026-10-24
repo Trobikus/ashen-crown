@@ -1,0 +1,125 @@
+name: itch.io Deploy
+
+# Schießt fertige Builds mit butler zu itch.io:
+#   :html    — der Web-Build aus dist/ (spielbar im Browser)
+#   :windows — die Windows-Installer des GitHub-Releases (NSIS-Setup)
+#
+# Auslöser: manuell (Workflow-Run, Kanäle wählbar) oder automatisch mit
+# jedem Release-Tag v* (dann beide Kanäle). Der Windows-Kanal braucht ein
+# bestehendes GitHub-Release — ohne Tag läuft er gegen das neueste Release.
+#
+# Einmalige Einrichtung (siehe docs/itch/release-checklist.md):
+#   1. itch-Projekt anlegen und ITCH_TARGET unten anpassen („nutzer/projekt“)
+#   2. butler einmal lokal installieren und „butler login“ ausführen ODER
+#      einen API-Key auf itch anlegen (Settings → API keys)
+#   3. Den Key als Repository-Secret BUTLER_API_KEY hinterlegen
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel-html:
+        description: 'HTML5-Build (dist/) nach :html'
+        type: boolean
+        default: true
+      channel-windows:
+        description: 'Windows-Installer des Releases nach :windows'
+        type: boolean
+        default: true
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+env:
+  # itch-Ziel in der Form „nutzer/projekt“ — an das eigene Projekt anpassen.
+  ITCH_TARGET: grimoire-interactive/ashen-crown
+
+jobs:
+  html:
+    name: HTML5 → :html
+    if: github.event_name == 'push' || inputs.channel-html
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Preflight — BUTLER_API_KEY vorhanden?
+        env:
+          HAS_KEY: ${{ secrets.BUTLER_API_KEY != '' }}
+        run: test "$HAS_KEY" = true || { echo "::error::Secret BUTLER_API_KEY fehlt — siehe Workflow-Kommentar oben."; exit 1; }
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Abhängigkeiten installieren
+        run: pnpm install --frozen-lockfile
+
+      - name: Web-Build
+        run: pnpm build
+
+      - name: butler laden (broth.itch.zone)
+        run: |
+          curl -sSfL -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip -o butler.zip
+          chmod +x butler
+          ./butler --version
+
+      - name: Version lesen
+        id: version
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: 'butler push dist → :html'
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: ./butler push dist "${ITCH_TARGET}:html" --userversion "${{ steps.version.outputs.version }}"
+
+  windows:
+    name: Windows-Release → :windows
+    if: github.event_name == 'push' || inputs.channel-windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Preflight — BUTLER_API_KEY vorhanden?
+        env:
+          HAS_KEY: ${{ secrets.BUTLER_API_KEY != '' }}
+        run: test "$HAS_KEY" = true || { echo "::error::Secret BUTLER_API_KEY fehlt — siehe Workflow-Kommentar oben."; exit 1; }
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Windows-Installer aus dem Release ziehen
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REF="${{ github.ref_name }}"
+          if [[ "$REF" != v* ]]; then REF="$(gh release view --json tagName -q .tagName)"; fi
+          mkdir -p windows-channel
+          gh release download "$REF" --repo "$GITHUB_REPOSITORY" --dir windows-channel --pattern '*setup.exe' --clobber
+          ls -la windows-channel
+
+      - name: butler laden (broth.itch.zone)
+        run: |
+          curl -sSfL -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip -o butler.zip
+          chmod +x butler
+          ./butler --version
+
+      - name: Version lesen
+        id: version
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: 'butler push → :windows'
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: ./butler push windows-channel "${ITCH_TARGET}:windows" --userversion "${{ steps.version.outputs.version }}"

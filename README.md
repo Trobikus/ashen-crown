@@ -8,7 +8,8 @@
   at the end of the void, the Ashen Crown itself rises to meet you.
 
   **[ ▶ Play in your browser ](https://trobikus.github.io/ashen-crown/)** ·
-  **[ ⬇ Download the desktop build ](releases)**
+  **[ ⬇ Download the desktop build ](releases)** ·
+  **[ 🎮 itch.io ](https://trobikus.itch.io/ashen-crown)**
 
   [![Version](https://img.shields.io/github/v/release/Trobikus/ashen-crown?include_prereleases&label=Alpha&color=C14B3A)](releases)
   [![CI](https://img.shields.io/badge/CI-balance-sim-%2B-smoke-green)](../../actions/workflows/ci.yml)
@@ -38,6 +39,9 @@
 | Skill tree | Areas |
 | :---: | :---: |
 | <a href="docs/screenshots/skilltree.png"><img src="docs/screenshots/skilltree.png" alt="The skill tree" width="100%" /></a> | <a href="docs/screenshots/gebiete.png"><img src="docs/screenshots/gebiete.png" alt="The area map" width="100%" /></a> |
+| <a href="docs/screenshots/schrein.png"><img src="docs/screenshots/schrein.png" alt="The shrine — the hub" width="100%" /></a> | <a href="docs/screenshots/werkstatt.png"><img src="docs/screenshots/werkstatt.png" alt="The workshop" width="100%" /></a> |
+
+> English-language variants of every shot live in `docs/screenshots-en/`.
 
 ## 📊 The game in numbers
 
@@ -109,7 +113,7 @@ a respec reopens them.
 - **Gear that remembers** — Every equipped piece counts its kills per creature
   family (the seven silhouette types); each 100 kills against a family grant
   +1 % damage against it, up to +3 % per piece. Reinforcing and reforging
-  reroll the values, never the memory — a blade’s biography travels with the
+  reroll the values, never the memory — a blade's biography travels with the
   metal, offline hunts included.
 - **Convenience on request** — **Auto-door** (after the boss falls, the door
   moves on by itself), **auto-sell** (loot below a chosen rarity turns into ash
@@ -172,9 +176,9 @@ It is spent in the **Legacy (Vermächtnis)** on six tiered titles (3 levels each
 (name, level, attack tempo, and its blade with all its kill memory) waiting in
 the area where that run peaked. It manifests there mid-area and defends the
 zone until broken — a boss-tier duel against who you used to be, self-balanced
-on the area’s own curve. Breaking it pays **+1 Crown Ash** and leaves its
-blade behind: an **Echo Relic**, a legendary at that area’s item level with
-secured lifeleech, one mastery — and the previous run’s kill memory. The area
+on the area's own curve. Breaking it pays **+1 Crown Ash** and leaves its
+blade behind: an **Echo Relic**, a legendary at that area's item level with
+secured lifeleech, one mastery — and the previous run's kill memory. The area
 map marks the waiting echo; the chronicle tells its story.
 
 **Awaken anew** resets the run — zone & areas, hero (level, XP, stat points,
@@ -248,7 +252,8 @@ deeper the level, the better the loot and the workshop.
 
 Ashen Crown is in a closed alpha stage:
 
-- **Join:** grab the installer from the [releases](releases) — the game updates
+- **Join:** grab the installer from the [releases](releases) or play on
+  **[itch.io](https://trobikus.itch.io/ashen-crown)** — the game updates
   itself when new versions ship. Without installation, play directly in the
   browser: **[trobikus.github.io/ashen-crown](https://trobikus.github.io/ashen-crown/)**
   (web build, tracking `main`; desktop remains the recommended way to play).
@@ -275,6 +280,10 @@ pnpm build          # production build into dist/
 
 node tools/balance-sim.mjs --verify   # verify balance against the real data.js
 node tools/smoke.mjs                  # smoke checks for core modules
+node tools/storage-smoke.mjs          # blocked-storage hardening checks
+node tools/i18n-check.mjs             # static translation audit (CI gate)
+node tools/i18n-runtime-check.mjs     # runtime translation audit against DOM stubs
+node tools/csp-check.mjs              # guards the HTML build against inline styles (CSP)
 ```
 
 <details>
@@ -316,8 +325,12 @@ node tools/smoke.mjs                  # smoke checks for core modules
 │   └── scenes.css        # scenes: inventory, map, workshop, chronicle, options
 ├── tools/
 │   ├── balance-sim.mjs   # balance simulator: plays the real data.js
-│   └── smoke.mjs         # node smoke checks for core modules
-├── docs/                 # banner & screenshots for this README
+│   ├── smoke.mjs         # node smoke checks for core modules
+│   ├── storage-smoke.mjs # blocked-storage hardening checks
+│   ├── i18n-check.mjs    # static translation audit (CI gate)
+│   ├── i18n-runtime-check.mjs # runtime translation audit against DOM stubs
+│   └── csp-check.mjs     # guards the HTML build against inline styles (CSP)
+├── docs/                 # banner, screenshots (de/en) & itch.io release kit
 └── src-tauri/            # Tauri-2 desktop shell (Rust)
 ```
 

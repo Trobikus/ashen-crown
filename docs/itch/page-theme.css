@@ -1,0 +1,63 @@
+/* Ashen Crown — itch-Page-Thema (Custom CSS)
+ * Bildsprache des Spiels: Aschdunkel #0b0a0c, Aschfahl #c9c2b8,
+ * Kronengold #d9a03f/#e8c87a, Georgia-Serif. Einmalig eintragen im
+ * Page-Editor → Theme → „blank“ wählen → dieses CSS ins Theme-Feld.
+ * Alle Regeln zielen auf Inhalts-Elemente; Header/Footer von itch bleiben
+ * unangetastet.
+ */
+
+/* — Grundfläche: die Asche — */
+body {
+  background: #0b0a0c;
+  background-image: radial-gradient(ellipse 80% 50% at 50% 0%, #17131a 0%, #0b0a0c 70%);
+  color: #c9c2b8;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+/* — Typografie: Knochen-Metall — */
+h1, h2, h3, h4 {
+  color: #ded5c4;
+  font-family: Georgia, 'Times New Roman', serif;
+  letter-spacing: 0.06em;
+}
+h2 { border-bottom: 1px solid rgba(217, 160, 63, 0.35); padding-bottom: 0.25em; }
+a { color: #d9a03f; }
+a:hover { color: #e8c87a; }
+
+/* — Zahlen-Tabelle der Beschreibung: kronengoldene Ränder — */
+table { border-collapse: collapse; margin: 1em 0; }
+th, td { border: 1px solid rgba(217, 160, 63, 0.25); padding: 0.45em 0.8em; }
+th { color: #e8c87a; background: rgba(217, 160, 63, 0.08); }
+tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.02); }
+
+/* — Listen & Zitate — */
+blockquote {
+  border-left: 3px solid rgba(217, 160, 63, 0.5);
+  background: rgba(217, 160, 63, 0.05);
+  padding: 0.6em 1em;
+}
+hr { border: 0; border-top: 1px solid rgba(217, 160, 63, 0.3); }
+
+/* — Buttons: die Krone — */
+.button, a.button, .btn {
+  background: linear-gradient(180deg, #d9a03f 0%, #8a651f 100%);
+  border: 1px solid #8a651f;
+  color: #0b0a0c;
+  font-weight: bold;
+  text-shadow: none;
+}
+.button:hover, a.button:hover, .btn:hover {
+  filter: brightness(1.12);
+  color: #0b0a0c;
+}
+
+/* — Inhaltskarten: dunkles Panel mit Goldrand — */
+.widget, .game_devlog_post, .formatted_description {
+  background: rgba(18, 15, 20, 0.85);
+  border: 1px solid rgba(217, 160, 63, 0.22);
+  border-radius: 4px;
+}
+.formatted_description user, .formatted_description p { color: #c9c2b8; }
+
+/* — Screenshots-Galerie: dezenter Goldrahmen — */
+.screenshot_list .screenshot { border: 1px solid rgba(217, 160, 63, 0.3); }
