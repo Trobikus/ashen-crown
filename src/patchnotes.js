@@ -4,10 +4,19 @@
 import { readStorage, writeStorage } from './storage.js';
 
 export const PATCH_NOTES = {
-  version: '0.21.4',
-  date: '23.10.2026',
-  headline: 'Hotfix — Desktop-Anzeige & Export gerettet',
+  version: '0.22.0',
+  date: '24.10.2026',
+  headline: 'Neu — Die Asche erinnert sich: Gedächtnis & Nachhall',
   sections: [
+    {
+      heading: '0.22.0 — Gedächtnis & Nachhall',
+      items: [
+        'Neu: Ausrüstung mit Gedächtnis. Jedes getragene Stück zählt seine Beutezüge je Kreaturfamilie — je 100 Beutezüge wächst der Schaden gegen diese Familie um +1 % (bis +3 % je Stück). Verstärken und Umschmieden würfeln die Werte neu, nie die Erinnerung: Die Biografie einer Klinge reist mit dem Stahl. Tooltips und Werkstatt erzählen sie, der Gegner-Inspektor zeigt den aktiven Bonus — und auch offline wird mitgezählt.',
+        'Neu: Der Asche-Nachhall. Jedes „Erneut erwachen“ hinterlässt einen Nachhall deines alten Ichs — Name, Stufe, Tempo und die Klinge samt Gedächtnis — in der Grenzzone des vergangenen Laufs, markiert auf der Gebiete-Karte. Dort manifestiert er sich und verteidigt die Zone, bis du ihn brichst: ein Duell gegen dein früheres Ich, das rast, wenn es wankt. Brechen zahlt +1 Kronenasche und hinterlässt die Klinge als Nachhallrelikt — legendär, mit gesicherter Lifeleech und dem vollen Gedächtnis deiner alten Waffe.',
+        'Neu: Zwei Errungenschaften dazu — „Die Klinge erinnert sich“ (2 Ruhm) und „Das Ich im Aschenschleier“ (3 Ruhm); insgesamt 31. Der Ruhm-Laden kostet weiterhin mehr, als es je gibt: Ruhm bleibt eine Entscheidung.',
+        'Unter der Haube: Gedächtnis und Nachhall-Snapshot sind im Spielstand gehärtet (nur bekannte Familien, Werte am Deckel), der Offline-Held weicht dem Nachhall aus wie einer Boss-Wand, und der automatisierte Sprach-Check beweist alle neuen Texte auch auf Englisch. Die Balance-Kurve ist unberührt — der Simulator misst unverändert 25,8 Stunden bis zur Krone.',
+      ],
+    },
     {
       heading: '0.21.4 — Hotfix: Desktop-Anzeige & Export',
       items: [
